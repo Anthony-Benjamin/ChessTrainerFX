@@ -110,11 +110,11 @@ public class Board extends GridPane {
         String[] ranks = FEN.split("/");
         ArrayList<String> boardArray = new ArrayList<>();
         // loop through ranks and make a list with characters in FEN string
-        for (int i = 0; i < ranks.length; i++) {
-            String row = ranks[i];    // row
-            char[] chars = row.toCharArray();
+        // row
+        for (String rank : ranks) {
+            char[] chars = rank.toCharArray();
             for (char character : chars) {
-            //if character is a number put a space in list instead of character
+                //if character is a number put a space in list instead of character
                 if (isNumeric(character)) {
                     for (int j = 0; j < Integer.parseInt(String.valueOf(character)); j++) {
                         boardArray.add(" ");
@@ -142,10 +142,7 @@ public class Board extends GridPane {
 
     //determine if character is a digit
     public static boolean isNumeric(char character) {
-        if (Character.isDigit(character)) {
-            return true;
-        }
-        return false;
+        return Character.isDigit(character);
     }
 
     public HashMap<String, String> generateImageList() {
