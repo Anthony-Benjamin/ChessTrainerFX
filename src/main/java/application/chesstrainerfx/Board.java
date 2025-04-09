@@ -115,7 +115,7 @@ public class Board extends GridPane {
             char[] chars = row.toCharArray();
             for (char character : chars) {
             //if character is a number put a space in list instead of character
-                if (isNumeric(String.valueOf(character))) {
+                if (isNumeric(character)) {
                     for (int j = 0; j < Integer.parseInt(String.valueOf(character)); j++) {
                         boardArray.add(" ");
                     }
@@ -140,18 +140,12 @@ public class Board extends GridPane {
         }
     }
 
-    //determine if
-    public static boolean isNumeric(String strNum) {
-        if (strNum == null) {
-            return false;
+    //determine if character is a digit
+    public static boolean isNumeric(char character) {
+        if (Character.isDigit(character)) {
+            return true;
         }
-
-        try {
-            int number = Integer.parseInt(strNum);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
+        return false;
     }
 
     public HashMap<String, String> generateImageList() {
