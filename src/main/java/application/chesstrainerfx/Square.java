@@ -56,5 +56,11 @@ public class Square extends StackPane {
         background.setWidth(95);
         background.setHeight(95);
     }
+
+    public void resetSquare() {
+        background.setStrokeWidth(0);
+        background.setWidth(100);
+        background.setHeight(100);
+    }
 }
 

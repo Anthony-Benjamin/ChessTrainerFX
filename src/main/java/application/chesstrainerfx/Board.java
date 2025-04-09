@@ -8,6 +8,7 @@ import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Board extends GridPane {
     private Square[][] board = new Square[8][8];
@@ -23,8 +24,7 @@ public class Board extends GridPane {
         }
 //        initializeBoard();
         map = generateImageList();
-//      positionFormFEN("rnbqkbnr/ppppp1pp/8/5pB1/3P4/2NQ1N2/PPP1PPPP/R3KB1R b KQkq - 0 1");
-        positionFormFEN("r1bqk2r/ppp3pp/2n1pn2/3p1p2//2N1PN2/PP3PPP/R2QKB1bPP1B21R w KQkq - 0 1");
+        positionFormFEN("r1b1kr2/1ppq2pp/2n1pn2/p2p1p2/1bPP1B2/P1N1PN2/1P3PPP/R2QKB1R w KQq - 0 1");
 
 
         this.setOnMouseClicked(e -> {
@@ -33,8 +33,6 @@ public class Board extends GridPane {
 
             Node clickNode = e.getPickResult().getIntersectedNode();
             StackPane clickParent = (StackPane) clickNode.getParent();
-
-
             Rectangle background = (Rectangle) clickParent.getChildren().getFirst();
             background.setStroke(Color.YELLOW);
             background.setStrokeWidth(5);
@@ -54,6 +52,11 @@ public class Board extends GridPane {
                 Integer col = GridPane.getColumnIndex(clickParent);
                 System.out.print(row + ",");
                 System.out.println(col);
+
+            }
+            if (clickCount >2){
+                System.out.println("clickcount: " + clickCount);
+                resetSquares();
                 clickCount = 0;
             }
         });
@@ -133,10 +136,8 @@ public class Board extends GridPane {
                 if(!boardArray.get(counter).equals(" ")){
                     board[row][col].setPiece(map.get(boardArray.get(counter)));
                 }
-
                 counter++;
             }
-
         }
     }
 
@@ -171,4 +172,12 @@ public class Board extends GridPane {
 
         return map;
     }
+    public void resetSquares(){
+        List<Node> gridPane = getChildren().stream().toList();
+        for (Node node:gridPane){
+            Square square = (Square) node;
+            square.resetSquare();
+
+    }
+}
 }
