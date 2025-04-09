@@ -1,0 +1,25 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+# Logbestanden
+*.log
+
+# JavaFX tijdelijke bestanden (indien gegenereerd)
+*.class
+*.jar
+
+# Maven of Gradle wrapper files (optioneel)
+.mvn/
+.gradle/
+!gradle-wrapper.jar
