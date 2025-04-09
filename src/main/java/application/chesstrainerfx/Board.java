@@ -23,9 +23,9 @@ public class Board extends GridPane {
         }
 //        initializeBoard();
         map = generateImageList();
-//        positionFormFEN("rnbqkbnr/ppppp1pp/8/5pB1/3P4/2NQ1N2/PPP1PPPP/R3KB1R b KQkq - 0 1");
-        positionFormFEN("rnbqkbnr/ppppp1pp/8/5pB1/3P4/2NQ1N2/PPP1PPPP/R3KB1R");
-//        HashMap<String, String> map = generateImageList();
+//      positionFormFEN("rnbqkbnr/ppppp1pp/8/5pB1/3P4/2NQ1N2/PPP1PPPP/R3KB1R b KQkq - 0 1");
+        positionFormFEN("r1bqk2r/ppp3pp/2n1pn2/3p1p2//2N1PN2/PP3PPP/R2QKB1bPP1B21R w KQkq - 0 1");
+
 
         this.setOnMouseClicked(e -> {
 
@@ -56,46 +56,11 @@ public class Board extends GridPane {
                 System.out.println(col);
                 clickCount = 0;
             }
-
-//            Node clickNode = e.getPickResult().getIntersectedNode();
-//            Node clickParent = clickNode.getParent();
-//            System.out.println(clickParent);
-//            Integer row = GridPane.getRowIndex(clickParent);
-//            Integer col = GridPane.getColumnIndex(clickParent);
-//            System.out.print(row + ",");
-//            System.out.println(col);
         });
     }
 
-//    private void printCoordinate(int row, int col) {
-//        int[] coordinate = {row, col};
-//        String coordintate = CoordinateSystem.indexToCoordinate(coordinate);
-//
-//        System.out.println(coordintate);
-//    }
 
 
-//    public void printBoard(){
-//        for (int row = 0; row < 8; row++) {
-//            for (int col = 0; col < 8; col++) {
-//                add(board[row][col], col, row);
-//                //board[row][col].printCoordinate();
-//            }
-
-    /// /            System.out.println();
-//        }
-//    }
-
-//    public void printCoordinates(){
-//        for (int row = 0; row < 8; row++) {
-//            for (int col = 0; col < 8; col++) {
-//                int index[] ={row,col};
-//
-//                String coordinate = CoordinateSystem.indexToCoordinate(index);
-//                board[row][col].setLabelText(coordinate);
-//            }
-//        }
-//    }
     private void initializeBoard() {
         board[0][0].setPiece("file:src/images/BlackRook.png");
         board[0][1].setPiece("file:src/images/BlackKnight.png");
@@ -135,75 +100,47 @@ public class Board extends GridPane {
     }
 
     public void addPiece(int row, int col, String path) {
-//        System.out.println("path? " + path);
         board[row][col].setPiece(path);
     }
 
 
-//    public void positionFormFEN(String FEN) {
-//        //3BQKBNR/ppppp1pp/8/5pB1/3P4/2NQ1N2/PPP1PPPP/R3KB1R"+
-//
-//        String[] pieces = FEN.split("/");
-//        for (int row = pieces.length - 1; row > 0; row--) {
-//            for (int col = 0; col < pieces[row].length(); col++) {
-//                if (!isInt(pieces[row].charAt(col) + "")) {
-//                    addPiece(0, col, map.get(pieces[row].charAt(col) + ""));
-//                } else {
-//                    col = col + Integer.parseInt(pieces[row].charAt(col) + "") - 1;
-//                }
-//            }
-//        }
-//    }
-
     public void positionFormFEN(String Fen) {
-        String FEN = "bqr1krnb/pppppppp/4n3/8/8/8/PPPPPPPP/BQRNKRNB";
-////        String FEN = "rbqnbkrn/pppppppp/8/8/3P4/2N1P3/PPP2PPP/RBQ1BKRN";
-//        String[] output = FEN.split("/");
-//
-//        for (int row = 0; row < output.length; row++) {
-////            System.out.print(row + ",");
-//            for (int col = 0; col < output[row].length(); col++) {
-////                System.out.print(col + " ");
-////                System.out.print(row + "," + col + " ");
-//                String piece = output[row].charAt(col) + "";
-//                if (isNumeric(piece)) {
-//                    int space = Integer.parseInt(piece);
-//
-//                    System.out.println("Number of spaces? " + space + " ");
-//                    int diffRow;
-//                    int diffCol;
-//
-//                    continue;
-//                }
-//
-//                addPiece(row, col, map.get(piece));
-//            }
-////            System.out.println();
-//        }
-        String[] rijen = FEN.split("/");
-        ArrayList<String> array2 = new ArrayList<>();
-        for (int k = 0; k < rijen.length; k++) {
-            String rij = rijen[k];    // row
-
-            char[] chars = rij.toCharArray();
-
+        String[] FENString = Fen.split(" ");
+        String FEN = FENString[0];
+        String[] ranks = FEN.split("/");
+        ArrayList<String> boardArray = new ArrayList<>();
+        // loop through ranks and make a list with characters in FEN string
+        for (int i = 0; i < ranks.length; i++) {
+            String row = ranks[i];    // row
+            char[] chars = row.toCharArray();
             for (char character : chars) {
-                // System.out.println(character);
-
+            //if character is a number put a space in list instead of character
                 if (isNumeric(String.valueOf(character))) {
                     for (int j = 0; j < Integer.parseInt(String.valueOf(character)); j++) {
-                        array2.add(" ");
+                        boardArray.add(" ");
                     }
                 } else {
-                    array2.add(String.valueOf(character));
+                    boardArray.add(String.valueOf(character));
                 }
-                System.out.println();
             }
+
         }
-        System.out.println(array2);
+        // place pieces from boardArray on board
+        int counter = 0;
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                //System.out.print(boardArray.get(counter));
+                if(!boardArray.get(counter).equals(" ")){
+                    board[row][col].setPiece(map.get(boardArray.get(counter)));
+                }
+
+                counter++;
+            }
+
+        }
     }
 
-
+    //determine if
     public static boolean isNumeric(String strNum) {
         if (strNum == null) {
             return false;
