@@ -6,6 +6,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends GridPane {
@@ -156,30 +157,52 @@ public class Board extends GridPane {
 
     public void positionFormFEN(String Fen) {
         String FEN = "bqr1krnb/pppppppp/4n3/8/8/8/PPPPPPPP/BQRNKRNB";
-//        String FEN = "rbqnbkrn/pppppppp/8/8/3P4/2N1P3/PPP2PPP/RBQ1BKRN";
-        String[] output = FEN.split("/");
+////        String FEN = "rbqnbkrn/pppppppp/8/8/3P4/2N1P3/PPP2PPP/RBQ1BKRN";
+//        String[] output = FEN.split("/");
+//
+//        for (int row = 0; row < output.length; row++) {
+////            System.out.print(row + ",");
+//            for (int col = 0; col < output[row].length(); col++) {
+////                System.out.print(col + " ");
+////                System.out.print(row + "," + col + " ");
+//                String piece = output[row].charAt(col) + "";
+//                if (isNumeric(piece)) {
+//                    int space = Integer.parseInt(piece);
+//
+//                    System.out.println("Number of spaces? " + space + " ");
+//                    int diffRow;
+//                    int diffCol;
+//
+//                    continue;
+//                }
+//
+//                addPiece(row, col, map.get(piece));
+//            }
+////            System.out.println();
+//        }
+        String[] rijen = FEN.split("/");
+        ArrayList<String> array2 = new ArrayList<>();
+        for (int k = 0; k < rijen.length; k++) {
+            String rij = rijen[k];    // row
 
-        for (int row = 0; row < output.length; row++) {
-//            System.out.print(row + ",");
-            for (int col = 0; col < output[row].length(); col++) {
-//                System.out.print(col + " ");
-//                System.out.print(row + "," + col + " ");
-                String piece = output[row].charAt(col) + "";
-                if (isNumeric(piece)) {
-                    int space = Integer.parseInt(piece);
+            char[] chars = rij.toCharArray();
 
-                    System.out.println("Number of spaces? " + space + " ");
-                    int diffRow;
-                    int diffCol;
+            for (char character : chars) {
+                // System.out.println(character);
 
-                    continue;
+                if (isNumeric(String.valueOf(character))) {
+                    for (int j = 0; j < Integer.parseInt(String.valueOf(character)); j++) {
+                        array2.add(" ");
+                    }
+                } else {
+                    array2.add(String.valueOf(character));
                 }
-
-                addPiece(row, col, map.get(piece));
+                System.out.println();
             }
-//            System.out.println();
         }
+        System.out.println(array2);
     }
+
 
     public static boolean isNumeric(String strNum) {
         if (strNum == null) {
@@ -195,7 +218,7 @@ public class Board extends GridPane {
     }
 
     public HashMap<String, String> generateImageList() {
-        HashMap<String, String> map = new HashMap<>();
+        map = new HashMap<>();
         map.put("r", "file:src/images/BlackRook.png");
         map.put("n", "file:src/images/BlackKnight.png");
         map.put("b", "file:src/images/BlackBishop.png");
