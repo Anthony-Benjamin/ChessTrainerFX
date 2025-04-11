@@ -60,12 +60,11 @@ public class Board extends GridPane {
 
                 movePiece();
 //                System.out.println(col);
-            }
-            if (clickCount >2){
-                System.out.println("clickcount: " + clickCount);
                 resetSquares();
                 clickCount = 0;
+                FENFromBoard();
             }
+
         });
     }
 
@@ -195,5 +194,25 @@ public class Board extends GridPane {
 //        System.out.println("Inside move method");
 //        System.out.println(startPosition.getRow() + "," + startPosition.getCol());
 //        System.out.println(targetPosition.getRow() + "," + targetPosition.getCol());
+    }
+
+    public String FENFromBoard(){
+        for (int row = 0; row <8 ; row++) {
+            for (int col = 0; col < 8 ; col++) {
+                if(board[row][col].getChildren().size() > 1 ){
+                //System.out.println("For pos(+ "+ row + "," + col +") :" + board[row][col].getImage().getUrl());
+
+                String url = board[row][col].getImage().getUrl();
+                String[] urlArray = url.split("/");
+                    System.out.println("For pos(+ "+ row + "," + col +")" + "Piece: " + urlArray[2]);
+                }
+
+            }
+
+        }
+
+
+        return null;
+
     }
 }

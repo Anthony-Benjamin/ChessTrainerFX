@@ -79,7 +79,6 @@ public class Square extends StackPane {
         getChildren().add(imageView);
     }
     public void removeImageView(){
-
         getChildren().remove(1);
     }
 }
