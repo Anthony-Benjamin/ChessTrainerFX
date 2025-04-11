@@ -12,6 +12,8 @@ public class Square extends StackPane {
     int row;
     int col;
     Label label;
+    private Image image;
+    private ImageView imageView;
 
     public Square(int row, int col) {
 
@@ -39,11 +41,14 @@ public class Square extends StackPane {
 //        background.setStrokeWidth(5);
 //        background.setWidth(95);
 //        background.setHeight(95);
-////        getChildren().add(label);
+
+
+
+    ////        getChildren().add(label);
 //    }
 
     public void setPiece(String path) {
-        Image image = new Image(path);
+        image = new Image(path);
 
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(80);
@@ -61,6 +66,21 @@ public class Square extends StackPane {
         background.setStrokeWidth(0);
         background.setWidth(100);
         background.setHeight(100);
+    }
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+        imageView = new ImageView(image);
+        imageView.setFitWidth(80);
+        imageView.setFitHeight(80);
+        getChildren().add(imageView);
+    }
+    public void removeImageView(){
+
+        getChildren().remove(1);
     }
 }
 

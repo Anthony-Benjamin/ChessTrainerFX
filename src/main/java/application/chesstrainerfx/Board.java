@@ -1,6 +1,7 @@
 package application.chesstrainerfx;
 
 import javafx.scene.Node;
+import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -14,6 +15,8 @@ public class Board extends GridPane {
     private Square[][] board = new Square[8][8];
     private int clickCount = 0;
     HashMap<String, String> map;
+    private Position startPosition;
+    private Position targetPosition;
 
     public Board() {
         for (int row = 0; row < 8; row++) {
@@ -24,7 +27,7 @@ public class Board extends GridPane {
         }
 //        initializeBoard();
         map = generateImageList();
-        positionFormFEN("r1b1kr2/1ppq2pp/2n1pn2/p2p1p2/1bPP1B2/P1N1PN2/1P3PPP/R2QKB1R w KQq - 0 1");
+        positionFormFEN("rnbqkb1r/ppp1pppp/8/3n4/3P1B2/3Q1N2/PPP1PPPP/RN2KB1R w KQkq - 0 1");
 
 
         this.setOnMouseClicked(e -> {
@@ -43,16 +46,20 @@ public class Board extends GridPane {
                 System.out.println("start position");
                 Integer row = GridPane.getRowIndex(clickParent);
                 Integer col = GridPane.getColumnIndex(clickParent);
-                System.out.print(row + ",");
-                System.out.println(col);
+                System.out.println(row + "," + col);
+                startPosition = new Position(row, col);
+//                System.out.println(col);
             }
             if (clickCount == 2) {
                 System.out.println("end position");
                 Integer row = GridPane.getRowIndex(clickParent);
                 Integer col = GridPane.getColumnIndex(clickParent);
-                System.out.print(row + ",");
-                System.out.println(col);
+                System.out.println(row + "," + col);
 
+                targetPosition = new Position(row, col);
+
+                movePiece();
+//                System.out.println(col);
             }
             if (clickCount >2){
                 System.out.println("clickcount: " + clickCount);
@@ -177,7 +184,16 @@ public class Board extends GridPane {
         for (Node node:gridPane){
             Square square = (Square) node;
             square.resetSquare();
-
+        }
     }
-}
+    public void movePiece(){
+
+        Image piece = board[startPosition.getRow()][startPosition.getCol()].getImage(); // get image of current square
+
+        board[targetPosition.getRow()][targetPosition.getCol()].setImage(piece);
+        board[startPosition.getRow()][startPosition.getCol()].removeImageView();
+//        System.out.println("Inside move method");
+//        System.out.println(startPosition.getRow() + "," + startPosition.getCol());
+//        System.out.println(targetPosition.getRow() + "," + targetPosition.getCol());
+    }
 }
