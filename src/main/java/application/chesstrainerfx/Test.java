@@ -25,6 +25,7 @@ public class Test {
                         array2.add(String.valueOf(character));
                     }
                     System.out.println();
+//                    System.out.print();
                 }
             }
            System.out.println(array2);

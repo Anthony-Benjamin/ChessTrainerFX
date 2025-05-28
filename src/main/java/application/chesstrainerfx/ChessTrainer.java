@@ -19,6 +19,10 @@ public class ChessTrainer extends Application {
         //board.printCoordinates();
         //BorderPane pane = new BorderPane();
         //pane.setCenter(board);
+        SquareModel square = new SquareModel(new Position(4, 4));
+        square.setPiece(new PieceModel(PieceType.KING, PieceColor.BLACK));
+        square.removePiece();
+        System.out.println(square.getPiece());
 
         Scene scene = new Scene(board, 800, 800);
 
