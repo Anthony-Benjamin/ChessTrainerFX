@@ -14,20 +14,7 @@ public class ChessTrainer extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Board board = new Board();
-//        board.printBoard();
-        //board.printCoordinates();
-        //BorderPane pane = new BorderPane();
-        //pane.setCenter(board);
-        SquareModel square = new SquareModel(new Position(4, 4));
-        square.setPiece(new PieceModel(PieceType.KING, PieceColor.BLACK));
-        square.removePiece();
-        System.out.println(square.getPiece());
-
-        Scene scene = new Scene(board, 800, 800);
-
-        stage.setScene(scene);
-        stage.show();
-
+        BoardModel model = new BoardModel();
+        model.initializeFromFEN("");
     }
 }
