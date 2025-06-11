@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BoardModel {
+
+
     private List<SquareModel> squares;
 
     public BoardModel() {
         squares = new ArrayList<>(64);
+        initializeBoard();
     }
 
     public void initializeBoard() {
@@ -22,7 +25,7 @@ public class BoardModel {
     public ArrayList<Character> initializeFromFEN(String fen) {
 
         if (fen == "") {
-            fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
         }
         String[] FENString = fen.split(" ");
         String FEN = FENString[0];
@@ -44,24 +47,12 @@ public class BoardModel {
             }
 
         }
-        // place pieces from boardArray on board
-        int counter = 0;
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                //System.out.print(boardArray.get(counter));
-                if (!boardArray.get(counter).equals(" ")) {
-                    System.out.print(boardArray.get(counter));
-                }
 
-                counter++;
-            }
-            System.out.println();
-        }
         return boardArray;
     }
 
     //geeft een PieceModel terug dat is opgebouwd uit PieceType en PieceColor
-    public PieceModel piecModelformFENChar(char c) {
+    public PieceModel pieceModelformFENChar(char c) {
         PieceColor color = null;
         PieceType type = null;
         if (Character.isLowerCase(c)) {
@@ -94,7 +85,8 @@ public class BoardModel {
                 System.out.println("geen geldige letter");
         }
         return new PieceModel(type, color);
-
-
+    }
+    public List<SquareModel> getSquares() {
+        return squares;
     }
 }
