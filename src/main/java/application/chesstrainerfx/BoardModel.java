@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BoardModel {
-
-
-    private List<SquareModel> squares;
+    //een lijst van SquareModels
+    private final List<SquareModel> squares;
 
     public BoardModel() {
         squares = new ArrayList<>(64);
         initializeBoard();
     }
-
+    // voor het aanmaken van de velden en hun positie
     public void initializeBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -21,35 +20,30 @@ public class BoardModel {
         }
     }
 
-
-    public ArrayList<Character> initializeFromFEN(String fen) {
-
-        if (fen == "") {
+    // zet de stukken in de lijst squares
+    public void initializeFromFEN(String fen) {
+        if (fen.isEmpty()) {
             fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
         }
-
         String[] FENString = fen.split(" ");
         String FEN = FENString[0];
         String[] ranks = FEN.split("/");
-        ArrayList<Character> boardArray = new ArrayList<>();
-        // loop through ranks and make a list with characters in FEN string
-        // row
+        // een teller voor de squares
+        int counter = 0;
+        // loop rij voor rij
         for (String rank : ranks) {
+            //zet rij om in characters
             char[] chars = rank.toCharArray();
             for (char character : chars) {
                 //if character is a number put a space in list instead of character
                 if (Character.isDigit(character)) {
-                    for (int j = 0; j < Integer.parseInt(String.valueOf(character)); j++) {
-                        boardArray.add('.');
-                    }
+                    counter += Integer.parseInt(String.valueOf(character));
                 } else {
-                    boardArray.add(character);
+                    squares.get(counter).setPiece(pieceModelformFENChar(character));
+                    counter++;
                 }
             }
-
         }
-
-        return boardArray;
     }
 
     //geeft een PieceModel terug dat is opgebouwd uit PieceType en PieceColor
@@ -87,6 +81,7 @@ public class BoardModel {
         }
         return new PieceModel(type, color);
     }
+
     public List<SquareModel> getSquares() {
         return squares;
     }
