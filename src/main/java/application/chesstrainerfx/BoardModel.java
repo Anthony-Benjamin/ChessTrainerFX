@@ -27,6 +27,7 @@ public class BoardModel {
         if (fen == "") {
             fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
         }
+
         String[] FENString = fen.split(" ");
         String FEN = FENString[0];
         String[] ranks = FEN.split("/");
