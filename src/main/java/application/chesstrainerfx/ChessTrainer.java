@@ -16,5 +16,10 @@ public class ChessTrainer extends Application {
     public void start(Stage stage) throws Exception {
         BoardModel model = new BoardModel();
         model.initializeFromFEN("");
+        /*String s  ="prq3bnKy";
+        for (char c: s.toCharArray()) {
+            System.out.println(model.piecModelformFENChar(c));
+        }*/
+
     }
 }
