@@ -71,7 +71,7 @@ public class Board extends GridPane {
 
 
     private void initializeBoard() {
-        board[0][0].setPiece("file:src/images/BlackRook.png");
+        /*board[0][0].setPiece("file:src/images/BlackRook.png");
         board[0][1].setPiece("file:src/images/BlackKnight.png");
         board[0][2].setPiece("file:src/images/BlackBishop.png");
         board[0][3].setPiece("file:src/images/BlackQueen.png");
@@ -105,7 +105,7 @@ public class Board extends GridPane {
         board[7][4].setPiece("file:src/images/WhiteKing.png");
         board[7][5].setPiece("file:src/images/WhiteBishop.png");
         board[7][6].setPiece("file:src/images/WhiteKnight.png");
-        board[7][7].setPiece("file:src/images/WhiteRook.png");
+        board[7][7].setPiece("file:src/images/WhiteRook.png");*/
     }
 
     public void addPiece(int row, int col, String path) {

@@ -3,6 +3,8 @@ package application.chesstrainerfx;/*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
+import java.util.Objects;
+
 /**
  *
  * @author ebenjamin
@@ -10,21 +12,26 @@ package application.chesstrainerfx;/*
 public class Position {
     private int row;
     private int col;
-    
-    public Position(int row, int col){
+
+    public Position(int row, int col) {
         this.row = row;
-        this.col = col;        
+        this.col = col;
     }
-    
-    public int getCol(){
+
+    public int getCol() {
         return col;
     }
-    public int getRow(){
+
+    public int getRow() {
         return row;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return row + "," + col;
     }
+
+
 }
+
+

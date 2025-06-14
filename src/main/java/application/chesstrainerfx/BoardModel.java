@@ -1,5 +1,7 @@
 package application.chesstrainerfx;
 
+import javafx.geometry.Pos;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +13,7 @@ public class BoardModel {
         squares = new ArrayList<>(64);
         initializeBoard();
     }
+
     // voor het aanmaken van de velden en hun positie
     public void initializeBoard() {
         for (int row = 0; row < 8; row++) {
@@ -84,5 +87,24 @@ public class BoardModel {
 
     public List<SquareModel> getSquares() {
         return squares;
+    }
+
+    public SquareModel getSquare(Position pos) {
+
+        int row = pos.getRow();
+        int col = pos.getCol();
+        SquareModel square = null;
+        for (SquareModel sq : squares) {
+            if (sq.getPosition().getRow()==row && sq.getPosition().getCol()==col) {
+                square = sq;
+            }
+
+        }
+        return square;
+    }
+    public void movePiece(Position from, Position target){
+        SquareModel fromSquare = getSquare(from);
+        SquareModel toSquare = getSquare(target);
+
     }
 }

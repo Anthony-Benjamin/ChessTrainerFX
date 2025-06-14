@@ -24,9 +24,11 @@ public class SquareModel {
     public PieceModel getPiece(){
         return piece;
     }
+
     public void setPiece(PieceModel piece){
         this.piece = piece;        
     }
+
     public void removePiece(){
         piece = null;        
     }
