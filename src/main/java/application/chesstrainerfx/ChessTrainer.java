@@ -20,18 +20,18 @@ public class ChessTrainer extends Application {
         //rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
         model.initializeFromFEN("rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 1");
 
-        BoardView board = new BoardView(model);
+        BoardView board = new BoardView(model,false);
 
         // 👇 Container met stijl
         StackPane container = new StackPane();
-        container.setStyle(
+       /* container.setStyle(
                 "-fx-background-color: white;" +                    // achtergrond
                         "-fx-border-color: deepskyblue;" +                         // randkleur
                         "-fx-border-width: 4;" +                            // dikte
                         "-fx-border-radius: 20;" +                          // afgeronde hoeken
                         "-fx-background-radius: 20;" +                      // afgeronde achtergrond
                         "-fx-padding: 6;"                                  // ruimte binnenin
-        );
+        );*/
 
         container.getChildren().add(board);
 
@@ -40,7 +40,7 @@ public class ChessTrainer extends Application {
 
 
        // StackPane root = new StackPane(board);
-        Scene scene = new Scene(root,900,900);
+        Scene scene = new Scene(root,1400,1000);
 
         // 5. Stage tonen
         primaryStage.setTitle("ChesstrainerFX");
