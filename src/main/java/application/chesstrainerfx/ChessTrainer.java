@@ -17,10 +17,11 @@ public class ChessTrainer extends Application {
     @Override
     public void start(Stage primaryStage) {
         BoardModel model = new BoardModel();
+        Controller controller = new Controller();
         //rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
         model.initializeFromFEN("rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 1");
 
-        BoardView board = new BoardView(model,true);
+        BoardView board = new BoardView(model, controller, false);
 
         // 👇 Container met stijl
         StackPane container = new StackPane();
@@ -46,8 +47,5 @@ public class ChessTrainer extends Application {
         primaryStage.setTitle("ChesstrainerFX");
         primaryStage.setScene(scene);
         primaryStage.show();
-
-
-
     }
 }

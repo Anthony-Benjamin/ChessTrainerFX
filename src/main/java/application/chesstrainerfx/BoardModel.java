@@ -102,9 +102,12 @@ public class BoardModel {
         }
         return square;
     }
-    public void movePiece(Position from, Position target){
-        SquareModel fromSquare = getSquare(from);
-        SquareModel toSquare = getSquare(target);
-
+    public void movePiece(Position from, Position to){
+          System.out.println(" clicked source ande target");
+          SquareModel source = getSquare(from);
+          SquareModel  target = getSquare(to);
+          PieceModel piece = source.getPiece();
+          source.removePiece();
+          target.setPiece(piece);
     }
 }

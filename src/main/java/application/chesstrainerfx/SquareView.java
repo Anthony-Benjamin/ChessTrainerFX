@@ -11,10 +11,16 @@ public class SquareView extends StackPane {
     private Rectangle background;
     private ImageView pieceImageView;
 
-    public SquareView(SquareModel model){
+    public SquareView(BoardModel boardModel,SquareModel model, Controller controller){
         this.model = model;
         //this.setPrefSize(100,100);
         background = new Rectangle(100,100);
+
+        setOnMouseClicked(mouseEvent -> {
+            System.out.println("Clicked! in View");
+            controller.handleSquareClick(boardModel,this, model);
+            //background.setFill(Color.GRAY);
+        });
 
         if (model != null && model.getPosition() != null) {
             int row = model.getPosition().getRow();
@@ -52,6 +58,14 @@ public class SquareView extends StackPane {
         } else {
             pieceImageView.setImage(null);
         }
+    }
+    public void setSeletedSource(){
+
+        background.setFill(Color.GRAY);
+    }
+
+    public void setSelectedTarget(){
+        background.setFill(Color.ORANGE);
     }
 
     }
