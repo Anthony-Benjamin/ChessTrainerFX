@@ -21,7 +21,7 @@ public class ChessTrainer extends Application {
         Controller controller = new Controller();
         BoardView boardView = new BoardView(model, controller,false);
 
-        boardView.setController(controller);
+
 
         // 👇 Container met stijl
         StackPane container = new StackPane();

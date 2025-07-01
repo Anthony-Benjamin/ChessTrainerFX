@@ -58,7 +58,5 @@ public class BoardView extends StackPane implements BoardChangeListener {
         }
     }
 
-    public void setController(Controller controller) {
-        this.controller = controller;
-    }
+
 }
