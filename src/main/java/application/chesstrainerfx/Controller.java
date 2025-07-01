@@ -5,6 +5,12 @@ public class Controller {
     private int counter;
     private Position source, target;
 
+    public void setBoardView(BoardView boardView) {
+        this.boardView = boardView;
+    }
+
+    private BoardView boardView;
+
     public void handleSquareClick(BoardModel board, SquareView view, SquareModel model ) {
         System.out.println("Clicked! in Controller");
 
@@ -18,9 +24,10 @@ public class Controller {
             System.out.println("Square: " + model.getPosition().getRow() + ", " + model.getPosition().getCol());
             target = model.getPosition();
             counter= 0;
+            board.movePiece(source ,target);
         }
 
 
-        board.movePiece(source ,target);
+        boardView.onBoardUpdated();
     }
 }
