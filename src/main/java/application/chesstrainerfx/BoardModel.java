@@ -90,9 +90,13 @@ public class BoardModel {
     }
 
     public SquareModel getSquare(Position pos) {
-
-        int row = pos.getRow();
-        int col = pos.getCol();
+        int row = 0;
+        int col = 0;
+        if(pos !=null){
+           row = pos.getRow();
+           col = pos.getCol();
+        }
+       
         SquareModel square = null;
         for (SquareModel sq : squares) {
             if (sq.getPosition().getRow()==row && sq.getPosition().getCol()==col) {

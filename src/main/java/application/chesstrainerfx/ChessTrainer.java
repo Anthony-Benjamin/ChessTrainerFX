@@ -17,11 +17,11 @@ public class ChessTrainer extends Application {
     @Override
     public void start(Stage primaryStage) {
         BoardModel model = new BoardModel();
-        Controller controller = new Controller();
-        //rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
         model.initializeFromFEN("rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 1");
+        Controller controller = new Controller();
+        BoardView boardView = new BoardView(model, controller,false);
 
-        BoardView board = new BoardView(model, controller, false);
+        boardView.setController(controller);
 
         // 👇 Container met stijl
         StackPane container = new StackPane();
@@ -34,7 +34,7 @@ public class ChessTrainer extends Application {
                         "-fx-padding: 6;"                                  // ruimte binnenin
         );*/
 
-        container.getChildren().add(board);
+        container.getChildren().add(boardView);
 
         // Zorg dat het in het midden staat
         StackPane root = new StackPane(container);
