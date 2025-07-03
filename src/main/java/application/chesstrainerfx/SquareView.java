@@ -11,17 +11,27 @@ public class SquareView extends StackPane {
     private Rectangle background;
     private ImageView pieceImageView;
 
-    public SquareView(BoardModel boardModel,SquareModel model, Controller controller){
+    public SquareView(BoardModel boardModel, SquareModel model, Controller controller) {
         this.model = model;
         //this.setPrefSize(100,100);
-        background = new Rectangle(100,100);
+        background = new Rectangle(100, 100);
 
         setOnMouseClicked(mouseEvent -> {
             System.out.println("Clicked! in View");
-            controller.handleSquareClick(boardModel,this, model);
+            controller.handleSquareClick(boardModel, this, model);
             //background.setFill(Color.GRAY);
         });
 
+        setSquareBackground();
+        pieceImageView = new ImageView();
+        pieceImageView.setFitWidth(85);
+        pieceImageView.setFitHeight(85);
+
+        getChildren().addAll(background, pieceImageView);
+        update();
+    }
+
+    public void setSquareBackground(){
         if (model != null && model.getPosition() != null) {
             int row = model.getPosition().getRow();
             int col = model.getPosition().getCol();
@@ -34,12 +44,6 @@ public class SquareView extends StackPane {
         } else {
             background.setFill(Color.RED); // bijvoorbeeld, om het visueel duidelijk te maken dat er iets fout is
         }
-        pieceImageView = new ImageView();
-        pieceImageView.setFitWidth(85);
-        pieceImageView.setFitHeight(85);
-
-        getChildren().addAll(background,pieceImageView);
-        update();
     }
 
     public void update() {
@@ -59,15 +63,20 @@ public class SquareView extends StackPane {
             pieceImageView.setImage(null);
         }
     }
-    public void setSeletedSource(){
+
+    public void setSeletedSource() {
 
         background.setFill(Color.GRAY);
     }
 
-    public void setSelectedTarget(){
+    public void setSelectedTarget() {
         background.setFill(Color.ORANGE);
     }
 
+
+    public void removeSelection() {
+        setSquareBackground();
     }
+}   
 
 

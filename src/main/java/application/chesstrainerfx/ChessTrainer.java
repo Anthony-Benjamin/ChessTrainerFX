@@ -19,8 +19,8 @@ public class ChessTrainer extends Application {
         BoardModel model = new BoardModel();
         model.initializeFromFEN("rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 1");
         Controller controller = new Controller();
-        BoardView boardView = new BoardView(model, controller,false);
-        controller.setBoardView(boardView);
+        BoardView boardView = new BoardView(model, controller,true);
+
 
 
         // 👇 Container met stijl

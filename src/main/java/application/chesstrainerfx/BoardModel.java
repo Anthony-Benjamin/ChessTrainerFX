@@ -2,12 +2,14 @@ package application.chesstrainerfx;
 
 import javafx.geometry.Pos;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class BoardModel {
     //een lijst van SquareModels
     private final List<SquareModel> squares;
+    private final List<BoardChangeListener> listeners = new ArrayList<>();
 
     public BoardModel() {
         squares = new ArrayList<>(64);
@@ -90,28 +92,45 @@ public class BoardModel {
     }
 
     public SquareModel getSquare(Position pos) {
-        int row = 0;
-        int col = 0;
-        if(pos !=null){
-           row = pos.getRow();
-           col = pos.getCol();
-        }
-       
         SquareModel square = null;
-        for (SquareModel sq : squares) {
-            if (sq.getPosition().getRow()==row && sq.getPosition().getCol()==col) {
-                square = sq;
+        if (pos != null) {
+            int row = pos.getRow();
+            int col = pos.getCol();
+
+
+            for (SquareModel sq : squares) {
+                if (sq.getPosition().getRow() == row && sq.getPosition().getCol() == col) {
+                    square = sq;
+                }
+
             }
 
         }
-        return square;
-    }
+            return square;
+        }
+
+
     public void movePiece(Position from, Position to){
           System.out.println(" clicked source ande target");
-          SquareModel source = getSquare(from);
-          SquareModel  target = getSquare(to);
-          PieceModel piece = source.getPiece();
-          source.removePiece();
-          target.setPiece(piece);
+        if (from != null && to != null) {
+            SquareModel source = getSquare(from);
+            SquareModel  target = getSquare(to);
+            PieceModel piece = source.getPiece();
+            source.removePiece();
+            target.setPiece(piece);
+            notifyListeners();
+        }
+
     }
+
+    public void addListener(BoardChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    private void notifyListeners() {
+        for (BoardChangeListener listener : listeners) {
+            listener.onBoardUpdated();
+        }
+    }
+
 }

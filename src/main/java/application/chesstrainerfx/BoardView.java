@@ -16,6 +16,8 @@ public class BoardView extends StackPane implements BoardChangeListener {
         this.boardModel = boardModel;
         this.setAlignment(Pos.CENTER);
         this.controller = controller;
+        boardModel.addListener(this);
+
         // Achtergrondafbeelding instellen (bijv. PNG met coördinaten)
         String imagePath = isWhitePerspective ? "/images/chessboard_white.png" : "/images/chessboard_black.png";
         Image backgroundImage = new Image(getClass().getResource(imagePath).toExternalForm());
@@ -48,6 +50,8 @@ public class BoardView extends StackPane implements BoardChangeListener {
         //boardGrid.setMaxSize(800,800);
         this.getChildren().add(boardGrid);
     }
+
+
 
     @Override
     public void onBoardUpdated() {
