@@ -4,6 +4,8 @@ import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 
+import java.net.URL;
+
 public class BoardView extends StackPane implements BoardChangeListener {
     private final BoardModel boardModel;
     private final SquareView[][] squareViews = new SquareView[8][8];
@@ -18,8 +20,14 @@ public class BoardView extends StackPane implements BoardChangeListener {
         this.controller = controller;
         boardModel.addListener(this);
 
+
         // Achtergrondafbeelding instellen (bijv. PNG met coördinaten)
         String imagePath = isWhitePerspective ? "/images/chessboard_white.png" : "/images/chessboard_black.png";
+
+        URL url = getClass().getResource(imagePath);
+        System.out.println("Loading image: " + imagePath);
+        System.out.println("Resolved URL: " + url);
+
         Image backgroundImage = new Image(getClass().getResource(imagePath).toExternalForm());
         BackgroundSize bgSize = new BackgroundSize(865, 865, false, false, false, false);
         BackgroundImage bgImage = new BackgroundImage(
