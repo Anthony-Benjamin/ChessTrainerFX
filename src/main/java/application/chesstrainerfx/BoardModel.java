@@ -1,7 +1,5 @@
 package application.chesstrainerfx;
 
-import javafx.geometry.Pos;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,11 +93,11 @@ public class BoardModel {
         SquareModel square = null;
         if (pos != null) {
             int row = pos.getRow();
-            int col = pos.getCol();
+            int col = pos.getColumn();
 
 
             for (SquareModel sq : squares) {
-                if (sq.getPosition().getRow() == row && sq.getPosition().getCol() == col) {
+                if (sq.getPosition().getRow() == row && sq.getPosition().getColumn() == col) {
                     square = sq;
                 }
 

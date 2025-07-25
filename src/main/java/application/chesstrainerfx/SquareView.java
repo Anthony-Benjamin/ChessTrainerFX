@@ -34,15 +34,13 @@ public class SquareView extends StackPane {
     public void setSquareBackground(){
         if (model != null && model.getPosition() != null) {
             int row = model.getPosition().getRow();
-            int col = model.getPosition().getCol();
+            int col = model.getPosition().getColumn();
 
             if ((row + col) % 2 == 0) {
                 background.setFill(Color.WHITE);
             } else {
                 background.setFill(Color.DEEPSKYBLUE);
             }
-        } else {
-            background.setFill(Color.RED); // bijvoorbeeld, om het visueel duidelijk te maken dat er iets fout is
         }
     }
 

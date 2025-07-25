@@ -5,6 +5,7 @@ public class Controller {
     private int counter;
     private Position source, target;
     private SquareView from, to;
+    private PieceModel piece;
 
     public void handleSquareClick(BoardModel board, SquareView view, SquareModel model) {
         System.out.println("Clicked! in Controller");
@@ -13,7 +14,8 @@ public class Controller {
             from = view;
             from.setSeletedSource();
             source = model.getPosition();
-            System.out.println("Source: " + source);
+            System.out.println("Source: " + source + model.getPiece());
+            piece = model.getPiece();
             counter = 1;
         } else  {
             // Tweede klik
@@ -22,9 +24,11 @@ public class Controller {
             target = model.getPosition();
             System.out.println("Target: " + target);
 
-
-            board.movePiece(source, target);
-
+            boolean result = MoveValidator.isValidMove(board, piece, source, target);
+            System.out.println(result);
+            if(result){
+                board.movePiece(source, target);
+            }
 
             if (from != null && to != null) {
                 from.removeSelection();

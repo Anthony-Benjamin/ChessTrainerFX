@@ -3,23 +3,21 @@ package application.chesstrainerfx;/*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
-import java.util.Objects;
-
 /**
  *
  * @author ebenjamin
  */
 public class Position {
-    private int row;
-    private int col;
+    public int row;
+    public int column;
 
     public Position(int row, int col) {
         this.row = row;
-        this.col = col;
+        this.column = col;
     }
 
-    public int getCol() {
-        return col;
+    public int getColumn() {
+        return column;
     }
 
     public int getRow() {
@@ -28,7 +26,7 @@ public class Position {
 
     @Override
     public String toString() {
-        return row + "," + col;
+        return row + "," + column;
     }
 
 
