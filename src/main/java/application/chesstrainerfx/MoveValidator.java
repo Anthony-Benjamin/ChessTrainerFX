@@ -16,7 +16,8 @@ public class MoveValidator {
             case BISHOP -> isValidBishopMove(board, piece, from, to);
             case ROOK -> isValidRookMove(board, piece, from, to);
             case QUEEN -> isValidQueenMove(board, piece, from, to);    
-            case KNIGHT -> isValidKnightMove(board, piece, from, to);    
+            case KNIGHT -> isValidKnightMove(board, piece, from, to);
+            case KING -> isValidKingMove(board, piece, from, to);
             default -> false;
         };
     }
@@ -100,8 +101,67 @@ public class MoveValidator {
         if(!((dx == 2 && dy ==1) || (dx == 1 && dy ==2))){
             return false;
         }
-        
         PieceModel target = board.getSquare(new Position(to.row, to.column)).getPiece();
         return target == null || !target.getColor().equals(knight.getColor());
     }
+    private static boolean isValidKingMove(BoardModel board, PieceModel king, Position from, Position to){
+        if (!isOnBoard(from) || !isOnBoard(to)) return false;
+
+        int dx = Math.abs(to.getColumn() - from.getColumn());
+        int dy = Math.abs(to.getRow() - from.getRow());
+
+        // Normale koningszet (1 vak in elke richting)
+        if ((dx <= 1 && dy <= 1) && !(dx == 0 && dy == 0)) {
+            PieceModel target = board.getSquare(to).getPiece();
+            return target == null || !target.getColor().equals(king.getColor());
+        }
+
+        // Rokade: check alleen horizontale zet van koning over 2 kolommen
+        if (dy == 0 && dx == 2) {
+            return isValidCastleMove(board, king, from, to);
+        }
+
+        return false;
+    }
+    private static boolean isValidCastleMove(BoardModel board, PieceModel king, Position from, Position to) {
+        if (king.hasMoved()) return false;
+
+        int row = from.getRow();
+        int colFrom = from.getColumn();
+        int colTo = to.getColumn();
+
+        int direction = (colTo - colFrom) > 0 ? 1 : -1;
+
+        // Korte rokade
+        if (direction == 1 && colTo == 6) {
+            Position rookPos = new Position(row, 7);
+            PieceModel rook = board.getSquare(rookPos).getPiece();
+            if (rook == null || rook.getType() != PieceType.ROOK || rook.hasMoved()) return false;
+
+            // Check of vakken tussen koning en toren leeg zijn
+            if (board.getSquare(new Position(row, 5)).getPiece() != null ||
+                    board.getSquare(new Position(row, 6)).getPiece() != null) return false;
+
+            // Extra: voeg hier controle toe of koning door/over schaak beweegt
+            return true;
+        }
+
+        // Lange rokade
+        if (direction == -1 && colTo == 2) {
+            Position rookPos = new Position(row, 0);
+            PieceModel rook = board.getSquare(rookPos).getPiece();
+            if (rook == null || rook.getType() != PieceType.ROOK || rook.hasMoved()) return false;
+
+            // Check of vakken tussen koning en toren leeg zijn
+            if (board.getSquare(new Position(row, 1)).getPiece() != null ||
+                    board.getSquare(new Position(row, 2)).getPiece() != null ||
+                    board.getSquare(new Position(row, 3)).getPiece() != null) return false;
+
+            // Extra: voeg hier controle toe of koning door/over schaak beweegt
+            return true;
+        }
+
+        return false;
+    }
+
 }

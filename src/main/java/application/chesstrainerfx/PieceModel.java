@@ -8,6 +8,10 @@ package application.chesstrainerfx;
 public class PieceModel {
     private PieceType pieceType;
     private PieceColor pieceColor;
+    private boolean hasMoved;
+
+
+
 
     public PieceModel(PieceType pieceType, PieceColor pieceColor) {
         this.pieceType = pieceType;
@@ -19,6 +23,14 @@ public class PieceModel {
     }
     public PieceColor getColor(){
         return pieceColor;
+    }
+
+    public boolean hasMoved() {
+        return hasMoved;
+    }
+
+    public void setHasMoved(boolean moved) {
+        this.hasMoved = moved;
     }
     
     public String toString(){

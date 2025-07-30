@@ -25,8 +25,21 @@ public class Controller {
             System.out.println("Target: " + target);
 
             boolean result = MoveValidator.isValidMove(board, piece, source, target);
+
+
             System.out.println(result);
             if(result){
+                if (piece.getType() == PieceType.KING && Math.abs(target.getColumn() - source.getColumn()) == 2) {
+                    // Rokade uitvoeren
+                    int row =source.getRow();
+                    if (target.getColumn() == 6) {
+                        // Korte rokade
+                        board.movePiece(new Position(row, 7), new Position(row, 5));
+                    } else if (target.getColumn() == 2) {
+                        // Lange rokade
+                        board.movePiece(new Position(row, 0), new Position(row, 3));
+                    }
+                }
                 board.movePiece(source, target);
             }
 
