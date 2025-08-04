@@ -18,6 +18,8 @@ public class MoveValidator {
             case QUEEN -> isValidQueenMove(board, piece, from, to);    
             case KNIGHT -> isValidKnightMove(board, piece, from, to);
             case KING -> isValidKingMove(board, piece, from, to);
+            case PAWN -> isValidPawnMove(board, piece, from, to);
+
             default -> false;
         };
     }
@@ -77,7 +79,7 @@ public class MoveValidator {
         int r = from.row + stepRow;
         int c = from.column + stepCol;
         while(r != to.row || c != to.column){
-            if(board.getSquare(new Position(r, c)) != null){
+            if(board.getSquare(new Position(r, c)).getPiece() != null){
                 return false;
             }
             r+= stepRow;
@@ -163,5 +165,57 @@ public class MoveValidator {
 
         return false;
     }
+    private static boolean isValidPawnMove(BoardModel board, PieceModel pawn, Position from, Position to) {
+        if (!isOnBoard(from) || !isOnBoard(to) || from.equals(to)) return false;
+
+        int direction = pawn.getColor() == PieceColor.WHITE ? -1 : 1;
+        int startRow = pawn.getColor() == PieceColor.WHITE ? 6 : 1;
+        int finalRow = pawn.getColor() == PieceColor.WHITE ? 0 : 7;
+
+        int dy = to.row - from.row;
+        int dx = Math.abs(to.column - from.column);
+
+        PieceModel target = board.getSquare(to).getPiece();
+
+        // 1 stap vooruit
+        if (dx == 0 && dy == direction && target == null) {
+            return true;
+        }
+
+        // 2 stappen vooruit vanaf beginpositie
+        if (dx == 0 && dy == 2 * direction && from.row == startRow) {
+            Position between = new Position(from.row + direction, from.column);
+            if (board.getSquare(between).getPiece() == null && target == null) {
+                return true;
+            }
+        }
+
+        // Diagonaal slaan
+        if (dx == 1 && dy == direction) {
+            // Normaal slaan
+            if (target != null && !target.getColor().equals(pawn.getColor())) {
+                return true;
+            }
+
+            // En passant
+
+            Position capturedPawnPos = new Position(from.row, to.column);
+
+            PieceModel epPawn = board.getSquare(capturedPawnPos).getPiece();
+            Position lastDouble = board.getLastDoubleStepPawnPosition();
+
+            if (epPawn != null && epPawn.getType() == PieceType.PAWN &&
+                    !epPawn.getColor().equals(pawn.getColor()) &&
+                    capturedPawnPos.equals(lastDouble)) {
+                     return true;
+            }
+            System.out.println("En passant poging:");
+            System.out.println("lastDoubleStep = " + lastDouble);
+            System.out.println("captured pos = " + capturedPawnPos);
+        }
+
+        return false;
+    }
+
 
 }

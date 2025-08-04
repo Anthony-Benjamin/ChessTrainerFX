@@ -29,19 +29,39 @@ public class Controller {
 
             System.out.println(result);
             if(result){
-                if (piece.getType() == PieceType.KING && Math.abs(target.getColumn() - source.getColumn()) == 2) {
-                    // Rokade uitvoeren
-                    int row =source.getRow();
-                    if (target.getColumn() == 6) {
-                        // Korte rokade
-                        board.movePiece(new Position(row, 7), new Position(row, 5));
-                    } else if (target.getColumn() == 2) {
-                        // Lange rokade
-                        board.movePiece(new Position(row, 0), new Position(row, 3));
+                if (piece.getType() == PieceType.PAWN) {
+                    int dx = target.getColumn() - source.getColumn();
+                    int dy = target.getRow() - source.getRow();
+                    int direction = piece.getColor() == PieceColor.WHITE ? -1 : 1;
+
+                    //En passant
+                    if (Math.abs(dx) == 1 && dy == direction && board.getSquare(target).getPiece() == null) {
+                        Position captured = new Position(source.getRow(), target.getColumn());
+                        board.getSquare(captured).setPiece(null);
+                        // GUI update
+                        view.update();
+
                     }
+                    // Dubbele stap
+                    if (Math.abs(dy) == 2) {
+                        board.setLastDoubleStepPawnPosition(target);
+                    } else {
+                        board.setLastDoubleStepPawnPosition(null);
+                    }
+
                 }
                 board.movePiece(source, target);
+
+                // Promotie
+                if (piece.getType() == PieceType.PAWN && (target.getRow() == 0 || target.getRow() == 7)) {
+                    PieceModel promoted = new PieceModel(PieceType.QUEEN, piece.getColor());
+                    board.getSquare(target).setPiece(promoted);
+                    view.update();
+                }
             }
+
+
+
 
             if (from != null && to != null) {
                 from.removeSelection();

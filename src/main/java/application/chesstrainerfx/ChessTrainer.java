@@ -17,9 +17,11 @@ public class ChessTrainer extends Application {
     @Override
     public void start(Stage primaryStage) {
         BoardModel model = new BoardModel();
-        model.initializeFromFEN("rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 1");
+        //model.initializeFromFEN("rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 1");
+        model.initializeFromFEN("r2qkbnr/pP3ppp/4p3/8/2pp4/8/P1PPPPPP/RNBQKBNR w KQkq - 0 1");
+
         Controller controller = new Controller();
-        BoardView boardView = new BoardView(model, controller,false);
+        BoardView boardView = new BoardView(model, controller,true);
 
 
 

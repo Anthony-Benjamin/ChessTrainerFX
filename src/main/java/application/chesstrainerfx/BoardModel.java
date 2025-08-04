@@ -120,6 +120,16 @@ public class BoardModel {
         }
 
     }
+    private Position lastDoubleStepPawnPosition = null;
+
+    public void setLastDoubleStepPawnPosition(Position pos) {
+        this.lastDoubleStepPawnPosition = pos;
+    }
+
+    public Position getLastDoubleStepPawnPosition() {
+        return lastDoubleStepPawnPosition;
+    }
+
 
     public void addListener(BoardChangeListener listener) {
         listeners.add(listener);
