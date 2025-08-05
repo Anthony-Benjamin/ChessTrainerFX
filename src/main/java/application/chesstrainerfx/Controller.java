@@ -7,8 +7,39 @@ public class Controller {
     private SquareView from, to;
     private PieceModel piece;
 
+    public boolean isSetupMode() {
+        return setupMode;
+    }
+
+    public void setSetupMode(boolean setupMode) {
+        this.setupMode = setupMode;
+        System.out.println("SetupMode " + setupMode);
+
+    }
+
+    private boolean setupMode = false;
+
+    public void setSelectedPieceForSetup(PieceModel selectedPieceForSetup) {
+        this.selectedPieceForSetup = selectedPieceForSetup;
+    }
+
+    private PieceModel selectedPieceForSetup = null; // null = verwijderen
+
+
     public void handleSquareClick(BoardModel board, SquareView view, SquareModel model) {
         System.out.println("Clicked! in Controller");
+        if (setupMode) {
+            if (selectedPieceForSetup == null) {
+                model.setPiece(null); // verwijderen
+            } else {
+                model.setPiece(new PieceModel(
+                        selectedPieceForSetup.getType(),
+                        selectedPieceForSetup.getColor()
+                ));
+            }
+            view.update(); // herteken GUI
+            return;
+        }
 
         if (counter == 0) {
             from = view;
@@ -17,7 +48,7 @@ public class Controller {
             System.out.println("Source: " + source + model.getPiece());
             piece = model.getPiece();
             counter = 1;
-        } else  {
+        } else {
             // Tweede klik
             to = view;
             to.setSelectedTarget();
@@ -28,7 +59,7 @@ public class Controller {
 
 
             System.out.println(result);
-            if(result){
+            if (result) {
                 if (piece.getType() == PieceType.PAWN) {
                     int dx = target.getColumn() - source.getColumn();
                     int dy = target.getRow() - source.getRow();
@@ -61,8 +92,6 @@ public class Controller {
             }
 
 
-
-
             if (from != null && to != null) {
                 from.removeSelection();
                 to.removeSelection();
@@ -79,3 +108,4 @@ public class Controller {
 
     }
 }
+
