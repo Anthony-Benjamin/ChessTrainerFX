@@ -11,10 +11,9 @@ public class Controller {
         return setupMode;
     }
 
-    public void setSetupMode(boolean setupMode) {
-        this.setupMode = setupMode;
+    public void toggleSetupMode() {
+        this.setupMode = !setupMode;
         System.out.println("SetupMode " + setupMode);
-
     }
 
     private boolean setupMode = false;

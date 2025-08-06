@@ -140,5 +140,38 @@ public class BoardModel {
             listener.onBoardUpdated();
         }
     }
+    public String exportToFEN() {
+        StringBuilder fen = new StringBuilder();
+
+        for (int row = 0; row < 8; row++) {
+            int emptyCount = 0;
+            for (int col = 0; col < 8; col++) {
+                PieceModel piece = getSquare(new Position(row, col)).getPiece();
+                if (piece == null) {
+                    emptyCount++;
+                } else {
+                    if (emptyCount > 0) {
+                        fen.append(emptyCount);
+                        emptyCount = 0;
+                    }
+                    fen.append(piece.getFENChar());
+                }
+            }
+            if (emptyCount > 0) {
+                fen.append(emptyCount);
+            }
+            if (row < 7) {
+                fen.append('/');
+            }
+        }
+
+        fen.append(" w - - 0 1"); // basis FEN metadata
+        return fen.toString();
+    }
+
+
+
+
+
 
 }

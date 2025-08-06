@@ -2,35 +2,74 @@ package application.chesstrainerfx;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-
-import java.net.URL;
 
 public class BoardView extends HBox implements BoardChangeListener {
 
     private final BoardModel boardModel;
     private final SquareView[][] squareViews = new SquareView[8][8];
-    private final Button setupBtn = new Button("Setup");
-
+    private final Button setupBtn = new Button("Position Setup");
+    private final VBox controlPane;
+    private PieceSelectorPane pieceSelector = null;
 
     private Controller controller;
 
     public BoardView(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
         this.boardModel = boardModel;
         this.controller = controller;
-        this.setAlignment(Pos.CENTER);
+        this.setSpacing(20);
+        this.setAlignment(Pos.CENTER_LEFT);
         boardModel.addListener(this);
-        setupBtn.setOnAction(event -> {
-            controller.setSetupMode(true);
 
+        StackPane boardWithBackground = createBoardStack(boardModel, controller, isWhitePerspective);
+        this.getChildren().add(boardWithBackground);
+        pieceSelector = new PieceSelectorPane(selected -> controller.setSelectedPieceForSetup(selected));
+        controlPane = new VBox(10);
+        controlPane.setAlignment(Pos.TOP_CENTER);
+
+        setupBtn.setOnAction(event -> toggleSetupMode());
+        Button exportFENBtn = new Button("Export FEN");
+        TextField fenField = new TextField();
+        fenField.setEditable(false);
+        fenField.setPrefWidth(450);
+
+        exportFENBtn.setOnAction(event -> {
+            String fen = boardModel.exportToFEN();
+            fenField.setText(fen);
+            System.out.println("FEN: " + fen);
         });
 
-        // Bordachtergrond + grid
+        controlPane.getChildren().add(setupBtn);
+        controlPane.getChildren().addAll(exportFENBtn, fenField);
+
+        this.getChildren().add(controlPane);
+
+
+    }
+
+    private void toggleSetupMode() {
+        controller.toggleSetupMode(); // toggelt boolean
+
+        if (controller.isSetupMode()) {
+            System.out.println("Entering setup mode");
+            if (!controlPane.getChildren().contains(pieceSelector)) {
+                controlPane.getChildren().add(pieceSelector);
+            }
+            setupBtn.setText("Leave Setup");
+        } else {
+            System.out.println("Leaving setup mode");
+            controlPane.getChildren().remove(pieceSelector);
+            setupBtn.setText("Position Setup");
+        }
+    }
+
+    private StackPane createBoardStack(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
         String imagePath = isWhitePerspective ? "/images/chessboard_white.png" : "/images/chessboard_black.png";
         Image backgroundImage = new Image(getClass().getResource(imagePath).toExternalForm());
-        BackgroundSize bgSize = new BackgroundSize(865, 865, false, false, false, false);
 
+        BackgroundSize bgSize = new BackgroundSize(865, 865, false, false, false, false);
         BackgroundImage bgImage = new BackgroundImage(
                 backgroundImage,
                 BackgroundRepeat.NO_REPEAT,
@@ -38,6 +77,7 @@ public class BoardView extends HBox implements BoardChangeListener {
                 BackgroundPosition.CENTER,
                 bgSize
         );
+
         StackPane boardWithBackground = new StackPane();
         boardWithBackground.setPrefSize(865, 865);
         boardWithBackground.setBackground(new Background(bgImage));
@@ -58,18 +98,9 @@ public class BoardView extends HBox implements BoardChangeListener {
         }
 
         boardWithBackground.getChildren().add(boardGrid);
-        this.getChildren().add(boardWithBackground);
-        this.getChildren().add(setupBtn);
-
-        // ➕ Voeg het selectie-paneel toe als setupMode actief is
-        if (controller.isSetupMode()) {
-
-            PieceSelectorPane pieceSelector = new PieceSelectorPane(selected -> {
-                controller.setSelectedPieceForSetup(selected);
-            });
-            this.getChildren().add(pieceSelector);
-        }
+        return boardWithBackground;
     }
+
 
 
 
