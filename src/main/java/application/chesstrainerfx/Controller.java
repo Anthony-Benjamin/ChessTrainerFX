@@ -136,5 +136,6 @@ public class Controller {
     public void toggleTurn(){
         this.isWhiteTurn = !isWhiteTurn;
     }
+
 }
 

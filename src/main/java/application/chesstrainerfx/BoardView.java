@@ -11,6 +11,7 @@ public class BoardView extends HBox implements BoardChangeListener {
     private final BoardModel boardModel;
     private final SquareView[][] squareViews = new SquareView[8][8];
     private final Button setupBtn = new Button("Position Setup");
+    private final Button startPosBtn = new Button("Start Position");
     private final VBox controlPane;
     private PieceSelectorPane pieceSelector = null;
 
@@ -34,6 +35,16 @@ public class BoardView extends HBox implements BoardChangeListener {
         TextField fenField = new TextField();
         fenField.setEditable(false);
         fenField.setPrefWidth(450);
+        startPosBtn.setOnAction(event -> {
+
+            for (SquareModel sq: boardModel.getSquares()){
+                sq.setPiece(null);
+            }
+            boardModel.initializeFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+            onBoardUpdated();
+
+        });
 
         exportFENBtn.setOnAction(event -> {
             String fen = boardModel.exportToFEN();
@@ -42,7 +53,7 @@ public class BoardView extends HBox implements BoardChangeListener {
         });
 
         controlPane.getChildren().add(setupBtn);
-        controlPane.getChildren().addAll(exportFENBtn, fenField);
+        controlPane.getChildren().addAll(exportFENBtn, fenField, startPosBtn);
 
         this.getChildren().add(controlPane);
 
@@ -102,8 +113,6 @@ public class BoardView extends HBox implements BoardChangeListener {
     }
 
 
-
-
     @Override
     public void onBoardUpdated() {
         for (int row = 0; row < 8; row++) {
@@ -112,7 +121,6 @@ public class BoardView extends HBox implements BoardChangeListener {
             }
         }
     }
-
 
 
 }
