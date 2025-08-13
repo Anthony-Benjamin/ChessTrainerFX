@@ -24,29 +24,11 @@ public class ChessTrainer extends Application {
         Controller controller = new Controller();
         BoardView boardView = new BoardView(model, controller,true);
 
-
-
-        // 👇 Container met stijl
         StackPane container = new StackPane();
-       /* container.setStyle(
-                "-fx-background-color: white;" +                    // achtergrond
-                        "-fx-border-color: deepskyblue;" +                         // randkleur
-                        "-fx-border-width: 4;" +                            // dikte
-                        "-fx-border-radius: 20;" +                          // afgeronde hoeken
-                        "-fx-background-radius: 20;" +                      // afgeronde achtergrond
-                        "-fx-padding: 6;"                                  // ruimte binnenin
-        );*/
-
         container.getChildren().add(boardView);
-
-        // Zorg dat het in het midden staat
         StackPane root = new StackPane(container);
-
-
-       // StackPane root = new StackPane(board);
         Scene scene = new Scene(root,1400,1000);
 
-        // 5. Stage tonen
         primaryStage.setTitle("ChesstrainerFX");
         primaryStage.setScene(scene);
         primaryStage.show();

@@ -2,12 +2,15 @@ package application.chesstrainerfx;
 
 public class Controller {
 
-    private int counter;
-    private Position source, target;
-    private SquareView from, to;
-    private PieceModel piece;
-    private boolean isWhiteTurn = true;
-    private boolean correctPieceSelected = false;
+
+    private boolean setupMode = false;
+    private PieceModel selectedSetupPiece;
+    private enum SelectionStage {NONE, SOURCE_SELECTED}
+    private SelectionStage stage = SelectionStage.NONE;
+    private SquareView sourceView;
+    private Position sourcePos;
+    private PieceModel selectedPiece;
+    private boolean whiteTurn = true;
 
     public boolean isSetupMode() {
         return setupMode;
@@ -15,127 +18,131 @@ public class Controller {
 
     public void toggleSetupMode() {
         this.setupMode = !setupMode;
-        System.out.println("SetupMode " + setupMode);
+        resetSelection();
     }
 
-    private boolean setupMode = false;
-
-    public void setSelectedPieceForSetup(PieceModel selectedPieceForSetup) {
-        this.selectedPieceForSetup = selectedPieceForSetup;
+    public void setSelectedPieceForSetup(PieceModel piece) {
+        this.selectedSetupPiece = piece;
     }
-
-    private PieceModel selectedPieceForSetup = null; // null = verwijderen
-
 
     public void handleSquareClick(BoardModel board, SquareView view, SquareModel model) {
-        System.out.println("Clicked! in Controller");
+        System.out.println("Clicked in Controller");
+
         if (setupMode) {
-            if (selectedPieceForSetup == null) {
-                model.setPiece(null); // verwijderen
-            } else {
-                model.setPiece(new PieceModel(
-                        selectedPieceForSetup.getType(),
-                        selectedPieceForSetup.getColor()
-                ));
-            }
-            view.update(); // herteken GUI
+            placeOrRemovePiece(model, view);
             return;
         }
-        PieceColor color;
-        if(isWhiteTurn){
-            color = PieceColor.WHITE;
-        }else{
-            color = PieceColor.BLACK;
-        }
-        PieceModel p = null;
-        if(counter == 0){
-            p = model.getPiece();
-            if(p != null && p.getColor().equals(color)){
-                correctPieceSelected = true;
-            }
-        }
 
-        System.out.println("piece? " + p);
-        if(correctPieceSelected) {
+        if (stage == SelectionStage.NONE) {
+            attemptSourceSelection(model, view);
+        } else {
+            attemptMove(board, view, model);
 
-
-            if (counter == 0) {
-
-                from = view;
-                from.setSeletedSource();
-                source = model.getPosition();
-                System.out.println("Source: " + source + model.getPiece());
-                piece = model.getPiece();
-                counter = 1;
-                System.out.println(isWhiteTurn);
-                System.out.println(piece.getColor());
-
-            } else {
-                // Tweede klik
-                to = view;
-                to.setSelectedTarget();
-                target = model.getPosition();
-                System.out.println("Target: " + target);
-
-                boolean result = MoveValidator.isValidMove(board, piece, source, target);
-
-
-                System.out.println(result);
-                if (result) {
-                    if (piece.getType() == PieceType.PAWN) {
-                        int dx = target.getColumn() - source.getColumn();
-                        int dy = target.getRow() - source.getRow();
-                        int direction = piece.getColor() == PieceColor.WHITE ? -1 : 1;
-
-                        //En passant
-                        if (Math.abs(dx) == 1 && dy == direction && board.getSquare(target).getPiece() == null) {
-                            Position captured = new Position(source.getRow(), target.getColumn());
-                            board.getSquare(captured).setPiece(null);
-                            // GUI update
-                            view.update();
-
-                        }
-                        // Dubbele stap
-                        if (Math.abs(dy) == 2) {
-                            board.setLastDoubleStepPawnPosition(target);
-                        } else {
-                            board.setLastDoubleStepPawnPosition(null);
-                        }
-
-                    }
-                    board.movePiece(source, target);
-                    toggleTurn();
-
-                    // Promotie
-                    if (piece.getType() == PieceType.PAWN && (target.getRow() == 0 || target.getRow() == 7)) {
-                        PieceModel promoted = new PieceModel(PieceType.QUEEN, piece.getColor());
-                        board.getSquare(target).setPiece(promoted);
-                        view.update();
-                    }
-                }
-
-
-                if (from != null && to != null) {
-                    from.removeSelection();
-                    to.removeSelection();
-                }
-
-                // reset
-                source = null;
-                target = null;
-                from = null;
-                to = null;
-                counter = 0;
-                correctPieceSelected = false;
-            }
-//            if(counter == 1) {
-//                correctPieceSelected = false;
-//            }
         }
     }
-    public void toggleTurn(){
-        this.isWhiteTurn = !isWhiteTurn;
+
+
+    private void placeOrRemovePiece(SquareModel model, SquareView view) {
+        if (selectedSetupPiece == null) {
+            model.setPiece(null);
+        } else {
+            model.setPiece(new PieceModel(
+                    selectedSetupPiece.getType(),
+                    selectedSetupPiece.getColor()
+            ));
+        }
+        view.update();
     }
+
+    private void attemptSourceSelection(SquareModel model, SquareView view) {
+        PieceModel piece = model.getPiece();
+        if (piece == null || piece.getColor() != currentColor()) {
+
+            return;
+        }
+        selectedPiece = piece;
+        sourcePos = model.getPosition();
+        sourceView = view;
+        sourceView.setSeletedSource();
+        stage = SelectionStage.SOURCE_SELECTED;
+        System.out.println("Source chosen: " + sourcePos + " " + piece);
+    }
+
+    private void attemptMove(BoardModel board, SquareView view, SquareModel model) {
+        Position targetPos = model.getPosition();
+        view.setSelectedTarget();
+        System.out.println("Target chosen: " + targetPos);
+
+        boolean valid = MoveValidator.isValidMove(board, selectedPiece, sourcePos, targetPos);
+        System.out.println("Move valid? " + valid);
+
+        if (valid) {
+            handlePawnSpecials(board, sourcePos, targetPos);
+            board.movePiece(sourcePos, targetPos);
+            handlePromotion(board, view, targetPos);
+            toggleTurn();
+            cleanupSelection();
+            //view.removeSelection();
+        }else {
+            view.removeSelection();
+        }
+
+
+
+    }
+
+    private void handlePawnSpecials(BoardModel board, Position from, Position to) {
+        if (selectedPiece.getType() != PieceType.PAWN) return;
+
+        int dx = to.getColumn() - from.getColumn();
+        int dy = to.getRow() - from.getRow();
+        int dir = (selectedPiece.getColor() == PieceColor.WHITE) ? -1 : 1;
+
+        // En passant
+        if (Math.abs(dx) == 1 && dy == dir && board.getSquare(to).getPiece() == null) {
+            Position capturePos = new Position(from.getRow(), to.getColumn());
+            board.getSquare(capturePos).setPiece(null);
+        }
+
+        // Double step tracking
+        if (Math.abs(dy) == 2) {
+            board.setLastDoubleStepPawnPosition(to);
+        } else {
+            board.setLastDoubleStepPawnPosition(null);
+        }
+    }
+
+    private void handlePromotion(BoardModel board, SquareView view, Position pos) {
+        if (selectedPiece.getType() == PieceType.PAWN && (pos.getRow() == 0 || pos.getRow() == 7)) {
+            board.getSquare(pos).setPiece(new PieceModel(PieceType.QUEEN, selectedPiece.getColor()));
+            view.update();
+        }
+    }
+
+    private void cleanupSelection() {
+        if (sourceView != null) sourceView.removeSelection();
+        // targetView highlighting is handled in move
+        resetSelection();
+    }
+
+    private void resetSelection() {
+        stage = SelectionStage.NONE;
+        sourceView = null;
+        selectedPiece = null;
+        sourcePos = null;
+
+    }
+
+    private PieceColor currentColor() {
+        return whiteTurn ? PieceColor.WHITE : PieceColor.BLACK;
+    }
+
+    private void toggleTurn() {
+        whiteTurn = !whiteTurn;
+    }
+
 
 }
+
+
 

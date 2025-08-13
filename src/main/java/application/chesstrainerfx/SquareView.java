@@ -74,6 +74,7 @@ public class SquareView extends StackPane {
 
     public void removeSelection() {
         setSquareBackground();
+        //System.out.println("remove in squareview");
     }
 }   
 
