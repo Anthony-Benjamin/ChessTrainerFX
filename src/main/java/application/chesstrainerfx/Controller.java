@@ -1,5 +1,9 @@
 package application.chesstrainerfx;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.paint.Color;
+
 public class Controller {
 
 
@@ -11,6 +15,14 @@ public class Controller {
     private Position sourcePos;
     private PieceModel selectedPiece;
     private boolean whiteTurn = true;
+
+
+    public boolean isWhiteTurn() {
+        return whiteTurn;
+    }
+
+
+    private SquareView lastmove;
 
     public boolean isSetupMode() {
         return setupMode;
@@ -65,6 +77,9 @@ public class Controller {
         sourceView = view;
         sourceView.setSeletedSource();
         stage = SelectionStage.SOURCE_SELECTED;
+        if(lastmove !=null){
+            lastmove.removeSelection();
+        }
         System.out.println("Source chosen: " + sourcePos + " " + piece);
     }
 
@@ -82,7 +97,9 @@ public class Controller {
             handlePromotion(board, view, targetPos);
             toggleTurn();
             cleanupSelection();
+            lastmove = view;
             //view.removeSelection();
+
         }else {
             view.removeSelection();
         }
@@ -140,7 +157,6 @@ public class Controller {
     private void toggleTurn() {
         whiteTurn = !whiteTurn;
     }
-
 
 }
 

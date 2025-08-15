@@ -1,10 +1,13 @@
 package application.chesstrainerfx;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class BoardView extends HBox implements BoardChangeListener {
 
@@ -13,19 +16,28 @@ public class BoardView extends HBox implements BoardChangeListener {
     private final Button setupBtn = new Button("Position Setup");
     private final Button startPosBtn = new Button("Start Position");
     private final VBox controlPane;
+    private final boolean isWhitePerspective;
+
     private PieceSelectorPane pieceSelector = null;
 
+
+
     private Controller controller;
+
 
     public BoardView(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
         this.boardModel = boardModel;
         this.controller = controller;
+        this.isWhitePerspective = isWhitePerspective;
         this.setSpacing(20);
         this.setAlignment(Pos.CENTER_LEFT);
         boardModel.addListener(this);
+        //this.setBorder(new Border(new BorderStroke(Color.BLUEVIOLET, BorderStrokeStyle.SOLID, null , null)));
 
         StackPane boardWithBackground = createBoardStack(boardModel, controller, isWhitePerspective);
         this.getChildren().add(boardWithBackground);
+        
+
         pieceSelector = new PieceSelectorPane(selected -> controller.setSelectedPieceForSetup(selected));
         controlPane = new VBox(10);
         controlPane.setAlignment(Pos.TOP_CENTER);
@@ -52,11 +64,11 @@ public class BoardView extends HBox implements BoardChangeListener {
             System.out.println("FEN: " + fen);
         });
 
+
         controlPane.getChildren().add(setupBtn);
         controlPane.getChildren().addAll(exportFENBtn, fenField, startPosBtn);
-
         this.getChildren().add(controlPane);
-
+        
 
     }
 
@@ -122,5 +134,6 @@ public class BoardView extends HBox implements BoardChangeListener {
         }
     }
 
+   
 
 }
