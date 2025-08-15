@@ -17,6 +17,7 @@ public class BoardView extends HBox implements BoardChangeListener {
     private final Button startPosBtn = new Button("Start Position");
     private final VBox controlPane;
     private final boolean isWhitePerspective;
+    private final Circle circle = new Circle();
 
     private PieceSelectorPane pieceSelector = null;
 
@@ -63,10 +64,11 @@ public class BoardView extends HBox implements BoardChangeListener {
             fenField.setText(fen);
             System.out.println("FEN: " + fen);
         });
-
+        circle.setRadius(20);
+        circle.setFill(Color.WHITE);
 
         controlPane.getChildren().add(setupBtn);
-        controlPane.getChildren().addAll(exportFENBtn, fenField, startPosBtn);
+        controlPane.getChildren().addAll(exportFENBtn, fenField, startPosBtn, circle);
         this.getChildren().add(controlPane);
         
 
@@ -132,8 +134,9 @@ public class BoardView extends HBox implements BoardChangeListener {
                 squareViews[row][col].update();
             }
         }
+        System.out.println("Turn: " + controller.isWhiteTurn());
+        Color color = controller.isWhiteTurn() ? Color.BLACK : Color.WHITE;
+        System.out.println(color);
+        circle.setFill(color);
     }
-
-   
-
 }
