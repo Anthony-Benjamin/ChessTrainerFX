@@ -9,7 +9,19 @@ package application.chesstrainerfx;
  *
  * @author ebenjamin
  */
+
+
+
 public class MoveValidator {
+
+    /* TODO : Validatie van onmogelijke zet en het opheffen van selectie
+        of wanneer tweemaal van dezelfde kleur wordt geklikt dat de source
+        vervangen wordt door nieuwe selectie
+ */
+
+
+
+
     public static boolean isValidMove(BoardModel board, PieceModel piece, Position from, Position to){
         System.out.println(piece.getType());
         return switch(piece.getType()){
@@ -20,7 +32,7 @@ public class MoveValidator {
             case KING -> isValidKingMove(board, piece, from, to);
             case PAWN -> isValidPawnMove(board, piece, from, to);
 
-            default -> false;
+
         };
     }
     
@@ -30,10 +42,7 @@ public class MoveValidator {
     
     public static boolean isValidBishopMove(BoardModel board, PieceModel bishop, Position from, Position to){
 
-//        if (!(isOnBoard(from) || isOnBoard(to) || !from.equals(to))){
-//            
-//            return false;
-//        }
+
         if(!isOnBoard(from) || !isOnBoard(to) || from.equals(to)){
             
             return false;
@@ -141,11 +150,10 @@ public class MoveValidator {
             if (rook == null || rook.getType() != PieceType.ROOK || rook.hasMoved()) return false;
 
             // Check of vakken tussen koning en toren leeg zijn
-            if (board.getSquare(new Position(row, 5)).getPiece() != null ||
-                    board.getSquare(new Position(row, 6)).getPiece() != null) return false;
+            return board.getSquare(new Position(row, 5)).getPiece() == null &&
+                    board.getSquare(new Position(row, 6)).getPiece() == null;
 
             // Extra: voeg hier controle toe of koning door/over schaak beweegt
-            return true;
         }
 
         // Lange rokade
@@ -155,12 +163,11 @@ public class MoveValidator {
             if (rook == null || rook.getType() != PieceType.ROOK || rook.hasMoved()) return false;
 
             // Check of vakken tussen koning en toren leeg zijn
-            if (board.getSquare(new Position(row, 1)).getPiece() != null ||
-                    board.getSquare(new Position(row, 2)).getPiece() != null ||
-                    board.getSquare(new Position(row, 3)).getPiece() != null) return false;
+            return board.getSquare(new Position(row, 1)).getPiece() == null &&
+                    board.getSquare(new Position(row, 2)).getPiece() == null &&
+                    board.getSquare(new Position(row, 3)).getPiece() == null;
 
             // Extra: voeg hier controle toe of koning door/over schaak beweegt
-            return true;
         }
 
         return false;
