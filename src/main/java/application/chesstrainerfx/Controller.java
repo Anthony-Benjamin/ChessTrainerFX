@@ -9,6 +9,8 @@ public class Controller {
 
     private boolean setupMode = false;
     private PieceModel selectedSetupPiece;
+    private BoardModel board;
+
     private enum SelectionStage {NONE, SOURCE_SELECTED}
     private SelectionStage stage = SelectionStage.NONE;
     private SquareView sourceView;
@@ -30,7 +32,8 @@ public class Controller {
 
     public void toggleSetupMode() {
         this.setupMode = !setupMode;
-        resetSelection();
+
+
     }
 
     public void setSelectedPieceForSetup(PieceModel piece) {
@@ -52,7 +55,6 @@ public class Controller {
 
         }
     }
-
 
     private void placeOrRemovePiece(SquareModel model, SquareView view) {
         if (selectedSetupPiece == null) {
@@ -156,9 +158,13 @@ public class Controller {
 
     private void toggleTurn() {
         whiteTurn = !whiteTurn;
+
     }
 
-}
+
+    }
+
+
 
 
 
