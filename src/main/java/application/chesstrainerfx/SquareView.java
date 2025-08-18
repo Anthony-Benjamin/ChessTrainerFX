@@ -68,7 +68,7 @@ public class SquareView extends StackPane {
     }
 
     public void setSelectedTarget() {
-        background.setFill(Color.ORANGE);
+        background.setFill(Color.rgb(255,205,146));
     }
 
 

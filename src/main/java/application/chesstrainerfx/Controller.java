@@ -12,19 +12,17 @@ public class Controller {
     private BoardModel board;
 
     private enum SelectionStage {NONE, SOURCE_SELECTED}
+
     private SelectionStage stage = SelectionStage.NONE;
     private SquareView sourceView;
     private Position sourcePos;
     private PieceModel selectedPiece;
     private boolean whiteTurn = true;
-
+    private SquareView lastmove;
 
     public boolean isWhiteTurn() {
         return whiteTurn;
     }
-
-
-    private SquareView lastmove;
 
     public boolean isSetupMode() {
         return setupMode;
@@ -32,8 +30,6 @@ public class Controller {
 
     public void toggleSetupMode() {
         this.setupMode = !setupMode;
-
-
     }
 
     public void setSelectedPieceForSetup(PieceModel piece) {
@@ -79,7 +75,7 @@ public class Controller {
         sourceView = view;
         sourceView.setSeletedSource();
         stage = SelectionStage.SOURCE_SELECTED;
-        if(lastmove !=null){
+        if (lastmove != null) {
             lastmove.removeSelection();
         }
         System.out.println("Source chosen: " + sourcePos + " " + piece);
@@ -102,10 +98,9 @@ public class Controller {
             lastmove = view;
             //view.removeSelection();
 
-        }else {
+        } else {
             view.removeSelection();
         }
-
 
 
     }
@@ -162,7 +157,7 @@ public class Controller {
     }
 
 
-    }
+}
 
 
 
