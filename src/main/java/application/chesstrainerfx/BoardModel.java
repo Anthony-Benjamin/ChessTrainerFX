@@ -8,7 +8,7 @@ public class BoardModel {
     //een lijst van SquareModels
     private final List<SquareModel> squares;
     private final List<BoardChangeListener> listeners = new ArrayList<>();
-
+//TODO verbeteren
     public BoardModel() {
         squares = new ArrayList<>(64);
         initializeBoard();
