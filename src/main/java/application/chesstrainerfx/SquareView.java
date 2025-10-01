@@ -62,7 +62,7 @@ public class SquareView extends StackPane {
         }
     }
 
-    public void setSeletedSource() {
+    public void setSelectedSource() {
 
         background.setFill(Color.GRAY);
     }

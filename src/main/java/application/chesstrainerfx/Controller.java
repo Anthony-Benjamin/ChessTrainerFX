@@ -1,24 +1,25 @@
 package application.chesstrainerfx;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.paint.Color;
+import javafx.scene.control.ChoiceDialog;
+
+import java.util.List;
 
 public class Controller {
-
 
     private boolean setupMode = false;
     private PieceModel selectedSetupPiece;
     private BoardModel board;
 
-    private enum SelectionStage {NONE, SOURCE_SELECTED}
-
+    private enum SelectionStage { NONE, SOURCE_SELECTED }
     private SelectionStage stage = SelectionStage.NONE;
+
     private SquareView sourceView;
     private Position sourcePos;
     private PieceModel selectedPiece;
     private boolean whiteTurn = true;
-    private SquareView lastmove;
+    private SquareView lastMove;
+
+    // ---------------- Public API ---------------- //
 
     public boolean isWhiteTurn() {
         return whiteTurn;
@@ -40,19 +41,20 @@ public class Controller {
         System.out.println("Clicked in Controller");
 
         if (setupMode) {
-            placeOrRemovePiece(model, view);
+            handleSetupPlacement(model, view);
             return;
         }
 
         if (stage == SelectionStage.NONE) {
-            attemptSourceSelection(model, view);
+            handleSourceSelection(model, view);
         } else {
-            attemptMove(board, view, model);
-
+            handleMove(board, view, model);
         }
     }
 
-    private void placeOrRemovePiece(SquareModel model, SquareView view) {
+    // ---------------- Setup Logic ---------------- //
+
+    private void handleSetupPlacement(SquareModel model, SquareView view) {
         if (selectedSetupPiece == null) {
             model.setPiece(null);
         } else {
@@ -64,24 +66,37 @@ public class Controller {
         view.update();
     }
 
-    private void attemptSourceSelection(SquareModel model, SquareView view) {
-        PieceModel piece = model.getPiece();
-        if (piece == null || piece.getColor() != currentColor()) {
+    // ---------------- Selection Logic ---------------- //
 
+    private void handleSourceSelection(SquareModel model, SquareView view) {
+        PieceModel piece = model.getPiece();
+        if (piece == null || piece.getColor() != currentTurnColor()) {
             return;
         }
+
         selectedPiece = piece;
         sourcePos = model.getPosition();
         sourceView = view;
-        sourceView.setSeletedSource();
-        stage = SelectionStage.SOURCE_SELECTED;
-        if (lastmove != null) {
-            lastmove.removeSelection();
+
+        sourceView.setSelectedSource();
+        if (lastMove != null) {
+            lastMove.removeSelection();
         }
+
+        stage = SelectionStage.SOURCE_SELECTED;
         System.out.println("Source chosen: " + sourcePos + " " + piece);
     }
 
-    private void attemptMove(BoardModel board, SquareView view, SquareModel model) {
+    // ---------------- Move Logic ---------------- //
+
+    private void handleMove(BoardModel board, SquareView view, SquareModel model) {
+        PieceColor targetColor = (model.getPiece() != null) ? model.getPiece().getColor() : null;
+
+        if (targetColor == currentTurnColor()) {
+            switchSourceSelection(model, view);
+            return;
+        }
+
         Position targetPos = model.getPosition();
         view.setSelectedTarget();
         System.out.println("Target chosen: " + targetPos);
@@ -90,20 +105,48 @@ public class Controller {
         System.out.println("Move valid? " + valid);
 
         if (valid) {
-            handlePawnSpecials(board, sourcePos, targetPos);
-            board.movePiece(sourcePos, targetPos);
-            handlePromotion(board, view, targetPos);
-            toggleTurn();
-            cleanupSelection();
-            lastmove = view;
-            //view.removeSelection();
-
+            executeMove(board, view, targetPos);
         } else {
-            view.removeSelection();
+            resetInvalidSelection(view);
+        }
+    }
+
+    private void switchSourceSelection(SquareModel model, SquareView view) {
+        System.out.println("Switching selected source...");
+
+        if (sourceView != null) {
+            sourceView.removeSelection();
         }
 
+        view.setSelectedSource();
+        sourceView = view;
+        sourcePos = model.getPosition();
+        selectedPiece = model.getPiece();
 
+        stage = SelectionStage.SOURCE_SELECTED;
+        System.out.println("New source: " + model.getPiece() + " at " + model.getPosition());
     }
+
+    private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
+        handlePawnSpecials(board, sourcePos, targetPos);
+        board.movePiece(sourcePos, targetPos);
+        System.out.println("Promotion Bishop");
+        handlePromotion(board, targetView, targetPos);
+
+        toggleTurn();
+        cleanupSelection();
+
+        lastMove = targetView;
+    }
+
+    private void resetInvalidSelection(SquareView targetView) {
+        System.out.println("Move invalid. Resetting selection.");
+        if (sourceView != null) sourceView.removeSelection();
+        targetView.removeSelection();
+        resetSelection();
+    }
+
+    // ---------------- Pawn & Promotion Logic ---------------- //
 
     private void handlePawnSpecials(BoardModel board, Position from, Position to) {
         if (selectedPiece.getType() != PieceType.PAWN) return;
@@ -126,16 +169,35 @@ public class Controller {
         }
     }
 
+    /*private void handlePromotion(BoardModel board, SquareView view, Position pos) {
+        if (selectedPiece.getType() == PieceType.PAWN && (pos.getRow() == 0 || pos.getRow() == 7)) {
+            // TODO: choose which for promotiom
+            System.out.println("Promotion Bishop");
+            board.getSquare(pos).setPiece(new PieceModel(PieceType.BISHOP, selectedPiece.getColor()));
+            view.update();
+        }
+    }*/
+
     private void handlePromotion(BoardModel board, SquareView view, Position pos) {
         if (selectedPiece.getType() == PieceType.PAWN && (pos.getRow() == 0 || pos.getRow() == 7)) {
-            board.getSquare(pos).setPiece(new PieceModel(PieceType.QUEEN, selectedPiece.getColor()));
+            List<PieceType> options = List.of(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT);
+
+            ChoiceDialog<PieceType> dialog = new ChoiceDialog<>(PieceType.QUEEN, options);
+            dialog.setTitle("Promotie");
+            dialog.setHeaderText("Kies een promotie voor de pion:");
+            dialog.setContentText("Promoveer naar:");
+
+            PieceType choice = dialog.showAndWait().orElse(PieceType.QUEEN);
+
+            board.getSquare(pos).setPiece(new PieceModel(choice, selectedPiece.getColor()));
             view.update();
         }
     }
 
+    // ---------------- Selection Reset ---------------- //
+
     private void cleanupSelection() {
         if (sourceView != null) sourceView.removeSelection();
-        // targetView highlighting is handled in move
         resetSelection();
     }
 
@@ -144,22 +206,15 @@ public class Controller {
         sourceView = null;
         selectedPiece = null;
         sourcePos = null;
-
     }
 
-    private PieceColor currentColor() {
+    // ---------------- Turn Handling ---------------- //
+
+    private PieceColor currentTurnColor() {
         return whiteTurn ? PieceColor.WHITE : PieceColor.BLACK;
     }
 
     private void toggleTurn() {
         whiteTurn = !whiteTurn;
-
     }
-
-
 }
-
-
-
-
-
