@@ -17,7 +17,7 @@ public class SquareView extends StackPane {
         background = new Rectangle(100, 100);
 
         setOnMouseClicked(mouseEvent -> {
-            System.out.println("Clicked! in View");
+            //System.out.println("Clicked! in View");
             controller.handleSquareClick(boardModel, this, model);
             //background.setFill(Color.GRAY);
         });

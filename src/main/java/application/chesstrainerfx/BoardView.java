@@ -49,7 +49,8 @@ public class BoardView extends HBox implements BoardChangeListener {
                 sq.setPiece(null);
             }
             boardModel.initializeFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-
+            //TODO turn not working
+            //controller.setWhiteTurn(true);
             onBoardUpdated();
 
         });

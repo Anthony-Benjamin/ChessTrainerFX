@@ -16,6 +16,11 @@ public class Controller {
     private SquareView sourceView;
     private Position sourcePos;
     private PieceModel selectedPiece;
+
+    public void setWhiteTurn(boolean whiteTurn) {
+        this.whiteTurn = whiteTurn;
+    }
+
     private boolean whiteTurn = true;
     private SquareView lastMove;
 
@@ -169,14 +174,7 @@ public class Controller {
         }
     }
 
-    /*private void handlePromotion(BoardModel board, SquareView view, Position pos) {
-        if (selectedPiece.getType() == PieceType.PAWN && (pos.getRow() == 0 || pos.getRow() == 7)) {
-            // TODO: choose which for promotiom
-            System.out.println("Promotion Bishop");
-            board.getSquare(pos).setPiece(new PieceModel(PieceType.BISHOP, selectedPiece.getColor()));
-            view.update();
-        }
-    }*/
+
 
     private void handlePromotion(BoardModel board, SquareView view, Position pos) {
         if (selectedPiece.getType() == PieceType.PAWN && (pos.getRow() == 0 || pos.getRow() == 7)) {
