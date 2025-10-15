@@ -14,14 +14,6 @@ package application.chesstrainerfx;
 
 public class MoveValidator {
 
-    /* TODO : Validatie van onmogelijke zet en het opheffen van selectie
-        of wanneer tweemaal van dezelfde kleur wordt geklikt dat de source
-        vervangen wordt door nieuwe selectie
- */
-
-
-
-
     public static boolean isValidMove(BoardModel board, PieceModel piece, Position from, Position to){
         System.out.println(piece.getType());
         return switch(piece.getType()){
