@@ -10,9 +10,9 @@ import java.util.regex.Pattern;
 
 public class PGNReader {
 
-    public static List<Exercise> leesHoofdstuk(String resourceNaam) {
-        try (InputStream in = PGNReader.class.getResourceAsStream("/pgn/Mates/Chapters/" + resourceNaam)) {
-            if (in == null) throw new IllegalArgumentException("Bestand niet gevonden: " + resourceNaam);
+    public static List<Exercise> readChapter(String path) {
+        try (InputStream in = PGNReader.class.getResourceAsStream( path)) {
+            if (in == null) throw new IllegalArgumentException("Bestand niet gevonden: " + path);
             String inhoud = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             return splitExercises(inhoud);
         } catch (Exception e) {

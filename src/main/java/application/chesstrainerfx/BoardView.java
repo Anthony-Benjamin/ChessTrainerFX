@@ -29,10 +29,8 @@ public class BoardView extends HBox implements BoardChangeListener {
         this.setAlignment(Pos.CENTER_LEFT);
         boardModel.addListener(this);
         //this.setBorder(new Border(new BorderStroke(Color.BLUEVIOLET, BorderStrokeStyle.SOLID, null , null)));
-
         StackPane boardWithBackground = createBoardStack(boardModel, controller, isWhitePerspective);
         this.getChildren().add(boardWithBackground);
-        
 
         pieceSelector = new PieceSelectorPane(selected -> controller.setSelectedPieceForSetup(selected));
         controlPane = new VBox(10);
