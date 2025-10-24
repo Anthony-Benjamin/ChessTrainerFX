@@ -8,7 +8,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class BoardView extends HBox implements BoardChangeListener {
+public class BoardViewCopy extends HBox implements BoardChangeListener {
 
     private final BoardModel boardModel;
     private final SquareView[][] squareViews = new SquareView[8][8];
@@ -21,7 +21,7 @@ public class BoardView extends HBox implements BoardChangeListener {
     private Controller controller;
 
 
-    public BoardView(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
+    public BoardViewCopy(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
         this.boardModel = boardModel;
         this.controller = controller;
         this.isWhitePerspective = isWhitePerspective;

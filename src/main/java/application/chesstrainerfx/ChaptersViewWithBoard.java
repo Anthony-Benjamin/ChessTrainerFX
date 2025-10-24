@@ -108,7 +108,7 @@ public class ChaptersViewWithBoard extends Application {
         controller.setWhiteTurn(true);            // beginwaarde, kan uit FEN worden gelezen als je wilt
 
         BoardModel boardModel = new BoardModel();
-        BoardView boardView = new BoardView(boardModel, controller, /*isWhitePerspective*/ true);
+        BoardViewCopy boardView = new BoardViewCopy(boardModel, controller, /*isWhitePerspective*/ true);
 
         Label idxLbl = new Label("Zet: –/–");
         Button startBtn = new Button("|<< Start");
@@ -232,7 +232,7 @@ public class ChaptersViewWithBoard extends Application {
     // --- Helpers ---
 
     // Reset: wis alle stukken, laad FEN, forceer redraw (BoardView.onBoardUpdated)
-    private static void resetToFEN(BoardModel model, BoardView view, String fen) {
+    private static void resetToFEN(BoardModel model, BoardViewCopy view, String fen) {
         for (SquareModel sq : model.getSquares()) {
             sq.setPiece(null);
         }

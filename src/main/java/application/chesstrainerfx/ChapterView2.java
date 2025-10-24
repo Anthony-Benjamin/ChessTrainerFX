@@ -148,7 +148,7 @@ public class ChapterView2 extends Application {
         Controller controller = new Controller();
         controller.setWhiteTurn(whiteToMove);
 
-        BoardView boardView = new BoardView(boardModel, controller, whiteToMove);
+        BoardViewCopy boardView = new BoardViewCopy(boardModel, controller, whiteToMove);
 
         // Bord leeg → FEN laden → UI refresh
         for (SquareModel sq : boardModel.getSquares()) sq.setPiece(null);
