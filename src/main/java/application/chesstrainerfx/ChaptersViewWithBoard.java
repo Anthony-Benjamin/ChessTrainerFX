@@ -1,5 +1,6 @@
 package application.chesstrainerfx;
 
+import application.chesstrainerfx.view.BoardView;
 import application.pgnreader.io.PGNReader;
 import application.pgnreader.model.Exercise;
 import javafx.application.Application;
@@ -108,7 +109,7 @@ public class ChaptersViewWithBoard extends Application {
         controller.setWhiteTurn(true);            // beginwaarde, kan uit FEN worden gelezen als je wilt
 
         BoardModel boardModel = new BoardModel();
-        BoardViewCopy boardView = new BoardViewCopy(boardModel, controller, /*isWhitePerspective*/ true);
+        BoardView boardView = new BoardView(boardModel, controller, /*isWhitePerspective*/ true, 600);
 
         Label idxLbl = new Label("Zet: –/–");
         Button startBtn = new Button("|<< Start");
@@ -232,7 +233,7 @@ public class ChaptersViewWithBoard extends Application {
     // --- Helpers ---
 
     // Reset: wis alle stukken, laad FEN, forceer redraw (BoardView.onBoardUpdated)
-    private static void resetToFEN(BoardModel model, BoardViewCopy view, String fen) {
+    private static void resetToFEN(BoardModel model, BoardView view, String fen) {
         for (SquareModel sq : model.getSquares()) {
             sq.setPiece(null);
         }

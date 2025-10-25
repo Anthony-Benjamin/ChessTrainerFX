@@ -111,7 +111,7 @@ public class BoardViewCopy extends HBox implements BoardChangeListener {
                 int displayCol = isWhitePerspective ? col : 7 - col;
                 Position pos = new Position(row, col);
                 SquareModel squareModel = boardModel.getSquare(pos);
-                SquareView squareView = new SquareView(boardModel, squareModel, controller);
+                SquareView squareView = new SquareView(boardModel, squareModel, controller, 100);
                 squareViews[row][col] = squareView;
                 boardGrid.add(squareView, displayCol, displayRow);
             }

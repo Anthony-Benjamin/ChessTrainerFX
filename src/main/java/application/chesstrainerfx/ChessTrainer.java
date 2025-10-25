@@ -1,7 +1,9 @@
 package application.chesstrainerfx;
 
+import application.chesstrainerfx.view.BoardView;
 import javafx.application.Application;
 
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -22,12 +24,12 @@ public class ChessTrainer extends Application {
         model.initializeFromFEN("r2qkbnr/pP3ppp/4p3/8/2pp4/8/P1PPPPPP/RNBQKBNR w KQkq - 0 1");
         Controller controller = new Controller();
 
-        BoardViewCopy boardView = new BoardViewCopy(model, controller,true);
-
+        BoardView boardView = new BoardView(model, controller,true, 600);
+        boardView.setAlignment(Pos.CENTER);
         StackPane container = new StackPane();
         container.getChildren().add(boardView);
         StackPane root = new StackPane(container);
-        Scene scene = new Scene(root,1400,1000);
+        Scene scene = new Scene(root,1000,1000);
 
         primaryStage.setTitle("ChesstrainerFX");
         primaryStage.setScene(scene);

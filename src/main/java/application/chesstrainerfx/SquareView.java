@@ -10,22 +10,24 @@ public class SquareView extends StackPane {
     private SquareModel model;
     private Rectangle background;
     private ImageView pieceImageView;
+    private int size = 100;
 
-    public SquareView(BoardModel boardModel, SquareModel model, Controller controller) {
+    public SquareView(BoardModel boardModel, SquareModel model, Controller controller, int size) {
         this.model = model;
-        //this.setPrefSize(100,100);
-        background = new Rectangle(100, 100);
+        this.size = size;
+        //TODO adjust size of squares possible?
+        background = new Rectangle(size, size);
 
         setOnMouseClicked(mouseEvent -> {
-            //System.out.println("Clicked! in View");
+
             controller.handleSquareClick(boardModel, this, model);
             //background.setFill(Color.GRAY);
         });
 
         setSquareBackground();
         pieceImageView = new ImageView();
-        pieceImageView.setFitWidth(85);
-        pieceImageView.setFitHeight(85);
+        pieceImageView.setFitWidth(size * 0.95);
+        pieceImageView.setFitHeight(size * 0.95);
 
         getChildren().addAll(background, pieceImageView);
         update();
