@@ -27,24 +27,26 @@ public final class MatingPatternsView extends BorderPane {
         StackPane bgLayer = new StackPane();
         ImageView bg = new ImageView(new Image(
                 getClass().getResource("/images/background_chapters.png").toExternalForm()));
-        bg.setPreserveRatio(false);
+        bg.setPreserveRatio(true);
         bg.fitWidthProperty().bind(bgLayer.widthProperty());
         bg.fitHeightProperty().bind(bgLayer.heightProperty());
         bg.setEffect(new GaussianBlur(10));
         bgLayer.getChildren().add(bg);
 
         // Grid
+        grid.setStyle("-fx-background-color: transparent;");
+        grid.setOpacity(0.5);
         grid.setPadding(new Insets(24));
         grid.setPrefTileWidth(160);
         grid.setPrefTileHeight(160);
         grid.setAlignment(Pos.TOP_LEFT);
-        grid.setStyle("-fx-background-color: transparent;");
+
 
         ScrollPane scroller = new ScrollPane(grid);
         scroller.setFitToWidth(true);
         scroller.setStyle("-fx-background-color: transparent;");
         scroller.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-
+        scroller.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         StackPane stack = new StackPane(bgLayer, scroller);
         setCenter(stack);
 

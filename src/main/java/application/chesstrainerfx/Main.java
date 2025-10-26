@@ -134,7 +134,7 @@ public class Main extends Application {
     }
 
     /** === View: Mating Patterns === */
-    private Parent buildMatingPatterns() {
+    /*private Parent buildMatingPatterns() {
         List<Chapter> chapters = buildChapters(chapterPaths);
         List<String> titles = chapters.stream().map(Chapter::getTitle).toList();
 
@@ -158,7 +158,36 @@ public class Main extends Application {
         StackPane.setAlignment(back, Pos.TOP_LEFT);
         StackPane.setMargin(back, new Insets(16));
         return wrapper;
+    }*/
+    private Parent buildMatingPatterns() {
+        List<Chapter> chapters = buildChapters(chapterPaths);
+        List<String> titles = chapters.stream().map(Chapter::getTitle).toList();
+
+        var view = new MatingPatternsView(titles, name -> {
+            Chapter chapter = chapters.stream()
+                    .filter(c -> c.getTitle().equals(name))
+                    .findFirst().orElse(null);
+            if (chapter != null) {
+                // Toon ChapterWindow in dezelfde scene-root
+                scene.setRoot(new ChapterWindow(chapter));
+            }
+        });
+
+        // Back-knop naar home (optioneel)
+        Button back = new Button("← Back");
+        back.setOnAction(e -> scene.setRoot(homeRoot));
+        back.setStyle("""
+        -fx-background-color: rgba(20,20,20,0.65);
+        -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
+        -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
+    """);
+
+        StackPane wrapper = new StackPane(view, back);
+        StackPane.setAlignment(back, Pos.TOP_LEFT);
+        StackPane.setMargin(back, new Insets(16));
+        return wrapper;
     }
+
 
     /** Venster met lijst van oefeningen in een hoofdstuk */
     private void openChapterWindow(Chapter chapter) {
