@@ -5,6 +5,7 @@ module application.chesstrainerfx {
     requires java.sql;
 
 
+
     opens application.chesstrainerfx to javafx.fxml;
     exports application.chesstrainerfx;
 

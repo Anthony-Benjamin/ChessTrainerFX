@@ -37,7 +37,7 @@ public final class MatingPatternsView extends BorderPane {
                 0, 0, true, true
         ));
 
-        var bgUrl = getClass().getResource("/images/background_chapters.png");
+        //var bgUrl = getClass().getResource("/images/background_chapters.png");
 
 
         bg.setPreserveRatio(true);
