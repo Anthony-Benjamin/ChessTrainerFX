@@ -8,7 +8,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class BoardViewCopy extends HBox implements BoardChangeListener {
+public class BoardViewSetup extends HBox implements BoardChangeListener {
 
     private final BoardModel boardModel;
     private final SquareView[][] squareViews = new SquareView[8][8];
@@ -17,11 +17,14 @@ public class BoardViewCopy extends HBox implements BoardChangeListener {
     private final VBox controlPane;
     private final boolean isWhitePerspective;
     private final Circle circle = new Circle();
+    private final int boardSize;
     private PieceSelectorPane pieceSelector = null;
     private Controller controller;
+    private float backgroundsize;
 
-
-    public BoardViewCopy(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
+    public BoardViewSetup(BoardModel boardModel, Controller controller, boolean isWhitePerspective,int boardSize) {
+        this.boardSize = boardSize;
+        backgroundsize = boardSize+(boardSize * 0.07f);
         this.boardModel = boardModel;
         this.controller = controller;
         this.isWhitePerspective = isWhitePerspective;
@@ -30,10 +33,11 @@ public class BoardViewCopy extends HBox implements BoardChangeListener {
         boardModel.addListener(this);
         //this.setBorder(new Border(new BorderStroke(Color.BLUEVIOLET, BorderStrokeStyle.SOLID, null , null)));
         StackPane boardWithBackground = createBoardStack(boardModel, controller, isWhitePerspective);
+
         this.getChildren().add(boardWithBackground);
 
         pieceSelector = new PieceSelectorPane(selected -> controller.setSelectedPieceForSetup(selected));
-        controlPane = new VBox(10);
+        controlPane = new VBox(20);
         controlPane.setAlignment(Pos.TOP_CENTER);
 
         setupBtn.setOnAction(event -> toggleSetupMode());
@@ -64,6 +68,7 @@ public class BoardViewCopy extends HBox implements BoardChangeListener {
 
         controlPane.getChildren().add(setupBtn);
         controlPane.getChildren().addAll(exportFENBtn, fenField, startPosBtn, circle);
+        controlPane.setAlignment(Pos.CENTER);
         this.getChildren().add(controlPane);
         
 
@@ -89,7 +94,7 @@ public class BoardViewCopy extends HBox implements BoardChangeListener {
         String imagePath = isWhitePerspective ? "/images/chessboard_white.png" : "/images/chessboard_black.png";
         Image backgroundImage = new Image(getClass().getResource(imagePath).toExternalForm());
 
-        BackgroundSize bgSize = new BackgroundSize(865, 865, false, false, false, false);
+        BackgroundSize bgSize = new BackgroundSize(backgroundsize, backgroundsize, false, false, false, false);
         BackgroundImage bgImage = new BackgroundImage(
                 backgroundImage,
                 BackgroundRepeat.NO_REPEAT,
@@ -99,7 +104,7 @@ public class BoardViewCopy extends HBox implements BoardChangeListener {
         );
 
         StackPane boardWithBackground = new StackPane();
-        boardWithBackground.setPrefSize(865, 865);
+        boardWithBackground.setPrefSize(backgroundsize, backgroundsize);
         boardWithBackground.setBackground(new Background(bgImage));
 
         GridPane boardGrid = new GridPane();
@@ -111,7 +116,7 @@ public class BoardViewCopy extends HBox implements BoardChangeListener {
                 int displayCol = isWhitePerspective ? col : 7 - col;
                 Position pos = new Position(row, col);
                 SquareModel squareModel = boardModel.getSquare(pos);
-                SquareView squareView = new SquareView(boardModel, squareModel, controller, 100);
+                SquareView squareView = new SquareView(boardModel, squareModel, controller, boardSize / 8);
                 squareViews[row][col] = squareView;
                 boardGrid.add(squareView, displayCol, displayRow);
             }

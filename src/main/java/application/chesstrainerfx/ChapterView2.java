@@ -20,7 +20,7 @@ public class ChapterView2 extends Application {
             "/pgn/mating/chapters/3_cozio_mate.pgn",
             "/pgn/mating/chapters/4_killerbox_mate.pgn",
             "/pgn/mating/chapters/5_triangle_mate.pgn",
-            "/pgn/mating/chapters/6_triangle_mate.pgn",
+            "/pgn/mating/chapters/6_railroad_mate.pgn",
             "/pgn/mating/chapters/7_maxlange_mate.pgn",
             "/pgn/mating/chapters/8_balestra_mate.pgn",
             "/pgn/mating/chapters/9_buckingbranco_mate.pgn",
@@ -47,10 +47,10 @@ public class ChapterView2 extends Application {
             "/pgn/mating/chapters/30_bombardier_mate.pgn",
             "/pgn/mating/chapters/31_boden_mate.pgn",
             "/pgn/mating/chapters/32_smothered_mate.pgn",
-            "/pgn/mating/chapters/33_boden_mate.pgn",
-            "/pgn/mating/chapters/34_boden_mate.pgn",
+            "/pgn/mating/chapters/33_two_night_mate.pgn",
+            "/pgn/mating/chapters/34_suffocation_mate.pgn",
             "/pgn/mating/chapters/35_collabration_mate.pgn",
-            "/pgn/mating/chapters/36_collabration_mate.pgn"
+            "/pgn/mating/chapters/36_blackburn_mate.pgn"
     );
 
     @Override
@@ -148,7 +148,7 @@ public class ChapterView2 extends Application {
         Controller controller = new Controller();
         controller.setWhiteTurn(whiteToMove);
 
-        BoardViewCopy boardView = new BoardViewCopy(boardModel, controller, whiteToMove);
+        BoardViewSetup boardView = new BoardViewSetup(boardModel, controller, whiteToMove,800);
 
         // Bord leeg → FEN laden → UI refresh
         for (SquareModel sq : boardModel.getSquares()) sq.setPiece(null);
@@ -160,7 +160,7 @@ public class ChapterView2 extends Application {
 
         Stage s = new Stage();
         s.setTitle(windowTitle);
-        s.setScene(new Scene(root, 1400, 1000)); // afgestemd op jouw BoardView (~865x865 achtergrond)
+        s.setScene(new Scene(root, 1500, 1000)); // afgestemd op jouw BoardView (~865x865 achtergrond)
         s.show();
     }
 
