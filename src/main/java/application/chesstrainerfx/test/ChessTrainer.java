@@ -1,5 +1,7 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
+import application.chesstrainerfx.controller.Controller;
+import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.view.BoardView;
 import javafx.application.Application;
 
@@ -29,7 +31,7 @@ public class ChessTrainer extends Application {
         StackPane container = new StackPane();
         container.getChildren().add(boardView);
         StackPane root = new StackPane(container);
-        Scene scene = new Scene(root,1000,1000);
+        Scene scene = new Scene(root,650,650);
 
         primaryStage.setTitle("ChesstrainerFX");
         primaryStage.setScene(scene);

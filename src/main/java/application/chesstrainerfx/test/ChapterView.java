@@ -1,4 +1,4 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
 import application.pgnreader.io.PGNReader;
 import application.pgnreader.model.Exercise;

@@ -1,5 +1,5 @@
 // File: MatingPatternsView.java
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,12 +14,12 @@ import javafx.scene.layout.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-public final class MatingPatternsView extends BorderPane {
+public final class MatePatternsView extends BorderPane {
 
     private final TilePane grid = new TilePane(16, 16);
     private Consumer<String> onSelect = t -> {};
 
-    public MatingPatternsView(List<String> titles, Consumer<String> onSelect) {
+    public MatePatternsView(List<String> titles, Consumer<String> onSelect) {
         if (onSelect != null) this.onSelect = onSelect;
         getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
 

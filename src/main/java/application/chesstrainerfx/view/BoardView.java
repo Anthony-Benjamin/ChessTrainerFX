@@ -1,114 +1,53 @@
 package application.chesstrainerfx.view;
 
-import application.chesstrainerfx.*;
-
+import application.chesstrainerfx.controller.Controller;
+import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.model.SquareModel;
+import application.chesstrainerfx.utils.Position;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 
 public class BoardView extends HBox implements BoardChangeListener {
 
     private final BoardModel boardModel;
     private final SquareView[][] squareViews = new SquareView[8][8];
-//    private final Button setupBtn = new Button("Position Setup");
-//    private final Button startPosBtn = new Button("Start Position");
-//    private final VBox controlPane;
     private final boolean isWhitePerspective;
-//    private final Circle circle = new Circle();
-    private PieceSelectorPane pieceSelector = null;
-    private Controller controller;
-    private int boardSize;   // size board
-    private float backgroundsize;
+    private final Controller controller;
+    private final int boardSize;          // totale breedte/hoogte van het speelvlak (8×8)
+    private final double squareSize;      // grootte van één veld
+    private final double frameThickness;  // dikte van de rand = 1/3 van square
 
     public BoardView(BoardModel boardModel, Controller controller, boolean isWhitePerspective, int boardSize) {
-        this.boardSize = boardSize;
-        backgroundsize = boardSize+(boardSize * 0.07f);
         this.boardModel = boardModel;
         this.controller = controller;
         this.isWhitePerspective = isWhitePerspective;
-        this.setSpacing(20);
-        this.setAlignment(Pos.CENTER_LEFT);
+        this.boardSize = boardSize;
+
+        this.squareSize = boardSize / 8.0;
+        this.frameThickness = squareSize / 3.0;
+
+        setSpacing(20);
+        setAlignment(Pos.CENTER_LEFT);
+
         boardModel.addListener(this);
-        //this.setBorder(new Border(new BorderStroke(Color.BLUEVIOLET, BorderStrokeStyle.SOLID, null , null)));
 
-        StackPane boardWithBackground = createBoardStack(boardModel, controller, isWhitePerspective);
-        this.getChildren().add(boardWithBackground);
-        
-
-        pieceSelector = new PieceSelectorPane(selected -> controller.setSelectedPieceForSetup(selected));
-//        controlPane = new VBox(10);
-//        controlPane.setAlignment(Pos.TOP_CENTER);
-
-//        setupBtn.setOnAction(event -> toggleSetupMode());
-//        Button exportFENBtn = new Button("Export FEN");
-//        TextField fenField = new TextField();
-//        fenField.setEditable(false);
-//        fenField.setPrefWidth(450);
-//        startPosBtn.setOnAction(event -> {
-//
-//            for (SquareModel sq: boardModel.getSquares()){
-//                sq.setPiece(null);
-//            }
-//            boardModel.initializeFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-//            //TODO turn not working
-//            //controller.setWhiteTurn(true);
-//            onBoardUpdated();
-//
-//        });
-
-//        exportFENBtn.setOnAction(event -> {
-//            String fen = boardModel.exportToFEN();
-//            fenField.setText(fen);
-//            System.out.println("FEN: " + fen);
-//        });
-//        circle.setRadius(20);
-//        circle.setFill(Color.WHITE);
-//        circle.setStroke(Color.BLACK);
-//
-//        controlPane.getChildren().add(setupBtn);
-//        controlPane.getChildren().addAll(exportFENBtn, fenField, startPosBtn, circle);
-//        this.getChildren().add(controlPane);
+        StackPane boardWithFrame = createBoardWithFrame();
+        getChildren().add(boardWithFrame);
     }
 
-//    private void toggleSetupMode() {
-//        controller.toggleSetupMode(); // toggelt boolean
-//
-//        if (controller.isSetupMode()) {
-//            System.out.println("Entering setup mode");
-//            if (!controlPane.getChildren().contains(pieceSelector)) {
-//                controlPane.getChildren().add(pieceSelector);
-//            }
-//            setupBtn.setText("Leave Setup");
-//        } else {
-//            System.out.println("Leaving setup mode");
-//            controlPane.getChildren().remove(pieceSelector);
-//            setupBtn.setText("Position Setup");
-//        }
-//    }
-
-    private StackPane createBoardStack(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
-        String imagePath = isWhitePerspective ? "/images/chessboard_white.png" : "/images/chessboard_black.png";
-        Image backgroundImage = new Image(getClass().getResource(imagePath).toExternalForm());
-
-        BackgroundSize bgSize = new BackgroundSize(backgroundsize, backgroundsize, false, false, false, false);
-        BackgroundImage bgImage = new BackgroundImage(
-                backgroundImage,
-                BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT,
-                BackgroundPosition.CENTER,
-                bgSize
-        );
-
-        StackPane boardWithBackground = new StackPane();
-        boardWithBackground.setPrefSize(backgroundsize, backgroundsize);
-        boardWithBackground.setBackground(new Background(bgImage));
-
+    private StackPane createBoardWithFrame() {
+        // === 8×8 grid met jouw SquareView ===
         GridPane boardGrid = new GridPane();
         boardGrid.setAlignment(Pos.CENTER);
+        boardGrid.setHgap(0);
+        boardGrid.setVgap(0);
+        boardGrid.setPadding(Insets.EMPTY);
+        boardGrid.setPrefSize(boardSize, boardSize);
+        boardGrid.setMinSize(boardSize, boardSize);
+        boardGrid.setMaxSize(boardSize, boardSize);
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -116,16 +55,40 @@ public class BoardView extends HBox implements BoardChangeListener {
                 int displayCol = isWhitePerspective ? col : 7 - col;
                 Position pos = new Position(row, col);
                 SquareModel squareModel = boardModel.getSquare(pos);
-                SquareView squareView = new SquareView(boardModel, squareModel, controller, boardSize / 8);
+                SquareView squareView = new SquareView(boardModel, squareModel, controller, (int) Math.round(squareSize));
                 squareViews[row][col] = squareView;
                 boardGrid.add(squareView, displayCol, displayRow);
             }
         }
 
-        boardWithBackground.getChildren().add(boardGrid);
-        return boardWithBackground;
-    }
+        // === Houten frame rondom het bord ===
+        // Warme houtkleur met rode ondertoon (matcht jouw thema)
+        Color frameColor = Color.web("#5A1F0E");
 
+        StackPane frame = new StackPane(boardGrid);
+        frame.setBackground(new Background(new BackgroundFill(frameColor, CornerRadii.EMPTY, Insets.EMPTY)));
+        frame.setPadding(new Insets(frameThickness));
+
+        // Een subtiele schaduw voor diepte
+        DropShadow shadow = new DropShadow();
+        shadow.setRadius(12);
+        shadow.setOffsetX(2);
+        shadow.setOffsetY(2);
+        shadow.setColor(Color.color(0, 0, 0, 0.40));
+        frame.setEffect(shadow);
+
+        // Totale afmetingen inclusief frame
+        double total = boardSize + frameThickness * 2;
+        frame.setPrefSize(total, total);
+        frame.setMinSize(total, total);
+        frame.setMaxSize(total, total);
+
+        // Buitenste container (handig als je later nog overlays wilt)
+        StackPane boardWithFrame = new StackPane(frame);
+        boardWithFrame.setAlignment(Pos.CENTER);
+        boardWithFrame.setPickOnBounds(false);
+        return boardWithFrame;
+    }
 
     @Override
     public void onBoardUpdated() {
@@ -134,13 +97,5 @@ public class BoardView extends HBox implements BoardChangeListener {
                 squareViews[row][col].update();
             }
         }
-//        System.out.println("Turn: " + controller.isWhiteTurn());
-//        Color color = controller.isWhiteTurn() ? Color.BLACK : Color.WHITE;
-//
-//        System.out.println(color);
-//        circle.setFill(color);
-//        if(color==Color.WHITE){
-//            circle.setStroke(Color.BLACK);
-//        }
     }
 }

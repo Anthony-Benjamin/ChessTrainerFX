@@ -1,4 +1,4 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.view;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
@@ -8,7 +8,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.effect.BoxBlur;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;

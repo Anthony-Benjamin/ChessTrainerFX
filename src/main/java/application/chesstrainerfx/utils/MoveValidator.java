@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package application.chesstrainerfx;
+package application.chesstrainerfx.utils;
 
+
+import application.chesstrainerfx.model.BoardModel;
 
 /**
  *
@@ -15,7 +17,7 @@ package application.chesstrainerfx;
 public class MoveValidator {
 
     public static boolean isValidMove(BoardModel board, PieceModel piece, Position from, Position to){
-        System.out.println(piece.getType());
+       // System.out.println(piece.getType());
         return switch(piece.getType()){
             case BISHOP -> isValidBishopMove(board, piece, from, to);
             case ROOK -> isValidRookMove(board, piece, from, to);

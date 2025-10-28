@@ -1,5 +1,8 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
+import application.chesstrainerfx.utils.Position;
+import application.chesstrainerfx.model.SquareModel;
+import application.chesstrainerfx.model.BoardModel;
 import application.pgnreader.io.PGNReader;
 import application.pgnreader.model.Exercise;
 import javafx.application.Application;

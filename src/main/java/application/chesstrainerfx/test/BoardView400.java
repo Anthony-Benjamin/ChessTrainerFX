@@ -1,5 +1,9 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
+import application.chesstrainerfx.utils.Position;
+import application.chesstrainerfx.model.SquareModel;
+import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.view.BoardChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;

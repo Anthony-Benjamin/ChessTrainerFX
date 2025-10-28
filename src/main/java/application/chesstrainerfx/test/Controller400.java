@@ -1,5 +1,8 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
+import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.model.SquareModel;
+import application.chesstrainerfx.utils.*;
 import javafx.scene.control.ChoiceDialog;
 
 import java.util.List;

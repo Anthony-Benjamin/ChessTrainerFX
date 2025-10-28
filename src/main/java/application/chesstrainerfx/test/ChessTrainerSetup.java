@@ -1,6 +1,8 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
-import application.chesstrainerfx.view.BoardView;
+import application.chesstrainerfx.controller.Controller;
+import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.view.setup.BoardViewSetup;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

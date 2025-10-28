@@ -1,4 +1,4 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
 import application.pgnreader.io.PGNReader;
 import application.pgnreader.model.Exercise;
@@ -66,9 +66,9 @@ public class MateChapterView extends Application {
                 }
             }
         }
-        MatingPatternsView matingPatternsView = new MatingPatternsView(titles,null);
+        MatePatternsView matePatternsView = new MatePatternsView(titles,null);
 
-        Scene scene = new Scene(matingPatternsView, 1500 , 1000);
+        Scene scene = new Scene(matePatternsView, 1500 , 1000);
         stage.setTitle("Mate patterns");
         stage.setScene(scene);
         stage.show();

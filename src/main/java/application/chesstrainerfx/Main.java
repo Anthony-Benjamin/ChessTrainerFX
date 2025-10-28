@@ -1,6 +1,8 @@
 // File: Main.java
 package application.chesstrainerfx;
 
+import application.chesstrainerfx.view.ChapterWindow;
+import application.chesstrainerfx.test.MatePatternsView;
 import application.pgnreader.io.PGNReader;
 import application.pgnreader.model.Chapter;
 import application.pgnreader.model.Exercise;
@@ -133,47 +135,25 @@ public class Main extends Application {
         return chapters;
     }
 
-    /** === View: Mating Patterns === */
-    /*private Parent buildMatingPatterns() {
-        List<Chapter> chapters = buildChapters(chapterPaths);
-        List<String> titles = chapters.stream().map(Chapter::getTitle).toList();
 
-        var view = new MatingPatternsView(titles, name -> {
-            Chapter chapter = chapters.stream()
-                    .filter(c -> c.getTitle().equals(name))
-                    .findFirst()
-                    .orElse(null);
-            if (chapter != null) openChapterWindow(chapter);
-        });
-
-        Button back = new Button("← Back");
-        back.setOnAction(e -> scene.setRoot(homeRoot));
-        back.setStyle("""
-            -fx-background-color: rgba(20,20,20,0.65);
-            -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
-            -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
-        """);
-
-        StackPane wrapper = new StackPane(view, back);
-        StackPane.setAlignment(back, Pos.TOP_LEFT);
-        StackPane.setMargin(back, new Insets(16));
-        return wrapper;
-    }*/
     private Parent buildMatingPatterns() {
         List<Chapter> chapters = buildChapters(chapterPaths);
         List<String> titles = chapters.stream().map(Chapter::getTitle).toList();
 
-        var view = new MatingPatternsView(titles, name -> {
+        var view = new MatePatternsView(titles, name -> {
             Chapter chapter = chapters.stream()
                     .filter(c -> c.getTitle().equals(name))
                     .findFirst().orElse(null);
             if (chapter != null) {
-                // Toon ChapterWindow in dezelfde scene-root
-                scene.setRoot(new ChapterWindow(chapter));
+                scene.setRoot(new ChapterWindow(
+                        chapter.getTitle(),
+                        chapter.getExercises(),
+                        v -> scene.setRoot(buildMatingPatterns()) // ⬅️ terug naar overzicht
+                ));
             }
         });
 
-        // Back-knop naar home (optioneel)
+        // Back-knop naar home (buiten de lambda!)
         Button back = new Button("← Back");
         back.setOnAction(e -> scene.setRoot(homeRoot));
         back.setStyle("""
@@ -184,54 +164,12 @@ public class Main extends Application {
 
         StackPane wrapper = new StackPane(view, back);
         StackPane.setAlignment(back, Pos.TOP_LEFT);
-        StackPane.setMargin(back, new Insets(16));
+        StackPane.setMargin(back, new Insets(10));
+
         return wrapper;
     }
 
 
-    /** Venster met lijst van oefeningen in een hoofdstuk */
-    private void openChapterWindow(Chapter chapter) {
-        List<Exercise> exercises = chapter.getExercises();
-
-        Label titleLbl = new Label(chapter.getTitle());
-        titleLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-        ListView<Exercise> listView = new ListView<>();
-        listView.getItems().addAll(exercises);
-
-        TextArea fenArea = new TextArea();
-        fenArea.setEditable(false);
-        TextArea movesArea = new TextArea();
-        movesArea.setEditable(false);
-
-        listView.getSelectionModel().selectedItemProperty().addListener((obs, o, ex) -> {
-            fenArea.setText(ex != null ? ex.getFen() : "");
-            movesArea.setText(ex != null ? ex.getMoves() : "");
-        });
-        if (!exercises.isEmpty()) listView.getSelectionModel().selectFirst();
-
-        VBox left = new VBox(8, new Label("Oefeningen"), listView);
-        left.setPadding(new Insets(10));
-        left.setPrefWidth(350);
-
-        Button openBoardBtn = new Button("Open bord");
-        openBoardBtn.setMaxWidth(Double.MAX_VALUE);
-
-        VBox right = new VBox(10, new Label("FEN:"), fenArea,
-                new Label("Zetten:"), movesArea, openBoardBtn);
-        right.setPadding(new Insets(10));
-
-        SplitPane split = new SplitPane(left, right);
-        split.setDividerPositions(0.4);
-
-        VBox root = new VBox(10, titleLbl, split);
-        root.setPadding(new Insets(12));
-
-        Stage s = new Stage();
-        s.setTitle(chapter.getTitle());
-        s.setScene(new Scene(root, 900, 560));
-        s.show();
-    }
 
     private static void showInfo(String header, String msg) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);

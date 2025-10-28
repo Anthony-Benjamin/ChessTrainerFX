@@ -1,5 +1,8 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.test;
 
+import application.chesstrainerfx.utils.PieceModel;
+import application.chesstrainerfx.model.SquareModel;
+import application.chesstrainerfx.model.BoardModel;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;

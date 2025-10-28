@@ -1,4 +1,4 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.utils;
 
 
 /**

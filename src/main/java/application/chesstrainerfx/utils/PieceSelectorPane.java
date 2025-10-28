@@ -1,4 +1,4 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.utils;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;

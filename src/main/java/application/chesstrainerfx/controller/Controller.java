@@ -1,5 +1,9 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.controller;
 
+import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.model.SquareModel;
+import application.chesstrainerfx.utils.*;
+import application.chesstrainerfx.view.SquareView;
 import javafx.scene.control.ChoiceDialog;
 
 import java.util.List;
@@ -43,7 +47,7 @@ public class Controller {
     }
 
     public void handleSquareClick(BoardModel board, SquareView view, SquareModel model) {
-        System.out.println("Clicked in Controller");
+
 
         if (setupMode) {
             handleSetupPlacement(model, view);
@@ -89,7 +93,7 @@ public class Controller {
         }
 
         stage = SelectionStage.SOURCE_SELECTED;
-        System.out.println("Source chosen: " + sourcePos + " " + piece);
+
     }
 
     // ---------------- Move Logic ---------------- //
@@ -104,10 +108,10 @@ public class Controller {
 
         Position targetPos = model.getPosition();
         view.setSelectedTarget();
-        System.out.println("Target chosen: " + targetPos);
+
 
         boolean valid = MoveValidator.isValidMove(board, selectedPiece, sourcePos, targetPos);
-        System.out.println("Move valid? " + valid);
+
 
         if (valid) {
             executeMove(board, view, targetPos);
@@ -135,7 +139,7 @@ public class Controller {
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
         handlePawnSpecials(board, sourcePos, targetPos);
         board.movePiece(sourcePos, targetPos);
-        System.out.println("Promotion Bishop");
+
         handlePromotion(board, targetView, targetPos);
 
         toggleTurn();

@@ -1,5 +1,11 @@
-package application.chesstrainerfx;
+package application.chesstrainerfx.model;
 
+
+import application.chesstrainerfx.utils.PieceColor;
+import application.chesstrainerfx.utils.PieceModel;
+import application.chesstrainerfx.utils.PieceType;
+import application.chesstrainerfx.utils.Position;
+import application.chesstrainerfx.view.BoardChangeListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,7 +115,7 @@ public class BoardModel {
 
 
     public void movePiece(Position from, Position to){
-          System.out.println(" clicked source ande target");
+
         if (from != null && to != null) {
             SquareModel source = getSquare(from);
             SquareModel  target = getSquare(to);
