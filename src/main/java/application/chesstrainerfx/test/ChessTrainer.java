@@ -31,7 +31,7 @@ public class ChessTrainer extends Application {
         StackPane container = new StackPane();
         container.getChildren().add(boardView);
         StackPane root = new StackPane(container);
-        Scene scene = new Scene(root,650,650);
+        Scene scene = new Scene(root,800,800);
 
         primaryStage.setTitle("ChesstrainerFX");
         primaryStage.setScene(scene);

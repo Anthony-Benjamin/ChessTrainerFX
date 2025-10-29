@@ -4,11 +4,14 @@ import application.chesstrainerfx.utils.PieceModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
+import javafx.geometry.Insets;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 
 public class SquareView extends StackPane {
     private final SquareModel model;
@@ -25,6 +28,7 @@ public class SquareView extends StackPane {
     private static final Color SELECTION_SOURCE = Color.color(1.0, 0.84, 0.55, 0.55); // warm licht
     private static final Color SELECTION_TARGET = Color.color(0.95, 0.55, 0.25, 0.55); // warm oranje
     private static final Color SELECTION_NONE   = Color.TRANSPARENT;
+    private Label lbl;
 
     public SquareView(BoardModel boardModel, SquareModel model, Controller controller, int size) {
         this.model = model;
@@ -46,7 +50,9 @@ public class SquareView extends StackPane {
         pieceImageView.setFitHeight(size * 0.92);
         pieceImageView.setPreserveRatio(true);
 
-        getChildren().addAll(background, highlight, pieceImageView);
+
+
+        getChildren().addAll(background, lbl,highlight, pieceImageView);
         update();
     }
 
@@ -55,6 +61,15 @@ public class SquareView extends StackPane {
         if (model != null && model.getPosition() != null) {
             int row = model.getPosition().getRow();
             int col = model.getPosition().getColumn();
+            lbl = new Label();
+            lbl.setFont(Font.font(15));
+            lbl.setPadding(new Insets(50, 60,0,0));
+            if(row == 7){
+                if( col== 0){
+                    lbl.setText("a");
+                    lbl.setStyle("-fx-text-fill:white");
+                }
+            }
             boolean light = ((row + col) % 2 == 0);
             background.setFill(light ? LIGHT_SQUARE : DARK_SQUARE);
         }
