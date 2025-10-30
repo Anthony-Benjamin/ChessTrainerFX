@@ -62,11 +62,11 @@ public class ChapterWindow extends BorderPane {
         StackPane rootStack = new StackPane();
         rootStack.setBackground(Background.EMPTY);
 
-        var bgUrl = getClass().getResource("/images/background_chapters.png");
+        var bgUrl = getClass().getResource("/images/background_chapters_blur.png");
         ImageView bg = new ImageView(new Image(bgUrl.toExternalForm()));
         bg.setPreserveRatio(false);
         bg.setSmooth(true);
-        bg.setEffect(new GaussianBlur(18));
+       
         bg.fitWidthProperty().bind(rootStack.widthProperty());
         bg.fitHeightProperty().bind(rootStack.heightProperty());
         bg.setMouseTransparent(true);
