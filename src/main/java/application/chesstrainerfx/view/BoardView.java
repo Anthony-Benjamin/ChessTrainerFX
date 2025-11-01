@@ -66,6 +66,9 @@ public class BoardView extends HBox implements BoardChangeListener {
         StackPane framed = new StackPane(boardGrid);
         framed.setBackground(new Background(new BackgroundFill(frameColor, CornerRadii.EMPTY, Insets.EMPTY)));
         framed.setPadding(new Insets(frame)); // ruimte voor labels IN de rand
+        framed.setBorder(new Border(new BorderStroke(
+                Color.color(1,1,1,0.12), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1)
+        )));
 
         // totale voorkeursmaten (bord + frame)
         double prefW = boardSize + 2*frame;
@@ -84,16 +87,22 @@ public class BoardView extends HBox implements BoardChangeListener {
         for (int i = 0; i < 8; i++) {
             int rank = isWhitePerspective ? (8 - i) : (i + 1);
             Label lbl = new Label(String.valueOf(rank));
-            lbl.setStyle("-fx-text-fill: #F5DEB3; -fx-font-size: 15px; -fx-font-weight: normal;");
+
+            double fontSize = squareSize * 0.15;
+            lbl.setStyle(String.format(
+                    "-fx-text-fill: #F5DEB3; -fx-font-size: %.1fpx; -fx-font-weight: normal;",
+                    fontSize
+            ));
+
             lbl.setPrefSize(frame, squareSize);
             lbl.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-            lbl.setAlignment(Pos.TOP_LEFT);
-            lbl.setPadding(new Insets(frame +40, 0, 0, 10));
+            lbl.setAlignment(Pos.CENTER);
+           // lbl.setPadding(new Insets(frame , 0, 0, 0));
             rankBox.getChildren().add(lbl);
         }
         StackPane.setAlignment(rankBox, Pos.TOP_LEFT);
-        StackPane.setMargin(rankBox, new Insets(0, 0, frame, 0)); // onder vrijlaten voor files
+        StackPane.setMargin(rankBox, new Insets(frame , 0, 0, 0)); // onder vrijlaten voor files
 
         // --- files ONDER (in de rand) ---
         HBox fileBox = new HBox(0);
@@ -105,16 +114,17 @@ public class BoardView extends HBox implements BoardChangeListener {
         for (int i = 0; i < 8; i++) {
             char file = (char) ((isWhitePerspective ? 'a' + i : 'h' - i));
             Label lbl = new Label(String.valueOf(file));
-            lbl.setStyle("-fx-text-fill: #F5DEB3; -fx-font-size: 15px; -fx-font-weight: normal;");
+            double fontSize = squareSize * 0.15;
+            lbl.setStyle(String.format("-fx-text-fill: #F5DEB3; -fx-font-size: %.1fpx; -fx-font-weight: normal;",fontSize));
             lbl.setPrefSize(squareSize, frame);
             lbl.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setAlignment(Pos.BOTTOM_CENTER);
-            lbl.setPadding(new Insets(0, 0, 6, 0));
+           // lbl.setPadding(new Insets(0, 0, 6, 0));
             fileBox.getChildren().add(lbl);
         }
         StackPane.setAlignment(fileBox, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(fileBox, new Insets(frame, frame, 0, frame)); // houd zij-frames zichtbaar
+        StackPane.setMargin(fileBox, new Insets(0, 0, 0, frame)); // houd zij-frames zichtbaar
 
         // --- bouw één stapel: frame + labels ---
         StackPane boardStack = new StackPane(framed, rankBox, fileBox);
