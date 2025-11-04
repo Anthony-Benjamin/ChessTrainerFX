@@ -65,13 +65,15 @@ public class Main extends Application {
 
     private Scene scene;
     private Parent homeRoot;
+    private Parent matingRoot;
 
     @Override
     public void start(Stage stage) {
         homeRoot = buildHome();
         scene = new Scene(homeRoot, 1500, 1000);
         scene.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
-
+        // cache:
+        matingRoot = buildMatingPatterns();  // <— bouw en bewaar
         stage.setTitle("ChessTrainer — Home");
         stage.setResizable(false);
         stage.setScene(scene);
@@ -118,7 +120,7 @@ public class Main extends Application {
     /** Router: bepaalt welk scherm geladen wordt */
     private void startTraining(String mode) {
         switch (mode) {
-            case "MATE_PATTERNS" -> scene.setRoot(buildMatingPatterns());
+            case "MATE_PATTERNS" -> scene.setRoot(matingRoot); // <— reuse!
             default -> showInfo("Nog niet beschikbaar", "Deze trainingscategorie is nog niet actief.");
         }
     }
@@ -148,7 +150,7 @@ public class Main extends Application {
                 scene.setRoot(new ChapterWindow(
                         chapter.getTitle(),
                         chapter.getExercises(),
-                        v -> scene.setRoot(buildMatingPatterns()) // ⬅️ terug naar overzicht
+                        v -> scene.setRoot(matingRoot) // <— terug naar de gecachte root
                 ));
             }
         });
