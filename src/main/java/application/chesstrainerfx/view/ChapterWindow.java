@@ -7,6 +7,7 @@ import application.chesstrainerfx.utils.Position;
 import application.pgnreader.model.Exercise;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.CacheHint;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.GaussianBlur;
@@ -61,12 +62,15 @@ public class ChapterWindow extends BorderPane {
         // === Achtergrondfoto (onderlaag) ===
         StackPane rootStack = new StackPane();
         rootStack.setBackground(Background.EMPTY);
-
-        var bgUrl = getClass().getResource("/images/background_chapters.png");
+        rootStack.setCache(true);
+        rootStack.setCacheHint(CacheHint.SPEED);
+        var bgUrl = getClass().getResource("/images/background_chapters_blur.png");
         ImageView bg = new ImageView(new Image(bgUrl.toExternalForm()));
         bg.setPreserveRatio(false);
         bg.setSmooth(true);
-        bg.setEffect(new GaussianBlur(18));
+        bg.setCache(true);
+        bg.setCacheHint(CacheHint.SPEED);
+        //bg.setEffect(new GaussianBlur(18));
         bg.fitWidthProperty().bind(rootStack.widthProperty());
         bg.fitHeightProperty().bind(rootStack.heightProperty());
         bg.setMouseTransparent(true);
@@ -82,7 +86,8 @@ public class ChapterWindow extends BorderPane {
         // stapel list + board in center
         centerStack.getChildren().setAll(tilesScroll, boardPane);
         content.setCenter(centerStack);
-
+        centerStack.setCache(true);
+        centerStack.setCacheHint(CacheHint.SPEED);
         rootStack.getChildren().addAll(bg, content);
         setCenter(rootStack);
     }
