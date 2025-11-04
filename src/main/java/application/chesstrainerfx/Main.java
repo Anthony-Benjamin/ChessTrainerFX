@@ -74,6 +74,29 @@ public class Main extends Application {
         scene.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
         // cache:
         matingRoot = buildMatingPatterns();  // <— bouw en bewaar
+        //TODO testing preformance
+        /*Extra optimalisaties (optioneel)
+        Chapters voorberekend: parse alle PGN’s 1x bij start en bewaar als List<Chapter> chaptersCache. Je gebruikt die lijst in buildMatingPatterns() i.p.v. elke keer PGNReader.readChapter(...) te doen.
+        CSS: zet veel inline styles om naar je splash.css. Minder inline style = minder CSS re-resolve.
+        JVM flags (Windows/Intel iGPU’s): probeer hardware versnelling te forceren:
+        -Dprism.order=es2 (OpenGL/ES2)
+        of op oudere systemen: -Dprism.order=sw (software) als GPU drivers slecht zijn
+
+        test welke sneller is op die PC
+
+        VisualVM
+
+        Gratis, van Oracle, werkt perfect met alle JDK’s.
+                Meet:
+                CPU-verbruik per thread
+                Geheugengebruik (heap/non-heap)
+                Garbage collection events
+                Loaded classes & live object count
+                Draait extern, dus onafhankelijk van IntelliJ-editie.
+                ➜ https://visualvm.github.io
+
+        */
+
         stage.setTitle("ChessTrainer — Home");
         stage.setResizable(false);
         stage.setScene(scene);
