@@ -53,6 +53,11 @@ public class BoardModel {
                 }
             }
         }
+        if (FENString.length > 1) {
+            boolean whiteToMove = FENString[1].equals("w");
+            // meld dit via de listeners
+            notifyListenersTurnChanged(whiteToMove);
+        }
     }
 
     //geeft een PieceModel terug dat is opgebouwd uit PieceType en PieceColor
@@ -173,6 +178,11 @@ public class BoardModel {
 
         fen.append(" w - - 0 1"); // basis FEN metadata
         return fen.toString();
+    }
+    public void notifyListenersTurnChanged(boolean whiteToMove) {
+        for (BoardChangeListener l : listeners) {
+            l.onTurnChanged(whiteToMove);
+        }
     }
 
 

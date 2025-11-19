@@ -62,10 +62,20 @@ public class ChapterWindow extends BorderPane {
         StackPane rootStack = new StackPane();
         rootStack.setBackground(Background.EMPTY);
 
+
         var bgUrl = getClass().getResource("/images/background_chapters_blur.png");
         ImageView bg = new ImageView(new Image(bgUrl.toExternalForm()));
         bg.setPreserveRatio(false);
         bg.setSmooth(true);
+
+        //older pc slow
+        rootStack.setCache(true);
+        rootStack.setCacheHint(javafx.scene.CacheHint.SPEED);
+        bg.setCache(true);
+        bg.setCacheHint(javafx.scene.CacheHint.SPEED);
+        centerStack.setCache(true);
+        centerStack.setCacheHint(javafx.scene.CacheHint.SPEED);
+
        
         bg.fitWidthProperty().bind(rootStack.widthProperty());
         bg.fitHeightProperty().bind(rootStack.heightProperty());
@@ -197,13 +207,13 @@ public class ChapterWindow extends BorderPane {
     private void showExercise(Exercise ex) {
         // Bouw bord
         String fen = ex.getFen() == null ? "" : ex.getFen().trim();
-        boolean whiteToMove = parseSideToMoveFromFen(fen);
+
 
         BoardModel boardModel = new BoardModel();
         Controller controller = new Controller();
-        controller.setWhiteTurn(whiteToMove);
+        controller.syncTurnFromFEN(fen);
 
-        boardView = new BoardView(boardModel, controller, true, 720);
+        boardView = new BoardView(boardModel, controller, true, 600);
 
         // leeg → FEN → refresh
         for (SquareModel sq : boardModel.getSquares()) sq.setPiece(null);

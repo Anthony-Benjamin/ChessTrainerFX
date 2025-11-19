@@ -78,6 +78,7 @@ public class Main extends Application {
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
+        //TODO check chaptercache
     }
 
     /** === Splash / Home scherm === */
