@@ -53,6 +53,7 @@ public class ChapterWindow extends BorderPane {
 
         setBackground(Background.EMPTY);
         setStyle("-fx-background-color: transparent;");
+        this.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
         buildLayout();
         switchMode(Mode.LIST);
     }
@@ -123,6 +124,7 @@ public class ChapterWindow extends BorderPane {
         titleLabel = new Label(chapterTitle);
         titleLabel.setStyle("-fx-text-fill: beige; -fx-font-size: 20px; -fx-font-weight: bold;");
 
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -135,6 +137,8 @@ public class ChapterWindow extends BorderPane {
             -fx-text-fill: #f5deb3;
             -fx-font-size: 15px;
         """);
+        theoryLabel.setMaxWidth(600);
+        theoryLabel.setPrefWidth(600);
 
         theoryScroll = new ScrollPane(theoryLabel);
         theoryScroll.setFitToWidth(true);
@@ -143,6 +147,9 @@ public class ChapterWindow extends BorderPane {
         theoryScroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         theoryScroll.setMaxHeight(140);
         theoryScroll.setPrefHeight(120);
+        theoryScroll.setPrefViewportWidth(600);
+        theoryScroll.setMaxWidth(600);
+        theoryScroll.setPrefWidth(600);
 
         Region theoryBg = new Region();
         theoryBg.setBackground(new Background(new BackgroundFill(
@@ -153,11 +160,16 @@ public class ChapterWindow extends BorderPane {
                 CornerRadii.EMPTY, Insets.EMPTY
         )));
 
+        VBox theoryBox = new VBox(8, headerRow, theoryScroll);
+        theoryBox.setMaxWidth(600);  // belangrijke toevoeging
+
+
         StackPane topStack = new StackPane(
                 theoryBg,
-                new VBox(8, headerRow, theoryScroll)
+               theoryBox
         );
         topStack.setPadding(new Insets(16, 24, 12, 24));
+        topStack.setAlignment(Pos.CENTER_LEFT);
 
         parent.setTop(topStack);
     }
@@ -198,6 +210,7 @@ public class ChapterWindow extends BorderPane {
     private void buildBoardCenter() {
         boardPane = new VBox(12);
         boardPane.setAlignment(Pos.TOP_CENTER);
+//        boardPane.setPadding(new Insets(10, 24, 24, 24));
         boardPane.setPadding(new Insets(10, 24, 24, 24));
         boardPane.setStyle("-fx-background-color: transparent;");
         boardPane.setVisible(false);  // start onzichtbaar
@@ -231,8 +244,17 @@ public class ChapterWindow extends BorderPane {
             -fx-border-color: rgba(255,255,255,0.2);
             -fx-border-radius: 6;
         """);
+        // --- CSS Toepassen ---
+
+        // Laad het CSS-bestand (zorg ervoor dat het in dezelfde map zit als je gecompileerde klassen)
+        String cssPath = getClass().getResource("/listview-style.css").toExternalForm();
+
+        // Pas het CSS-bestand toe op de ListView
+        movesList.getStylesheets().add(cssPath);
         movesList.setPrefWidth(300);
         fillMoves(ex.getMoves());
+        // Eerste item in list krijgt de focus;
+        movesList.getSelectionModel().select(0);
 
         HBox row = new HBox(30, boardView, movesList);
         row.setAlignment(Pos.CENTER_LEFT);

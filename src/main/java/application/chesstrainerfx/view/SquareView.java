@@ -26,7 +26,8 @@ public class SquareView extends StackPane {
     private static final Color BORDER_COLOR = Color.web("#3B1E0C");  // subtiele rand
 
     // Selection overlays (semi-transparant, schijnt mooi over de bordkleur heen)
-    private static final Color SELECTION_SOURCE = Color.color(1.0, 0.84, 0.55, 0.55); // warm licht
+//    private static final Color SELECTION_SOURCE = Color.color(1.0, 0.84, 0.55, 0.55); // warm licht
+    private static final Color SELECTION_SOURCE = Color.web("#8a5216");
     private static final Color SELECTION_TARGET = Color.color(0.95, 0.55, 0.25, 0.55); // warm oranje
     private static final Color SELECTION_NONE   = Color.TRANSPARENT;
 

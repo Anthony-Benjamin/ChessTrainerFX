@@ -1,0 +1,17 @@
+/* listview-stijl.css */
+
+
+.list-cell:filled:selected {
+    /* De achtergrondkleur van de geselecteerde cel */
+    -fx-background-color: GREEN;
+
+    /* De tekstkleur van de geselecteerde cel */
+    -fx-text-fill: white;
+}
+
+/* De kleur van de cel wanneer de ListView de focus verliest,
+   maar het item nog steeds geselecteerd is (optioneel) */
+.list-cell:filled:selected:focused {
+    -fx-background-color: brown;
+    -fx-text-fill: white;
+}
