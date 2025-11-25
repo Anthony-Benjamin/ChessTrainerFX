@@ -123,22 +123,32 @@ public class ChapterWindow extends BorderPane {
 
         titleLabel = new Label(chapterTitle);
         titleLabel.setStyle("-fx-text-fill: beige; -fx-font-size: 20px; -fx-font-weight: bold;");
-
-
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
         headerRow.getChildren().addAll(backBtn, titleLabel, spacer);
 
+
         String theoryText = exercises.isEmpty() ? "" : exercises.getFirst().getComments();
-        theoryLabel = new Label(theoryText == null ? "" : theoryText);
+
+        if (theoryText == null) theoryText = "";
+
+        // Normaliseer line endings
+        theoryText = theoryText.replace("\r\n", "\n");
+
+        // Forceer wrapping binnen regels door lange stukken te splitsen op spaties
+        theoryText = theoryText.replaceAll("(?<=\\S)(?=\\p{Lu})", " "); // voeg spaties toe voor hoofdletters
+        theoryText = theoryText.replaceAll("\\s+", " "); // dubbele spaties weg
+
+        theoryLabel = new Label(theoryText);
         theoryLabel.setWrapText(true);
         theoryLabel.setStyle("""
             -fx-text-fill: #f5deb3;
             -fx-font-size: 15px;
         """);
-        theoryLabel.setMaxWidth(600);
-        theoryLabel.setPrefWidth(600);
+        int widthLabel =900;
+
+        theoryLabel.setMaxWidth(widthLabel);
+        theoryLabel.setPrefWidth(widthLabel);
 
         theoryScroll = new ScrollPane(theoryLabel);
         theoryScroll.setFitToWidth(true);
@@ -147,9 +157,9 @@ public class ChapterWindow extends BorderPane {
         theoryScroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         theoryScroll.setMaxHeight(140);
         theoryScroll.setPrefHeight(120);
-        theoryScroll.setPrefViewportWidth(600);
-        theoryScroll.setMaxWidth(600);
-        theoryScroll.setPrefWidth(600);
+        theoryScroll.setPrefViewportWidth(widthLabel);
+        theoryScroll.setMaxWidth(widthLabel);
+        theoryScroll.setPrefWidth(widthLabel);
 
         Region theoryBg = new Region();
         theoryBg.setBackground(new Background(new BackgroundFill(
@@ -161,7 +171,7 @@ public class ChapterWindow extends BorderPane {
         )));
 
         VBox theoryBox = new VBox(8, headerRow, theoryScroll);
-        theoryBox.setMaxWidth(600);  // belangrijke toevoeging
+        theoryBox.setMaxWidth(widthLabel);  // belangrijke toevoeging
 
 
         StackPane topStack = new StackPane(
@@ -233,6 +243,10 @@ public class ChapterWindow extends BorderPane {
         boardModel.initializeFromFEN(fen);
         boardView.onBoardUpdated();
 
+        VBox moveBox = new VBox();
+        Label emptyLabel = new Label();
+        emptyLabel.setPrefHeight(30);
+
         // Moves rechts
         movesList = new ListView<>();
         movesList.setStyle("""
@@ -251,12 +265,35 @@ public class ChapterWindow extends BorderPane {
 
         // Pas het CSS-bestand toe op de ListView
         movesList.getStylesheets().add(cssPath);
-        movesList.setPrefWidth(300);
+        movesList.setPrefWidth(200);
+
+        movesList.setCellFactory(lv -> new ListCell<>() {
+            private final Label lbl = new Label();
+
+            {
+                lbl.setWrapText(true);
+                lbl.setStyle("-fx-text-fill: white; -fx-font-family: Consolas; -fx-font-size: 14px;");
+                lbl.setMaxWidth(260);   // belangrijk: beperken tot ListView-breedte
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    lbl.setText(item);
+                    setGraphic(lbl);
+                }
+            }
+        });
+
         fillMoves(ex.getMoves());
         // Eerste item in list krijgt de focus;
         movesList.getSelectionModel().select(0);
+        moveBox.getChildren().addAll(emptyLabel,movesList);
 
-        HBox row = new HBox(30, boardView, movesList);
+        HBox row = new HBox(30, boardView, moveBox);
         row.setAlignment(Pos.CENTER_LEFT);
 
         boardPane.getChildren().setAll(row);
