@@ -236,7 +236,8 @@ public class ChapterWindow extends BorderPane {
         Controller controller = new Controller();
         controller.syncTurnFromFEN(fen);
 
-        boardView = new BoardView(boardModel, controller, true, 600);
+
+        boardView = new BoardView(boardModel, controller, controller.isWhiteTurn(), 600);
 
         // leeg → FEN → refresh
         for (SquareModel sq : boardModel.getSquares()) sq.setPiece(null);
