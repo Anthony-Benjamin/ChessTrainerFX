@@ -39,7 +39,6 @@ public class PGNReader {
         String src = content.replace("\r\n", "\n").replace('\r', '\n').trim();
 
         // (?s) = DOTALL: . matcht ook nieuwe regels
-        // Split op iedere [Event ...], tot net vóór de volgende [Event of tekst-einde
         Pattern blockPattern = Pattern.compile("(?s)(?=\\[Event\\b)(.*?)(?=(\\n\\[Event\\b|\\z))");
         Matcher matcher = blockPattern.matcher(src);
 
@@ -69,6 +68,7 @@ public class PGNReader {
     /**
      * Haal het movetext-gedeelte op en maak het schoon:
      * - verwijder { ... } comments (multi-line)
+     * - verwijder {[%eval ...]} of {[%evp ...]} engine-evaluaties
      * - verwijder ( ... ) varianten
      * - verwijder NAGs $1, $2, ...
      * - verwijder resultaten (1-0/0-1/1/2-1/2/*)
@@ -84,24 +84,25 @@ public class PGNReader {
         // Normaliseer line endings en collapse
         movetext = movetext.replace("\r", " ").replace("\n", " ");
 
-        // 1) comments { ... } (DOTALL)
+        // 1) verwijder engine-evaluatieblokken {[%...]}
+        movetext = movetext.replaceAll("(?s)\\{\\s*\\[%[^}]*\\]\\s*\\}", " ");
+
+        // 2) comments { ... } (DOTALL)
         movetext = movetext.replaceAll("(?s)\\{[^}]*\\}", " ");
 
-        // 2) varianten ( ... ) (DOTALL)
+        // 3) varianten ( ... ) (DOTALL)
         movetext = movetext.replaceAll("(?s)\\([^)]*\\)", " ");
 
-        // 3) NAGs $n
+        // 4) NAGs $n
         movetext = movetext.replaceAll("\\$\\d+", " ");
 
-        // 4) resultaten en eventuele achterblijvende accolades
+        // 5) resultaten en eventuele achterblijvende accolades
         movetext = movetext
                 .replaceAll("(?i)\\b(1-0|0-1|1/2-1/2|\\*)\\b", " ")
                 .replace("{", " ").replace("}", " ");
 
-        // 5) whitespace normaliseren
+        // 6) whitespace normaliseren
         movetext = movetext.replaceAll("\\s+", " ").trim();
-
-
 
         return movetext;
     }
@@ -109,27 +110,32 @@ public class PGNReader {
     /**
      * Extraheer alle comments uit het volledige block (niet uit het al-bewerkte movetext),
      * zodat de oorspronkelijke tekst behouden blijft.
+     * - sla engine evaluatieblokken over ({[%eval ...]} / {[%evp ...]})
+     * - sla pure diagram markers over ({[#]})
      */
     private static List<String> extractComments(String block) {
         List<String> comments = new ArrayList<>();
         if (block == null || block.isBlank()) return comments;
 
-        // Pak alle { ... } blokken (DOTALL)
         Matcher m = Pattern.compile("(?s)\\{([^}]*)\\}").matcher(block);
 
-        // Herken "diagram markers" zoals {[#]} of { # } of { [ # ] }
         Pattern diagramOnly = Pattern.compile("^\\s*(\\[#\\]|#)\\s*$");
+        Pattern engineEval  = Pattern.compile("^\\s*\\[%[^]]*\\]\\s*$"); // {[%eval ...]} of {[%evp ...]}
 
         while (m.find()) {
             String c = m.group(1).trim();
 
-            // 1) als het exact een diagram-marker is, overslaan
+            // 1) sla engine-evaluatie comments over
+            if (engineEval.matcher(c).matches()) {
+                continue;
+            }
+
+            // 2) sla pure diagram-markers over
             if (diagramOnly.matcher(c).matches()) {
                 continue;
             }
 
-            // 2) als de marker IN de comment staat, verwijder alleen die marker
-            // (bijv. "{Here we reach a key position [#] before sacrificing}")
+            // 3) verwijder inline [#] markers
             c = c.replaceAll("\\[\\s*#\\s*\\]", " ").trim();
 
             if (!c.isEmpty()) {

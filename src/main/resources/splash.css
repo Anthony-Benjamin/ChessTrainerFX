@@ -21,7 +21,7 @@
     -fx-border-radius: 12;
     -fx-border-color: rgba(255,255,255,0.35);
     -fx-border-width: 1.5;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.65), 10, 0.25, 0, 2);
+  /*  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.65), 10, 0.25, 0, 2);*/
 }
 
 .tile:hover {
@@ -32,4 +32,44 @@
 
 .tile:armed {
     -fx-background-color: rgba(60,60,60,0.75);
+}
+/* Transparante track */
+.scroll-bar:vertical .track,
+.scroll-bar:vertical .track-background {
+    -fx-background-color: #381a02;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    }
+
+/* Scrollbar thumb (het beweegbare gedeelte) */
+.scroll-bar:vertical .thumb {
+     -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+}
+
+.scroll-bar:horizontal .thumb {
+     -fx-background-color: rgba(20,20,20,0.65);
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+}
+
+/* Optioneel: hover-effect voor thumb */
+.scroll-bar:vertical .thumb:hover,
+.scroll-bar:horizontal .thumb:hover {
+     -fx-background-color: rgba(20,20,20,0.65);
+}
+
+/* Achtergrond van de knoppen (boven/onder) */
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color: rgba(20,20,20,0.65);    /* kleur van het vierkantje */
+       -fx-background-insets: 0;
+       -fx-background-radius: 0;
+       -fx-padding: 5;
+}
+/* De daadwerkelijke pijltjes */
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:vertical .decrement-arrow {
+   -fx-background-color: rgba(20,20,20,0.65);    /* kleur van het pijltje */
 }

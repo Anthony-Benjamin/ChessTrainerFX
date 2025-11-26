@@ -30,7 +30,7 @@ public final class MatePatternsView extends BorderPane {
         bg.setPreserveRatio(true);
         bg.fitWidthProperty().bind(bgLayer.widthProperty());
         bg.fitHeightProperty().bind(bgLayer.heightProperty());
-        bg.setEffect(new GaussianBlur(10));
+      // bg.setEffect(new GaussianBlur(10));
         bgLayer.getChildren().add(bg);
 
         // Grid

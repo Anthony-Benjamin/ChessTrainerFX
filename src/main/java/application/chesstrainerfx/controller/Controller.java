@@ -3,6 +3,7 @@ package application.chesstrainerfx.controller;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.utils.*;
+import application.chesstrainerfx.view.BoardChangeListener;
 import application.chesstrainerfx.view.SquareView;
 import javafx.scene.control.ChoiceDialog;
 
@@ -25,7 +26,7 @@ public class Controller {
         this.whiteTurn = whiteTurn;
     }
 
-    private boolean whiteTurn = true;
+    private boolean whiteTurn;
     private SquareView lastMove;
 
     // ---------------- Public API ---------------- //
@@ -115,6 +116,8 @@ public class Controller {
 
         if (valid) {
             executeMove(board, view, targetPos);
+
+
         } else {
             resetInvalidSelection(view);
         }
@@ -143,6 +146,7 @@ public class Controller {
         handlePromotion(board, targetView, targetPos);
 
         toggleTurn();
+        board.notifyListenersTurnChanged(whiteTurn);
         cleanupSelection();
 
         lastMove = targetView;
@@ -219,4 +223,19 @@ public class Controller {
     private void toggleTurn() {
         whiteTurn = !whiteTurn;
     }
+
+    private void notifyTurnChanged() {
+        if( board != null){
+            board.notifyListenersTurnChanged(whiteTurn);
+        }
+    }
+    public void syncTurnFromFEN(String fen) {
+        try {
+            String[] parts = fen.split("\\s+");
+            if (parts.length >= 2) {
+                whiteTurn = parts[1].equals("w");
+            }
+        } catch (Exception ignored) {}
+    }
+
 }
