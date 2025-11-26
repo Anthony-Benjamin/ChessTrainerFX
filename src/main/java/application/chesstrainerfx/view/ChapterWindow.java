@@ -5,6 +5,7 @@ import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.utils.Position;
 import application.pgnreader.model.Exercise;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -35,6 +36,8 @@ public class ChapterWindow extends BorderPane {
     private Label titleLabel;
     private ScrollPane theoryScroll;
     private Label theoryLabel;
+
+
 
     private final StackPane centerStack = new StackPane(); // stapelt LIST en BOARD
     private TilePane tilesGrid;    // LIST
@@ -244,9 +247,26 @@ public class ChapterWindow extends BorderPane {
         boardModel.initializeFromFEN(fen);
         boardView.onBoardUpdated();
 
-        VBox moveBox = new VBox();
-        Label emptyLabel = new Label();
-        emptyLabel.setPrefHeight(30);
+        VBox moveBox = new VBox(22);
+
+        //Label emptyLabel = new Label();
+    //        Button showHideMovesBtn = new Button("Hide moves!");
+    //        showHideMovesBtn.setPrefHeight(30);
+    //        showHideMovesBtn.setStyle("-fx-background-color: #d7b77e");
+    //        showHideMovesBtn.setOnAction(e -> {
+    //            if(movesList.isVisible()){
+    //                showHideMovesBtn.setText("Show moves!");
+    //                movesList.setVisible(false);
+    //            }else{
+    //                showHideMovesBtn.setText("Hide moves!");
+    //                movesList.setVisible(true);
+    //            }
+    //        });
+        //emptyLabel.setPrefHeight(30);
+
+
+
+
 
         // Moves rechts
         movesList = new ListView<>();
@@ -292,8 +312,26 @@ public class ChapterWindow extends BorderPane {
         fillMoves(ex.getMoves());
         // Eerste item in list krijgt de focus;
         movesList.getSelectionModel().select(0);
-        moveBox.getChildren().addAll(emptyLabel,movesList);
+        //movesList.setVisible(false);
+        //moveBox.getChildren().addAll(emptyLabel,movesList);
 
+        Button showHideMovesBtn = new Button();
+        showHideMovesBtn.setPrefHeight(30);
+        showHideMovesBtn.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
+
+// Bind the text to visibility
+        showHideMovesBtn.textProperty().bind(
+                Bindings.when(movesList.visibleProperty())
+                        .then("Hide moves!")
+                        .otherwise("Show moves!")
+        );
+
+// Toggle on click
+        showHideMovesBtn.setOnAction(e ->
+                movesList.setVisible(!movesList.isVisible())
+        );
+        moveBox.setPadding(new Insets(32, 0, 0, 0));
+        moveBox.getChildren().addAll(showHideMovesBtn,movesList);
         HBox row = new HBox(30, boardView, moveBox);
         row.setAlignment(Pos.CENTER_LEFT);
 
