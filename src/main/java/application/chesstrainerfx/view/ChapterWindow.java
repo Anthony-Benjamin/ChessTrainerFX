@@ -312,10 +312,10 @@ public class ChapterWindow extends BorderPane {
         fillMoves(ex.getMoves());
         // Eerste item in list krijgt de focus;
         movesList.getSelectionModel().select(0);
-        //movesList.setVisible(false);
+        movesList.setVisible(false);
         //moveBox.getChildren().addAll(emptyLabel,movesList);
 
-        Button showHideMovesBtn = new Button();
+        Button showHideMovesBtn = new Button("Show moves!");
         showHideMovesBtn.setPrefHeight(30);
         showHideMovesBtn.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
 
