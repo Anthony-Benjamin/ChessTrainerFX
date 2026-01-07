@@ -6,6 +6,8 @@ import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.utils.Position;
 import application.pgnreader.model.Exercise;
 import javafx.beans.binding.Bindings;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,6 +22,7 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -310,10 +313,18 @@ public class ChapterWindow extends BorderPane {
         });
 
         fillMoves(ex.getMoves());
+        System.out.println("Moves: " + ex.getMoves());
         // Eerste item in list krijgt de focus;
         movesList.getSelectionModel().select(0);
         movesList.setVisible(false);
         //moveBox.getChildren().addAll(emptyLabel,movesList);
+        // Modified code by E. Benjamin
+        movesList.setOnMouseClicked(e -> {
+            String selected = movesList.getSelectionModel().getSelectedItem();
+            if(selected != null){
+                System.out.println("Move(s): " + selected);
+            }
+        });
 
         Button showHideMovesBtn = new Button("Show moves!");
         showHideMovesBtn.setPrefHeight(30);
@@ -325,13 +336,54 @@ public class ChapterWindow extends BorderPane {
                         .then("Hide moves!")
                         .otherwise("Show moves!")
         );
+        Button btnHint = new Button("Hint");
+        btnHint.setVisible(true);
+
+        Label lblHint = new Label();
+
+        btnHint.setOnAction(new EventHandler<ActionEvent>() {
+            int moveCounter = 0;
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                String move = movesList.getItems().get(moveCounter);
+                String[] testMove = move.split(" ");
+                System.out.println("Move: " + testMove[1]);
+                System.out.println("Aantal zetten: " + movesList.getItems().size());
+                lblHint.setText(testMove[1]);
+                moveCounter++;
+            }
+        });
+
+
+
+
+
 
 // Toggle on click
-        showHideMovesBtn.setOnAction(e ->
-                movesList.setVisible(!movesList.isVisible())
-        );
+        showHideMovesBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                movesList.setVisible(!movesList.isVisible());
+//                if(showHideMovesBtn.textProperty().toString().equals("Hide moves!")){
+//                    btnHint.setVisible(true);
+//                }
+                System.out.println("texxtproperty" +showHideMovesBtn.textProperty().toString());
+                if(showHideMovesBtn.getText().equals("Show moves!")){
+                    System.out.println("Show moves!");
+                    btnHint.setVisible(true);
+                }else {
+                    btnHint.setVisible(false);
+                }
+            }
+        });
+
+       // movesList.setVisible(!movesList.isVisible())
+
+        if(showHideMovesBtn.textProperty().toString().equals("Hide moves!")){
+            btnHint.setVisible(true);
+        }
         moveBox.setPadding(new Insets(32, 0, 0, 0));
-        moveBox.getChildren().addAll(showHideMovesBtn,movesList);
+        moveBox.getChildren().addAll(showHideMovesBtn,movesList, btnHint, lblHint);
         HBox row = new HBox(30, boardView, moveBox);
         row.setAlignment(Pos.CENTER_LEFT);
 
