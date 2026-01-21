@@ -26,7 +26,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ChapterWindow extends BorderPane {
+public class ChapterWindow extends BorderPane implements BoardChangeListener {
+
+
+    private Controller controller;
 
     private enum Mode { LIST, BOARD }
 
@@ -39,7 +42,7 @@ public class ChapterWindow extends BorderPane {
     private Label titleLabel;
     private ScrollPane theoryScroll;
     private Label theoryLabel;
-
+    private int moveCounter;
 
 
     private final StackPane centerStack = new StackPane(); // stapelt LIST en BOARD
@@ -63,6 +66,8 @@ public class ChapterWindow extends BorderPane {
         buildLayout();
         switchMode(Mode.LIST);
     }
+
+
 
     private void buildLayout() {
         // === Achtergrondfoto (onderlaag) ===
@@ -239,9 +244,9 @@ public class ChapterWindow extends BorderPane {
 
 
         BoardModel boardModel = new BoardModel();
-        Controller controller = new Controller();
+        controller = new Controller();
         controller.syncTurnFromFEN(fen);
-
+        boardModel.addListener(this);
 
         boardView = new BoardView(boardModel, controller, controller.isWhiteTurn(), 600);
 
@@ -314,6 +319,7 @@ public class ChapterWindow extends BorderPane {
 
         fillMoves(ex.getMoves());
         System.out.println("Moves: " + ex.getMoves());
+        System.out.println("Exercise? " + ex.getTitle());
         // Eerste item in list krijgt de focus;
         movesList.getSelectionModel().select(0);
         movesList.setVisible(false);
@@ -342,15 +348,13 @@ public class ChapterWindow extends BorderPane {
         Label lblHint = new Label();
 
         btnHint.setOnAction(new EventHandler<ActionEvent>() {
-            int moveCounter = 0;
+
             @Override
             public void handle(ActionEvent actionEvent) {
                 String move = movesList.getItems().get(moveCounter);
-                String[] testMove = move.split(" ");
-                System.out.println("Move: " + testMove[1]);
-                System.out.println("Aantal zetten: " + movesList.getItems().size());
-                lblHint.setText(testMove[1]);
-                moveCounter++;
+                //String[] testMove = move.split(" ");
+
+                lblHint.setText(move);
             }
         });
 
@@ -389,6 +393,13 @@ public class ChapterWindow extends BorderPane {
 
         boardPane.getChildren().setAll(row);
         switchMode(Mode.BOARD);
+    }
+
+    @Override
+    public void onBoardUpdated() {
+        moveCounter++;
+        System.out.println(moveCounter);
+//        System.out.println(controller.);
     }
 
     private void switchMode(Mode m) {

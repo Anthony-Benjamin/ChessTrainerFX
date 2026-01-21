@@ -27,7 +27,18 @@ public class Controller {
     }
 
     private boolean whiteTurn;
+
+
+
+    public SquareView getLastMove() {
+        return lastMove;
+    }
+
     private SquareView lastMove;
+
+    // changes 21-01-2026
+    private ExerciseSession exerciseSession;
+    // end of changes 21-01-2026
 
     // ---------------- Public API ---------------- //
 
@@ -134,7 +145,6 @@ public class Controller {
         sourceView = view;
         sourcePos = model.getPosition();
         selectedPiece = model.getPiece();
-
         stage = SelectionStage.SOURCE_SELECTED;
         System.out.println("New source: " + model.getPiece() + " at " + model.getPosition());
     }
@@ -142,14 +152,15 @@ public class Controller {
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
         handlePawnSpecials(board, sourcePos, targetPos);
         board.movePiece(sourcePos, targetPos);
-
         handlePromotion(board, targetView, targetPos);
 
         toggleTurn();
+        lastMove = targetView;
         board.notifyListenersTurnChanged(whiteTurn);
         cleanupSelection();
 
-        lastMove = targetView;
+//        lastMove = targetView;
+//        System.out.println("lastMove: " + lastMove);
     }
 
     private void resetInvalidSelection(SquareView targetView) {
@@ -181,8 +192,6 @@ public class Controller {
             board.setLastDoubleStepPawnPosition(null);
         }
     }
-
-
 
     private void handlePromotion(BoardModel board, SquareView view, Position pos) {
         if (selectedPiece.getType() == PieceType.PAWN && (pos.getRow() == 0 || pos.getRow() == 7)) {
@@ -236,6 +245,10 @@ public class Controller {
                 whiteTurn = parts[1].equals("w");
             }
         } catch (Exception ignored) {}
+    }
+
+    public void setExerciseSession(ExerciseSession session){
+        this.exerciseSession = session;
     }
 
 }
