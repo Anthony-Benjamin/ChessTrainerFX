@@ -160,7 +160,7 @@ public class BoardView extends HBox implements BoardChangeListener {
             for (int col = 0; col < 8; col++) {
                 squareViews[row][col].update();
             }
-            //updateTurnLabel(controller.isWhiteTurn());
+            updateTurnLabel(controller.isWhiteTurn());
             //controller.setWhiteTurn();
             //System.out.println("In onboarupdated: " + controller.isWhiteTurn());
         }

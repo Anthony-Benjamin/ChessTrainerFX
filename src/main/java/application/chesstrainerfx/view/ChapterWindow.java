@@ -29,8 +29,8 @@ import java.util.function.Consumer;
 public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
 
-    private Controller controller;
-
+//    private Controller controller;
+    private Controller controller = new Controller();
     private enum Mode { LIST, BOARD }
 
     private final List<Exercise> exercises;
@@ -241,8 +241,8 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     private void showExercise(Exercise ex) {
         // Bouw bord
         String fen = ex.getFen() == null ? "" : ex.getFen().trim();
-
-
+        controller.setExerciseStage(Controller.ExerciseStage.PLAYERTOMOVE);
+        System.out.println(controller.getExerciseStage());
         BoardModel boardModel = new BoardModel();
         controller = new Controller();
         controller.syncTurnFromFEN(fen);

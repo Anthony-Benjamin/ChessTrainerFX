@@ -16,8 +16,18 @@ public class Controller {
     private BoardModel board;
 
     private enum SelectionStage { NONE, SOURCE_SELECTED }
+    public enum ExerciseStage{PLAYERTOMOVE, COMPUTERTOMOVE, NONE};
     private SelectionStage stage = SelectionStage.NONE;
 
+    public void setExerciseStage(ExerciseStage exerciseStage) {
+        this.exerciseStage = exerciseStage;
+    }
+
+    public ExerciseStage getExerciseStage() {
+        return exerciseStage;
+    }
+
+    private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SquareView sourceView;
     private Position sourcePos;
     private PieceModel selectedPiece;
@@ -150,7 +160,7 @@ public class Controller {
     }
 
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
-        System.out.println("is Exercise null? " + exerciseSession);
+//        System.out.println("is Exercise null? " + exerciseSession);
         if (exerciseSession != null) {
             Move userMove = new Move(sourcePos, targetPos);
 
@@ -173,6 +183,7 @@ public class Controller {
         handlePromotion(board, targetView, targetPos);
 
         toggleTurn();
+        exerciseStage = ExerciseStage.COMPUTERTOMOVE;
         lastMove = targetView;
 
         board.notifyListenersTurnChanged(whiteTurn);

@@ -292,6 +292,7 @@ public class BoardModel {
         // =========================
         if (from != null && to != null) {
             movePiece(from, to);
+            System.out.println("From? " + from + " to? " + to);
         } else {
             System.out.println("Geen geldige zet gevonden voor: " + move);
         }
