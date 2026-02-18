@@ -1,10 +1,7 @@
 package application.chesstrainerfx.model;
 
 
-import application.chesstrainerfx.utils.PieceColor;
-import application.chesstrainerfx.utils.PieceModel;
-import application.chesstrainerfx.utils.PieceType;
-import application.chesstrainerfx.utils.Position;
+import application.chesstrainerfx.utils.*;
 import application.chesstrainerfx.view.BoardChangeListener;
 
 import java.util.ArrayList;
@@ -186,8 +183,199 @@ public class BoardModel {
     }
 
 
+    public void playCounterMove(String move, PieceColor color) {
+        Position from = null;
+        Position to;
+
+        // doelveld = laatste 2 tekens (bv "e6")
+        String target = move.substring(move.length() - 2);
+        to = algebraicToPosition(target);
+
+        // =========================
+        // ♟️ PION-CAPTURE (fxe6)
+        // =========================
+        if (move.contains("x") && Character.isLowerCase(move.charAt(0))) {
+            char fileChar = move.charAt(0); // f
+            int file = fileChar - 'a';
+
+            for (SquareModel sq : squares) {
+                PieceModel p = sq.getPiece();
+                if (p != null &&
+                        p.getType() == PieceType.PAWN &&
+                        p.getColor() == color &&
+                        sq.getPosition().getColumn() == file) {
+
+                    from = sq.getPosition();
+                    break;
+                }
+            }
+        }
+
+        // =========================
+        // ♟️ STUK-CAPTURE (Bxe6)
+        // =========================
+        else if (move.contains("x") && Character.isUpperCase(move.charAt(0))) {
+            char pieceChar = move.charAt(0); // B, R, Q, N, K
+            PieceType type = pieceTypeFromChar(pieceChar);
+
+            for (SquareModel sq : squares) {
+                PieceModel p = sq.getPiece();
+                if (p != null &&
+                        p.getType() == type &&
+                        p.getColor() == color) {
+
+                    boolean canReach = switch (type) {
+                        case BISHOP -> canBishopReach(sq.getPosition(), to);
+                        case ROOK   -> canRookReach(sq.getPosition(), to);
+                        case QUEEN  -> canQueenReach(sq.getPosition(), to);
+                        case KNIGHT -> canKnightReach(sq.getPosition(), to);
+                        case KING   -> canKingReach(sq.getPosition(), to);
+                        default     -> false;
+                    };
+
+                    if (canReach) {
+                        from = sq.getPosition();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // =========================
+        // ♟️ GEWONE STUK-ZET (Be6)
+        // =========================
+        else if (Character.isUpperCase(move.charAt(0))) {
+            char pieceChar = move.charAt(0);
+            PieceType type = pieceTypeFromChar(pieceChar);
+
+            for (SquareModel sq : squares) {
+                PieceModel p = sq.getPiece();
+                if (p != null &&
+                        p.getType() == type &&
+                        p.getColor() == color) {
+
+                    boolean canReach = switch (type) {
+                        case BISHOP -> canBishopReach(sq.getPosition(), to);
+                        case ROOK   -> canRookReach(sq.getPosition(), to);
+                        case QUEEN  -> canQueenReach(sq.getPosition(), to);
+                        case KNIGHT -> canKnightReach(sq.getPosition(), to);
+                        case KING   -> canKingReach(sq.getPosition(), to);
+                        default     -> false;
+                    };
+
+                    if (canReach) {
+                        from = sq.getPosition();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // =========================
+        // ♟️ PION VOORUIT (e6)
+        // =========================
+        else {
+            for (SquareModel sq : squares) {
+                PieceModel p = sq.getPiece();
+                if (p != null &&
+                        p.getType() == PieceType.PAWN &&
+                        p.getColor() == color) {
+
+                    from = sq.getPosition();
+                    break;
+                }
+            }
+        }
+
+        // =========================
+        // 🚀 UITVOEREN
+        // =========================
+        if (from != null && to != null) {
+            movePiece(from, to);
+        } else {
+            System.out.println("Geen geldige zet gevonden voor: " + move);
+        }
+    }
 
 
 
+
+    private Position algebraicToPosition(String alg) {
+        int col = alg.charAt(0) - 'a';
+        int row = 8 - Character.getNumericValue(alg.charAt(1));
+        return new Position(row, col);
+    }
+
+    private PieceType pieceTypeFromChar(char c) {
+        switch (c) {
+            case 'R': return PieceType.ROOK;
+            case 'N': return PieceType.KNIGHT;
+            case 'B': return PieceType.BISHOP;
+            case 'Q': return PieceType.QUEEN;
+            case 'K': return PieceType.KING;
+            default: return PieceType.PAWN;
+        }
+    }
+
+
+
+    private boolean canKnightReach(Position from, Position to) {
+        int dr = Math.abs(to.getRow() - from.getRow());
+        int dc = Math.abs(to.getColumn() - from.getColumn());
+        return (dr == 2 && dc == 1) || (dr == 1 && dc == 2);
+    }
+
+    private boolean canRookReach(Position from, Position to) {
+        if (from.getRow() != to.getRow() && from.getColumn() != to.getColumn()) {
+            return false;
+        }
+
+        int rowStep = Integer.compare(to.getRow(), from.getRow());
+        int colStep = Integer.compare(to.getColumn(), from.getColumn());
+
+        int r = from.getRow() + rowStep;
+        int c = from.getColumn() + colStep;
+
+        while (r != to.getRow() || c != to.getColumn()) {
+            SquareModel sq = getSquare(new Position(r, c));
+            if (sq == null || sq.getPiece() != null) return false;
+            r += rowStep;
+            c += colStep;
+        }
+        return true;
+    }
+
+    private boolean canBishopReach(Position from, Position to) {
+        int rowDiff = to.getRow() - from.getRow();
+        int colDiff = to.getColumn() - from.getColumn();
+
+        if (Math.abs(rowDiff) != Math.abs(colDiff)) return false;
+
+        int rowStep = rowDiff > 0 ? 1 : -1;
+        int colStep = colDiff > 0 ? 1 : -1;
+
+        int r = from.getRow() + rowStep;
+        int c = from.getColumn() + colStep;
+
+        while (r != to.getRow() || c != to.getColumn()) {
+            SquareModel sq = getSquare(new Position(r, c));
+            if (sq == null || sq.getPiece() != null) return false;
+            r += rowStep;
+            c += colStep;
+        }
+        return true;
+    }
+
+    private boolean canQueenReach(Position from, Position to) {
+        return canRookReach(from, to) || canBishopReach(from, to);
+    }
+
+    private boolean canKingReach(Position from, Position to) {
+
+        int dr = Math.abs(to.getRow() - from.getRow());
+        int dc = Math.abs(to.getColumn() - from.getColumn());
+//        System.out.println("canKingReach? " + (dr <= 1 && dc <= 1));
+        return dr <= 1 && dc <= 1;
+    }
 
 }

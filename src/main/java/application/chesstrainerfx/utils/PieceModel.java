@@ -33,6 +33,39 @@ public class PieceModel {
     public String toString(){
         return pieceColor + " " + pieceType;
     }
+
+    public char letterPiece(){
+        switch(pieceType){
+            case PieceType.ROOK -> {
+                return 'R';
+            }
+            case PieceType.BISHOP ->
+            {
+                return 'B';
+            }
+            case PieceType.KING ->
+            {
+                return 'K';
+            }
+            case  PieceType.KNIGHT ->
+            {
+                return 'N';
+            }
+            case PieceType.PAWN ->
+            {
+                return 'P';
+            }
+            case PieceType.QUEEN ->
+            {
+                return 'Q';
+            }
+        }
+//        if (pieceType == PieceType.ROOK){
+//            return 'R';
+//        }
+        return ' ';
+    }
+
     public char getFENChar() {
         if (pieceType == null || pieceColor == null) {
             return ' ';

@@ -150,12 +150,31 @@ public class Controller {
     }
 
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
+        System.out.println("is Exercise null? " + exerciseSession);
+        if (exerciseSession != null) {
+            Move userMove = new Move(sourcePos, targetPos);
+
+            if (!exerciseSession.isCorrectMove(userMove)) {
+                // voorlopig: alleen print / eenvoudige feedback
+                System.out.println("Incorrect move for this exercise");
+                resetInvalidSelection(targetView);
+                return;
+            }
+        }
         handlePawnSpecials(board, sourcePos, targetPos);
+        if (board.getSquare(targetPos).getPiece() ==  null){
+            System.out.println("lastMove: " + board.getSquare(sourcePos).getPiece().letterPiece()  +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column}));
+        }
+        else{
+            System.out.println("lastMove: " + board.getSquare(sourcePos).getPiece().letterPiece()  + "x" +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column}));
+        }
+
         board.movePiece(sourcePos, targetPos);
         handlePromotion(board, targetView, targetPos);
 
         toggleTurn();
         lastMove = targetView;
+
         board.notifyListenersTurnChanged(whiteTurn);
         cleanupSelection();
 
@@ -229,8 +248,9 @@ public class Controller {
         return whiteTurn ? PieceColor.WHITE : PieceColor.BLACK;
     }
 
-    private void toggleTurn() {
+    public void toggleTurn() {
         whiteTurn = !whiteTurn;
+        System.out.println("Whose turn is it? " + whiteTurn);
     }
 
     private void notifyTurnChanged() {
@@ -250,5 +270,4 @@ public class Controller {
     public void setExerciseSession(ExerciseSession session){
         this.exerciseSession = session;
     }
-
 }
