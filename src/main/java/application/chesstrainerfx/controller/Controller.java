@@ -15,19 +15,29 @@ public class Controller {
     private PieceModel selectedSetupPiece;
     private BoardModel board;
 
-    private enum SelectionStage { NONE, SOURCE_SELECTED }
-    public enum ExerciseStage{PLAYERTOMOVE, COMPUTERTOMOVE, NONE};
+    private enum SelectionStage {
+        NONE,
+        SOURCE_SELECTED
+    }
+    public enum ExerciseStage{
+        PLAYER_TO_MOVE,
+        COMPUTER_TO_MOVE,
+        NONE};
+
+    private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SelectionStage stage = SelectionStage.NONE;
 
     public void setExerciseStage(ExerciseStage exerciseStage) {
+
         this.exerciseStage = exerciseStage;
+
     }
 
     public ExerciseStage getExerciseStage() {
         return exerciseStage;
     }
 
-    private ExerciseStage exerciseStage = ExerciseStage.NONE;
+
     private SquareView sourceView;
     private Position sourcePos;
     private PieceModel selectedPiece;
@@ -136,6 +146,7 @@ public class Controller {
 
 
         if (valid) {
+            setExerciseStage(ExerciseStage.COMPUTER_TO_MOVE);
             executeMove(board, view, targetPos);
 
 
@@ -183,7 +194,7 @@ public class Controller {
         handlePromotion(board, targetView, targetPos);
 
         toggleTurn();
-        exerciseStage = ExerciseStage.COMPUTERTOMOVE;
+
         lastMove = targetView;
 
         board.notifyListenersTurnChanged(whiteTurn);

@@ -241,7 +241,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     private void showExercise(Exercise ex) {
         // Bouw bord
         String fen = ex.getFen() == null ? "" : ex.getFen().trim();
-        controller.setExerciseStage(Controller.ExerciseStage.PLAYERTOMOVE);
+        controller.setExerciseStage(Controller.ExerciseStage.PLAYER_TO_MOVE);
         System.out.println(controller.getExerciseStage());
         BoardModel boardModel = new BoardModel();
         controller = new Controller();

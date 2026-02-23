@@ -74,13 +74,16 @@ public class Test extends Application implements BoardChangeListener {
     @Override
     public void onBoardUpdated() {
         if (!computerHasMoved) {
-            computerHasMoved = true;
-            if(controller.getExerciseStage() == Controller.ExerciseStage.COMPUTERTOMOVE){
+            System.out.printf("computermove");
+            System.out.println("exerciseStage -> " +controller.getExerciseStage());
+            if(controller.getExerciseStage() == Controller.ExerciseStage.COMPUTER_TO_MOVE){
                 boardModel.playCounterMove("fxe6", PieceColor.BLACK);
                 controller.toggleTurn();
                 System.out.println(controller.getExerciseStage());
             }
         }
+        controller.setExerciseStage(Controller.ExerciseStage.PLAYER_TO_MOVE);
+        computerHasMoved = !computerHasMoved;
     }
 
     @Override
