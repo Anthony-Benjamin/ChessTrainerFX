@@ -4,17 +4,27 @@ import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.PieceColor;
 import application.chesstrainerfx.utils.Position;
+import application.pgnreader.model.Exercise;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Test extends Application implements BoardChangeListener {
 
     private BoardModel boardModel;
     Controller controller;
     private boolean computerHasMoved = false;
+
+
+
+    private ListView<String> movesList;
+    private Exercise exercise;
 
     public static void main(String[] args){
         launch();
@@ -60,6 +70,13 @@ public class Test extends Application implements BoardChangeListener {
         root.getChildren().add(boardView);
         //root.getChildren().add(tegenzet);
 
+
+        exercise = new Exercise("test", "4kr2/3b1p2/4pQ1p/q5b1/8/2p4P/1rB2PP1/3RR1K1 w - - 0 1",
+                " 1. Rxe6+ fxe6 2. Bg6+ Rf7 3. Qxf7+ Kd8 4.Qxd7", "");
+
+        System.out.println("moves" + exercise.getMoves());
+//TODO split moves
+
         Scene scene = new Scene(root, 1500, 1000);
         stage.setTitle("ChessTrainer — Home");
         stage.setResizable(false);
@@ -90,4 +107,7 @@ public class Test extends Application implements BoardChangeListener {
     public void onTurnChanged(boolean whiteToMove) {
         BoardChangeListener.super.onTurnChanged(whiteToMove);
     }
+
+
+
 }
