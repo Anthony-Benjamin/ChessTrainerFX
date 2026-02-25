@@ -296,6 +296,7 @@ public class BoardModel {
         } else {
             System.out.println("Geen geldige zet gevonden voor: " + move);
         }
+
     }
 
 

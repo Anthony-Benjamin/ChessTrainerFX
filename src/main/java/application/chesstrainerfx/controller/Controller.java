@@ -3,7 +3,6 @@ package application.chesstrainerfx.controller;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.utils.*;
-import application.chesstrainerfx.view.BoardChangeListener;
 import application.chesstrainerfx.view.SquareView;
 import javafx.scene.control.ChoiceDialog;
 
@@ -14,6 +13,12 @@ public class Controller {
     private boolean setupMode = false;
     private PieceModel selectedSetupPiece;
     private BoardModel board;
+
+    public String getExtractedLastMove() {
+        return extractedLastMove;
+    }
+
+    private String extractedLastMove;
 
     private enum SelectionStage {
         NONE,
@@ -47,14 +52,13 @@ public class Controller {
     }
 
     private boolean whiteTurn;
+    public String lastmove;
 
-
-
-    public SquareView getLastMove() {
-        return lastMove;
+    public SquareView getLastViewMove() {
+        return lastViewMove;
     }
 
-    private SquareView lastMove;
+    private SquareView lastViewMove;
 
     // changes 21-01-2026
     private ExerciseSession exerciseSession;
@@ -120,8 +124,8 @@ public class Controller {
         sourceView = view;
 
         sourceView.setSelectedSource();
-        if (lastMove != null) {
-            lastMove.removeSelection();
+        if (lastViewMove != null) {
+            lastViewMove.removeSelection();
         }
 
         stage = SelectionStage.SOURCE_SELECTED;
@@ -183,25 +187,31 @@ public class Controller {
             }
         }
         handlePawnSpecials(board, sourcePos, targetPos);
-        if (board.getSquare(targetPos).getPiece() ==  null){
-            System.out.println("lastMove: " + board.getSquare(sourcePos).getPiece().letterPiece()  +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column}));
-        }
-        else{
-            System.out.println("lastMove: " + board.getSquare(sourcePos).getPiece().letterPiece()  + "x" +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column}));
-        }
+        extractedLastMove = extractLastMove(board,targetPos);
 
         board.movePiece(sourcePos, targetPos);
         handlePromotion(board, targetView, targetPos);
 
         toggleTurn();
 
-        lastMove = targetView;
+        lastViewMove = targetView;
 
         board.notifyListenersTurnChanged(whiteTurn);
         cleanupSelection();
 
 //        lastMove = targetView;
 //        System.out.println("lastMove: " + lastMove);
+    }
+
+    private String extractLastMove(BoardModel board, Position targetPos) {
+        String s;
+        if (board.getSquare(targetPos).getPiece() ==  null){
+            s = board.getSquare(sourcePos).getPiece().letterPiece()  +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
+        }
+        else{
+            s = board.getSquare(sourcePos).getPiece().letterPiece()  + "x" +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
+        }
+        return s;
     }
 
     private void resetInvalidSelection(SquareView targetView) {
