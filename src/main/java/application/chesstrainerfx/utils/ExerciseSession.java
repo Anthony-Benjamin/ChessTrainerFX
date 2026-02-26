@@ -3,25 +3,30 @@ package application.chesstrainerfx.utils;
 import java.util.List;
 
 public class ExerciseSession {
-    private List<List<Move>> solutionLines; // hoofdvariant + evt. alternatieven
+    private final List<Move> mainLine;
     private int currentPly = 0;
-    private List<Move> mainLine;
-
-//    public ExerciseSession(List<List<Move>> solutionLines) {
-//        this.solutionLines = solutionLines;
-//    }
 
     public ExerciseSession(List<Move> mainLine){
         this.mainLine = mainLine;
     }
 
     public int getCurrentPly() { return currentPly; }
-    public void advancePly() { currentPly++; }
 
-    // later: methods als getExpectedMovesAtCurrentPly(), getHint(), etc.
+    public boolean hasNext() {
+        return currentPly < mainLine.size();
+    }
+
+    public Move getExpectedMove() {
+        if (!hasNext()) return null;
+        return mainLine.get(currentPly);
+    }
 
     public boolean isCorrectMove(Move move) {
-        // voorlopig: altijd true, zodat gedrag identiek blijft
-        return true;
+        Move expected = getExpectedMove();
+        return expected != null && expected.equals(move);
+    }
+
+    public void advancePly() {
+        currentPly++;
     }
 }

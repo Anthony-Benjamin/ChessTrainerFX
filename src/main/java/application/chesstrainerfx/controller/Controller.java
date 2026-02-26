@@ -5,6 +5,7 @@ import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.utils.*;
 import application.chesstrainerfx.view.SquareView;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Alert;
 
 import java.util.List;
 
@@ -13,6 +14,12 @@ public class Controller {
     private boolean setupMode = false;
     private PieceModel selectedSetupPiece;
     private BoardModel board;
+
+
+
+    public void setExerciseSession(ExerciseSession session) {
+        this.exerciseSession = session;
+    }
 
     public String getExtractedLastMove() {
         return extractedLastMove;
@@ -150,9 +157,29 @@ public class Controller {
 
 
         if (valid) {
-            setExerciseStage(ExerciseStage.COMPUTER_TO_MOVE);
+            Move userMove = new Move(sourcePos, targetPos);
+
+            // 1) Controleer oefenzet
+            if (exerciseSession != null && !exerciseSession.isCorrectMove(userMove)) {
+                resetInvalidSelection(view);
+                showWrongMoveMessage();
+                return;
+            }
+
+            // 2) Speler zet uitvoeren
             executeMove(board, view, targetPos);
 
+            // ply vooruit (speler heeft juiste zet gedaan)
+            if (exerciseSession != null) {
+                exerciseSession.advancePly();
+            }
+            if (isExerciseFinished()) {
+                showMateMessage();
+                return;
+            }
+
+            // 3) Tegenzet (als die er is)
+            playOpponentMoveIfAny(board);
 
         } else {
             resetInvalidSelection(view);
@@ -175,17 +202,7 @@ public class Controller {
     }
 
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
-//        System.out.println("is Exercise null? " + exerciseSession);
-        if (exerciseSession != null) {
-            Move userMove = new Move(sourcePos, targetPos);
 
-            if (!exerciseSession.isCorrectMove(userMove)) {
-                // voorlopig: alleen print / eenvoudige feedback
-                System.out.println("Incorrect move for this exercise");
-                resetInvalidSelection(targetView);
-                return;
-            }
-        }
         handlePawnSpecials(board, sourcePos, targetPos);
         extractedLastMove = extractLastMove(board,targetPos);
 
@@ -199,8 +216,7 @@ public class Controller {
         board.notifyListenersTurnChanged(whiteTurn);
         cleanupSelection();
 
-//        lastMove = targetView;
-//        System.out.println("lastMove: " + lastMove);
+
     }
 
     private String extractLastMove(BoardModel board, Position targetPos) {
@@ -282,7 +298,8 @@ public class Controller {
 
     public void toggleTurn() {
         whiteTurn = !whiteTurn;
-        System.out.println("Whose turn is it? " + whiteTurn);
+        System.out.println("Whose turn is it? " +  (whiteTurn ? "White" : "Black"));
+        //notifyTurnChanged();
     }
 
     private void notifyTurnChanged() {
@@ -298,8 +315,62 @@ public class Controller {
             }
         } catch (Exception ignored) {}
     }
+    private void playOpponentMoveIfAny(BoardModel board) {
+        if (exerciseSession == null) return;
 
-    public void setExerciseSession(ExerciseSession session){
-        this.exerciseSession = session;
+        Move expected = exerciseSession.getExpectedMove();
+        if (expected == null) return;
+
+        Position from = expected.getFrom();
+        Position to = expected.getTo();
+
+        PieceModel piece = board.getSquare(from).getPiece();
+        if (piece == null) return; // safety
+
+        // (optioneel) nog checken of kleur klopt met currentTurnColor()
+        if (piece.getColor() != currentTurnColor()) return;
+
+        // voer tegenzet uit
+        board.movePiece(from, to);
+
+        // turn wisselen (computer heeft gezet)
+        toggleTurn();
+        board.notifyListenersTurnChanged(whiteTurn);
+
+        // ply vooruit
+        exerciseSession.advancePly();
+        if (isExerciseFinished()) {
+            showMateMessage();
+            return;
+        }
+
+    }
+    private void showWrongMoveMessage() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Onjuiste zet");
+        alert.setHeaderText(null);
+        alert.setContentText("Dit is niet de juiste zet. Probeer opnieuw.");
+        alert.showAndWait();
+    }
+
+    private void showMateMessage() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Oefening klaar");
+        alert.setHeaderText(null);
+        alert.setContentText("Mat! 🎉");
+        alert.showAndWait();
+    }
+
+    private boolean isExerciseFinished() {
+        return exerciseSession != null && !exerciseSession.hasNext();
+    }
+
+    public void setTurnFromFen(String fen) {
+        String[] parts = fen.trim().split("\\s+");
+        if (parts.length >= 2) {
+            this.whiteTurn = parts[1].equals("w");
+        } else {
+            this.whiteTurn = true; // fallback
+        }
     }
 }

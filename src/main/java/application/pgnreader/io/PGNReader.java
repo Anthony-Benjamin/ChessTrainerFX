@@ -77,29 +77,32 @@ public class PGNReader {
     private static String extractMoves(String block) {
         if (block == null) return "";
 
-        // Pak alles NA het laatste ']' (header-tag einde)
-        int lastBracket = block.lastIndexOf(']');
-        String movetext = (lastBracket != -1) ? block.substring(lastBracket + 1) : block;
+        // Normaliseer line endings
+        String normalized = block.replace("\r\n", "\n").replace('\r', '\n');
 
-        // Normaliseer line endings en collapse
-        movetext = movetext.replace("\r", " ").replace("\n", " ");
+        // Pak alles NA de eerste lege regel (headers -> body)
+        int split = normalized.indexOf("\n\n");
+        String movetext = (split >= 0) ? normalized.substring(split).trim() : normalized;
+
+        // Maak het 1 regel
+        movetext = movetext.replace("\n", " ");
 
         // 1) verwijder engine-evaluatieblokken {[%...]}
         movetext = movetext.replaceAll("(?s)\\{\\s*\\[%[^}]*\\]\\s*\\}", " ");
 
-        // 2) comments { ... } (DOTALL)
+        // 2) comments { ... } (incl. {[%csl ...]})
         movetext = movetext.replaceAll("(?s)\\{[^}]*\\}", " ");
 
-        // 3) varianten ( ... ) (DOTALL)
-        movetext = movetext.replaceAll("(?s)\\([^)]*\\)", " ");
+        // 3) varianten ( ... ) verwijderen (werkt ook met geneste variaties)
+        movetext = removeVariationsNested(movetext);
+
+        movetext = movetext.replace("(", " ").replace(")", " ");
 
         // 4) NAGs $n
         movetext = movetext.replaceAll("\\$\\d+", " ");
 
-        // 5) resultaten en eventuele achterblijvende accolades
-        movetext = movetext
-                .replaceAll("(?i)\\b(1-0|0-1|1/2-1/2|\\*)\\b", " ")
-                .replace("{", " ").replace("}", " ");
+        // 5) resultaten (ook *) — vooral aan het einde
+        movetext = movetext.replaceAll("(1-0|0-1|1/2-1/2|\\*)\\s*$", " ");
 
         // 6) whitespace normaliseren
         movetext = movetext.replaceAll("\\s+", " ").trim();
@@ -143,5 +146,24 @@ public class PGNReader {
             }
         }
         return comments;
+    }
+    private static String removeVariationsNested(String pgn) {
+        StringBuilder result = new StringBuilder();
+        int depth = 0;
+
+        for (char c : pgn.toCharArray()) {
+            if (c == '(') {
+                depth++;
+                continue;
+            }
+            if (c == ')') {
+                if (depth > 0) depth--;
+                continue;
+            }
+            if (depth == 0) {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 }

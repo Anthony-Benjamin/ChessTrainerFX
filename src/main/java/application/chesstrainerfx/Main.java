@@ -23,8 +23,8 @@ import java.util.List;
 
 public class Main extends Application {
 
-// TODO: programma geeft aan dat er sprake is van maat
-// TODO: Het vebergen van de zetten
+
+
 // TODO: Hint van een zet
     /** Alle beschikbare hoofdstukken (PGN-bestanden in resources) */
     private final List<String> chapterPaths = Arrays.asList(

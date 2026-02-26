@@ -11,6 +11,19 @@ public class BoardModel {
     //een lijst van SquareModels
     private final List<SquareModel> squares;
     private final List<BoardChangeListener> listeners = new ArrayList<>();
+//helper klasse
+    public static class BoardSnapshot {
+        private final PieceModel[][] pieces; // 8x8
+        private final Position lastDoubleStepPawnPosition;
+
+        private BoardSnapshot(PieceModel[][] pieces, Position lastDoubleStepPawnPosition) {
+            this.pieces = pieces;
+            this.lastDoubleStepPawnPosition = lastDoubleStepPawnPosition;
+        }
+    }
+
+
+
 //TODO verbeteren
     public BoardModel() {
         squares = new ArrayList<>(64);
@@ -292,14 +305,13 @@ public class BoardModel {
         // =========================
         if (from != null && to != null) {
             movePiece(from, to);
-            System.out.println("From? " + from + " to? " + to);
+           // System.out.println("From? " + from + " to? " + to);
+
         } else {
             System.out.println("Geen geldige zet gevonden voor: " + move);
         }
 
     }
-
-
 
 
     private Position algebraicToPosition(String alg) {
@@ -379,5 +391,34 @@ public class BoardModel {
 //        System.out.println("canKingReach? " + (dr <= 1 && dc <= 1));
         return dr <= 1 && dc <= 1;
     }
+
+    public BoardSnapshot createSnapshot() {
+        PieceModel[][] copy = new PieceModel[8][8];
+
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                PieceModel p = getSquare(new Position(r, c)).getPiece();
+                if (p == null) {
+                    copy[r][c] = null;
+                } else {
+                    PieceModel p2 = new PieceModel(p.getType(), p.getColor());
+                    p2.setHasMoved(p.hasMoved());
+                    copy[r][c] = p2;
+                }
+            }
+        }
+        return new BoardSnapshot(copy, lastDoubleStepPawnPosition);
+    }
+
+    public void restoreSnapshot(BoardSnapshot snap) {
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                getSquare(new Position(r, c)).setPiece(snap.pieces[r][c]);
+            }
+        }
+        this.lastDoubleStepPawnPosition = snap.lastDoubleStepPawnPosition;
+        notifyListeners();
+    }
+
 
 }
