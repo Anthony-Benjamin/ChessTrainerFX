@@ -3,30 +3,37 @@ package application.chesstrainerfx.utils;
 import java.util.List;
 
 public class ExerciseSession {
-    private final List<Move> mainLine;
-    private int currentPly = 0;
 
-    public ExerciseSession(List<Move> mainLine){
-        this.mainLine = mainLine;
-    }
+    private final List<Move> moves;
+    private final List<String> sanMoves;
+    private int index = 0;
 
-    public int getCurrentPly() { return currentPly; }
-
-    public boolean hasNext() {
-        return currentPly < mainLine.size();
+    public ExerciseSession(List<Move> moves, List<String> sanMoves) {
+        this.moves = moves;
+        this.sanMoves = sanMoves;
     }
 
     public Move getExpectedMove() {
-        if (!hasNext()) return null;
-        return mainLine.get(currentPly);
+        if (index >= moves.size()) return null;
+        return moves.get(index);
     }
 
-    public boolean isCorrectMove(Move move) {
+    public String getExpectedSan() {
+        if (index >= sanMoves.size()) return null;
+        return sanMoves.get(index);
+    }
+
+    public boolean isCorrectMove(Move userMove) {
         Move expected = getExpectedMove();
-        return expected != null && expected.equals(move);
+        if (expected == null) return false;
+        return expected.equals(userMove);
     }
 
     public void advancePly() {
-        currentPly++;
+        index++;
+    }
+
+    public boolean hasNext() {
+        return index < moves.size();
     }
 }

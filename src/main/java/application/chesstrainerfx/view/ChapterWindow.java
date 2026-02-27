@@ -32,6 +32,8 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
 //    private Controller controller;
     private Controller controller = new Controller();
+    private String[] parts;
+
     private enum Mode { LIST, BOARD }
 
     private final List<Exercise> exercises;
@@ -308,7 +310,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
         // Vul de zichtbare moves-lijst (alleen voor UI / debug)
         fillMoves(ex.getMoves());
-
+        System.out.println("moves: " + ex.getMoves());
         System.out.println("MovesList size = " + movesList.getItems().size());
         if (!movesList.getItems().isEmpty()) {
             movesList.getSelectionModel().select(0);
@@ -337,13 +339,14 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         // Hint: toon de volgende verwachte zet uit session
         // (simpel; later kun je dit mooier maken, bv. highlight squares)
         btnHint.setOnAction(e -> {
-            Move expected = session.getExpectedMove();
-            if (expected != null) {
-                lblHint.setText("Next: " + expected);   // bv "e1 -> e6"
+            String san = session.getExpectedSan();
+            if (san != null) {
+                lblHint.setText("Next: " + san);
             } else {
                 lblHint.setText("Exercise finished.");
             }
         });
+
 
         // Toggle on click
         showHideMovesBtn.setOnAction(e -> {
@@ -427,8 +430,10 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         if (clean.isBlank()) return;
 
         // 8) Split per zetnummer. Fallback als split niets oplevert.
-        String[] parts = clean.split("(?=\\d+\\.(?:\\.\\.)?\\s)"); // <-- zonder \\b (betrouwbaarder)
+        parts = clean.split("(?=\\d+\\.(?:\\.\\.)?\\s)"); // <-- zonder \\b (betrouwbaarder)
 
+        System.out.println("Size of parts " + parts.length);
+        System.out.println("Parts: " + Arrays.deepToString(parts));
         int added = 0;
         for (String part : parts) {
             String trimmed = part.trim();
@@ -520,23 +525,26 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         PieceColor toMove = whiteToMove ? PieceColor.WHITE : PieceColor.BLACK;
 
         List<Move> mainLine = new ArrayList<>();
+        List<String> sanLine = new ArrayList<>();
+
 
         for (String san : sanPlies) {
             if (san == null || san.isBlank()) continue;
 
             Move m = resolveSanToMove(temp, san, toMove);
             if (m == null) {
-                throw new IllegalStateException("Kon SAN niet resolven: " + san + " voor " + toMove);
+                throw new IllegalStateException("Kon SAN niet resolven: " + san);
             }
 
             mainLine.add(m);
-            applyMoveOnTempBoard(temp, m, san, toMove);
+            sanLine.add(san); // 👈 originele SAN bewaren
 
-            // wissel kant
+            applyMoveOnTempBoard(temp, m, san, toMove);
             toMove = (toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
         }
 
-        return new ExerciseSession(mainLine);
+        System.out.println("buildsession mainline: " + mainLine);
+        return new ExerciseSession(mainLine, sanLine);
     }
     private Move resolveSanToMove(BoardModel board, String sanRaw, PieceColor color) {
         String san = sanRaw.replace("+", "").replace("#", "").trim();
