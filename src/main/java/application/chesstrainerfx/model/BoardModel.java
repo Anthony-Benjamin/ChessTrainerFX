@@ -11,7 +11,8 @@ public class BoardModel {
     //een lijst van SquareModels
     private final List<SquareModel> squares;
     private final List<BoardChangeListener> listeners = new ArrayList<>();
-//helper klasse
+
+    //helper klasse
     public static class BoardSnapshot {
         private final PieceModel[][] pieces; // 8x8
         private final Position lastDoubleStepPawnPosition;
@@ -23,8 +24,7 @@ public class BoardModel {
     }
 
 
-
-//TODO verbeteren
+    //TODO verbeteren
     public BoardModel() {
         squares = new ArrayList<>(64);
         initializeBoard();
@@ -116,24 +116,22 @@ public class BoardModel {
             int row = pos.getRow();
             int col = pos.getColumn();
 
-
             for (SquareModel sq : squares) {
                 if (sq.getPosition().getRow() == row && sq.getPosition().getColumn() == col) {
                     square = sq;
                 }
 
             }
-
         }
-            return square;
-        }
+        return square;
+    }
 
 
-    public void movePiece(Position from, Position to){
+    public void movePiece(Position from, Position to) {
 
         if (from != null && to != null) {
             SquareModel source = getSquare(from);
-            SquareModel  target = getSquare(to);
+            SquareModel target = getSquare(to);
             PieceModel piece = source.getPiece();
             source.removePiece();
             target.setPiece(piece);
@@ -141,6 +139,7 @@ public class BoardModel {
         }
 
     }
+
     private Position lastDoubleStepPawnPosition = null;
 
     public void setLastDoubleStepPawnPosition(Position pos) {
@@ -151,7 +150,6 @@ public class BoardModel {
         return lastDoubleStepPawnPosition;
     }
 
-
     public void addListener(BoardChangeListener listener) {
         listeners.add(listener);
     }
@@ -161,6 +159,7 @@ public class BoardModel {
             listener.onBoardUpdated();
         }
     }
+
     public String exportToFEN() {
         StringBuilder fen = new StringBuilder();
 
@@ -189,12 +188,12 @@ public class BoardModel {
         fen.append(" w - - 0 1"); // basis FEN metadata
         return fen.toString();
     }
+
     public void notifyListenersTurnChanged(boolean whiteToMove) {
         for (BoardChangeListener l : listeners) {
             l.onTurnChanged(whiteToMove);
         }
     }
-
 
     public void playCounterMove(String move, PieceColor color) {
         Position from = null;
@@ -239,11 +238,11 @@ public class BoardModel {
 
                     boolean canReach = switch (type) {
                         case BISHOP -> canBishopReach(sq.getPosition(), to);
-                        case ROOK   -> canRookReach(sq.getPosition(), to);
-                        case QUEEN  -> canQueenReach(sq.getPosition(), to);
+                        case ROOK -> canRookReach(sq.getPosition(), to);
+                        case QUEEN -> canQueenReach(sq.getPosition(), to);
                         case KNIGHT -> canKnightReach(sq.getPosition(), to);
-                        case KING   -> canKingReach(sq.getPosition(), to);
-                        default     -> false;
+                        case KING -> canKingReach(sq.getPosition(), to);
+                        default -> false;
                     };
 
                     if (canReach) {
@@ -269,11 +268,11 @@ public class BoardModel {
 
                     boolean canReach = switch (type) {
                         case BISHOP -> canBishopReach(sq.getPosition(), to);
-                        case ROOK   -> canRookReach(sq.getPosition(), to);
-                        case QUEEN  -> canQueenReach(sq.getPosition(), to);
+                        case ROOK -> canRookReach(sq.getPosition(), to);
+                        case QUEEN -> canQueenReach(sq.getPosition(), to);
                         case KNIGHT -> canKnightReach(sq.getPosition(), to);
-                        case KING   -> canKingReach(sq.getPosition(), to);
-                        default     -> false;
+                        case KING -> canKingReach(sq.getPosition(), to);
+                        default -> false;
                     };
 
                     if (canReach) {
@@ -305,14 +304,13 @@ public class BoardModel {
         // =========================
         if (from != null && to != null) {
             movePiece(from, to);
-           // System.out.println("From? " + from + " to? " + to);
+            // System.out.println("From? " + from + " to? " + to);
 
         } else {
             System.out.println("Geen geldige zet gevonden voor: " + move);
         }
 
     }
-
 
     private Position algebraicToPosition(String alg) {
         int col = alg.charAt(0) - 'a';
@@ -322,15 +320,20 @@ public class BoardModel {
 
     private PieceType pieceTypeFromChar(char c) {
         switch (c) {
-            case 'R': return PieceType.ROOK;
-            case 'N': return PieceType.KNIGHT;
-            case 'B': return PieceType.BISHOP;
-            case 'Q': return PieceType.QUEEN;
-            case 'K': return PieceType.KING;
-            default: return PieceType.PAWN;
+            case 'R':
+                return PieceType.ROOK;
+            case 'N':
+                return PieceType.KNIGHT;
+            case 'B':
+                return PieceType.BISHOP;
+            case 'Q':
+                return PieceType.QUEEN;
+            case 'K':
+                return PieceType.KING;
+            default:
+                return PieceType.PAWN;
         }
     }
-
 
 
     private boolean canKnightReach(Position from, Position to) {
@@ -419,6 +422,5 @@ public class BoardModel {
         this.lastDoubleStepPawnPosition = snap.lastDoubleStepPawnPosition;
         notifyListeners();
     }
-
 
 }

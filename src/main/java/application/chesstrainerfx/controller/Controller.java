@@ -6,6 +6,8 @@ import application.chesstrainerfx.utils.*;
 import application.chesstrainerfx.view.SquareView;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Alert;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import java.util.List;
 
@@ -38,11 +40,15 @@ public class Controller {
 
     private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SelectionStage stage = SelectionStage.NONE;
-
+    private ExerciseSession exerciseSession;
     public void setExerciseStage(ExerciseStage exerciseStage) {
-
         this.exerciseStage = exerciseStage;
-
+    }
+    public String getExpectedSan() {
+        if (exerciseSession == null) {
+            return null;
+        }
+        return exerciseSession.getExpectedSan();
     }
 
     public ExerciseStage getExerciseStage() {
@@ -67,10 +73,23 @@ public class Controller {
 
     private SquareView lastViewMove;
 
-    // changes 21-01-2026
-    private ExerciseSession exerciseSession;
-    // end of changes 21-01-2026
 
+
+
+    // telt het aantal zetten op het bord
+    private int moveCounter = 0;
+
+    public int getMoveCounter() {
+        return moveCounter;
+    }
+
+    public void resetMoveCounter() {
+        this.moveCounter = 0;
+    }
+
+    public void incrementMoveCounter() {
+        this.moveCounter++;
+    }
     // ---------------- Public API ---------------- //
 
     public boolean isWhiteTurn() {
@@ -327,23 +346,26 @@ public class Controller {
         PieceModel piece = board.getSquare(from).getPiece();
         if (piece == null) return; // safety
 
-        // (optioneel) nog checken of kleur klopt met currentTurnColor()
+        // check of de kleur klopt met de beurt
         if (piece.getColor() != currentTurnColor()) return;
 
-        // voer tegenzet uit
-        board.movePiece(from, to);
+        // kleine vertraging voordat de tegenzet wordt uitgevoerd
+        PauseTransition pause = new PauseTransition(Duration.millis(1000)); // 300ms = 0.3s
+        pause.setOnFinished(evt -> {
+            // voer tegenzet uit
+            board.movePiece(from, to);
 
-        // turn wisselen (computer heeft gezet)
-        toggleTurn();
-        board.notifyListenersTurnChanged(whiteTurn);
+            // turn wisselen (computer heeft gezet)
+            toggleTurn();
+            board.notifyListenersTurnChanged(whiteTurn);
 
-        // ply vooruit
-        exerciseSession.advancePly();
-        if (isExerciseFinished()) {
-            showMateMessage();
-            return;
-        }
-
+            // ply vooruit
+            exerciseSession.advancePly();
+            if (isExerciseFinished()) {
+                showMateMessage();
+            }
+        });
+        pause.play();
     }
     private void showWrongMoveMessage() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

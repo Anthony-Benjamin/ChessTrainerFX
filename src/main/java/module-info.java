@@ -20,5 +20,5 @@ module application.chesstrainerfx {
     opens application.chesstrainerfx.view.setup to javafx.fxml;
     exports application.chesstrainerfx.controller;
     opens application.chesstrainerfx.controller to javafx.fxml;
-
+    exports application.pgnreader.model;
 }
