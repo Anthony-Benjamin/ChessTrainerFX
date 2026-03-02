@@ -465,4 +465,28 @@ public class Controller {
             System.out.println("Exercise ply index after undo = " + exerciseSession.getIndex());
         }
     }
+    public void redoMove(BoardModel board) {
+        // Kunnen we überhaupt vooruit?
+        if (historyIndex >= history.size() - 1) {
+            System.out.println("Geen zet om vooruit te zetten. size=" + history.size() + ", index=" + historyIndex);
+            return;
+        }
+
+        // Eén snapshot vooruit
+        historyIndex++;
+        BoardSnapshot snap = history.get(historyIndex);
+
+        System.out.println("Redo to index " + historyIndex + " / size " + history.size());
+
+        // 1) Bord + turn terugzetten vanuit snapshot
+        board.initializeFromFEN(snap.fen);
+        board.setLastDoubleStepPawnPosition(snap.lastDoubleStepPawn);
+        this.whiteTurn = snap.whiteTurn;
+
+        // 2) Oefensessie ook één ply vooruit
+        if (exerciseSession != null) {
+            exerciseSession.advancePly();
+            System.out.println("Exercise ply index after redo = " + exerciseSession.getIndex());
+        }
+    }
 }

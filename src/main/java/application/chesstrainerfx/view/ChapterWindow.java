@@ -319,11 +319,14 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
             btnHint.setVisible(!movesList.isVisible());
         });
         Button btnUndo = new Button("Undo");
+        Button btnRedo = new Button("Redo");
+
         btnUndo.setOnAction(e -> controller.undoLastMove(boardModel));
+        btnRedo.setOnAction(e -> controller.redoMove(boardModel));
 
         VBox moveBox = new VBox(22);
         moveBox.setPadding(new Insets(32, 0, 0, 0));
-        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint,btnUndo);
+        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint,btnUndo, btnRedo);
         moveBox.setPrefWidth(320);
         moveBox.setMinWidth(320);
 
