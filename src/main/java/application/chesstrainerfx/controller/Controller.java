@@ -11,16 +11,42 @@ import javafx.util.Duration;
 
 import java.util.List;
 
+
 public class Controller {
 
     private boolean setupMode = false;
     private PieceModel selectedSetupPiece;
-    private BoardModel board;
+    // Aantal gespeelde halfzetten vanaf de start-FEN van de oefening.
+    // 0 = beginpositie, 1 = na eerste zet, 2 = na tweede zet, etc.
+    private int currentPly = 0;
+    // Verste punt dat de speler daadwerkelijk bereikt heeft.
+    //  Hiermee voorkom je straks dat je verder navigeert dan hij al gespeeld heeft.
+    private int maxReachedPly = 0;
 
+    // ---------------- Move history voor navigatie ---------------- //
 
+    private static class BoardSnapshot {
+        String fen;                         // Bordstand in FEN
+        boolean whiteTurn;                  // Wie is aan zet in deze stand
+        Position lastDoubleStepPawn;        // Voor en passant (mag null zijn)
+
+        BoardSnapshot(String fen, boolean whiteTurn, Position lastDoubleStepPawn) {
+            this.fen = fen;
+            this.whiteTurn = whiteTurn;
+            this.lastDoubleStepPawn = lastDoubleStepPawn;
+        }
+    }
+
+    private final java.util.List<BoardSnapshot> history = new java.util.ArrayList<>();
+    private int historyIndex = -1; // index in history; -1 = nog geen snapshot
 
     public void setExerciseSession(ExerciseSession session) {
+
         this.exerciseSession = session;
+
+        // Ply-teller resetten bij start van nieuwe oefening
+        this.currentPly = 0;
+        this.maxReachedPly = 0;
     }
 
     public String getExtractedLastMove() {
@@ -33,17 +59,23 @@ public class Controller {
         NONE,
         SOURCE_SELECTED
     }
-    public enum ExerciseStage{
+
+    public enum ExerciseStage {
         PLAYER_TO_MOVE,
         COMPUTER_TO_MOVE,
-        NONE};
+        NONE
+    }
+
+    ;
 
     private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SelectionStage stage = SelectionStage.NONE;
     private ExerciseSession exerciseSession;
+
     public void setExerciseStage(ExerciseStage exerciseStage) {
         this.exerciseStage = exerciseStage;
     }
+
     public String getExpectedSan() {
         if (exerciseSession == null) {
             return null;
@@ -65,15 +97,13 @@ public class Controller {
     }
 
     private boolean whiteTurn;
-    public String lastmove;
+
 
     public SquareView getLastViewMove() {
         return lastViewMove;
     }
 
     private SquareView lastViewMove;
-
-
 
 
     // telt het aantal zetten op het bord
@@ -223,28 +253,28 @@ public class Controller {
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
 
         handlePawnSpecials(board, sourcePos, targetPos);
-        extractedLastMove = extractLastMove(board,targetPos);
+        extractedLastMove = extractLastMove(board, targetPos);
 
         board.movePiece(sourcePos, targetPos);
         handlePromotion(board, targetView, targetPos);
-
+        //Beurt wisselen
         toggleTurn();
+        board.notifyListenersTurnChanged(whiteTurn);
+
+        //Nieuwe bordtoestand +beurt vastleggen in geschiedenis
+        saveSnapshot(board);
 
         lastViewMove = targetView;
-
-        board.notifyListenersTurnChanged(whiteTurn);
         cleanupSelection();
-
 
     }
 
     private String extractLastMove(BoardModel board, Position targetPos) {
         String s;
-        if (board.getSquare(targetPos).getPiece() ==  null){
-            s = board.getSquare(sourcePos).getPiece().letterPiece()  +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
-        }
-        else{
-            s = board.getSquare(sourcePos).getPiece().letterPiece()  + "x" +  CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
+        if (board.getSquare(targetPos).getPiece() == null) {
+            s = board.getSquare(sourcePos).getPiece().letterPiece() + CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
+        } else {
+            s = board.getSquare(sourcePos).getPiece().letterPiece() + "x" + CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
         }
         return s;
     }
@@ -317,23 +347,22 @@ public class Controller {
 
     public void toggleTurn() {
         whiteTurn = !whiteTurn;
-        System.out.println("Whose turn is it? " +  (whiteTurn ? "White" : "Black"));
-        //notifyTurnChanged();
+        System.out.println("Whose turn is it? " + (whiteTurn ? "White" : "Black"));
+
     }
 
-    private void notifyTurnChanged() {
-        if( board != null){
-            board.notifyListenersTurnChanged(whiteTurn);
-        }
-    }
+
+
     public void syncTurnFromFEN(String fen) {
         try {
             String[] parts = fen.split("\\s+");
             if (parts.length >= 2) {
                 whiteTurn = parts[1].equals("w");
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
+
     private void playOpponentMoveIfAny(BoardModel board) {
         if (exerciseSession == null) return;
 
@@ -359,6 +388,9 @@ public class Controller {
             toggleTurn();
             board.notifyListenersTurnChanged(whiteTurn);
 
+            //snapshot van deze stand
+            saveSnapshot(board);
+
             // ply vooruit
             exerciseSession.advancePly();
             if (isExerciseFinished()) {
@@ -367,6 +399,7 @@ public class Controller {
         });
         pause.play();
     }
+
     private void showWrongMoveMessage() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Onjuiste zet");
@@ -387,12 +420,49 @@ public class Controller {
         return exerciseSession != null && !exerciseSession.hasNext();
     }
 
-    public void setTurnFromFen(String fen) {
-        String[] parts = fen.trim().split("\\s+");
-        if (parts.length >= 2) {
-            this.whiteTurn = parts[1].equals("w");
-        } else {
-            this.whiteTurn = true; // fallback
+
+    public int getCurrentPly() {
+        return currentPly;
+    }
+    // Sla de huidige bordstand + beurt op als snapshot
+    private void saveSnapshot(BoardModel board) {
+        // Als we eerder een undo/redo-achtig iets doen: snij "toekomst" af
+        while (history.size() > historyIndex + 1) {
+            history.remove(history.size() - 1);
+        }
+
+        String fen = board.exportToFEN(whiteTurn); // alleen de stukken; metadata komt later wel
+        Position lastDouble = board.getLastDoubleStepPawnPosition();
+
+        BoardSnapshot snap = new BoardSnapshot(fen, whiteTurn, lastDouble);
+        history.add(snap);
+        historyIndex = history.size() - 1;
+    }
+    // Aanroepen als je een nieuw board / nieuwe oefening start.
+    public void startNewHistory(BoardModel board) {
+        history.clear();
+        historyIndex = -1;
+        saveSnapshot(board); // beginstand (ply 0)
+    }
+    public void undoLastMove(BoardModel board) {
+        if (historyIndex <= 0) {
+            System.out.println("Geen zet om terug te draaien.");
+            return;
+        }
+
+        historyIndex--;
+        BoardSnapshot snap = history.get(historyIndex);
+
+        System.out.println("Undo to index " + historyIndex + " / size " + history.size());
+
+        board.initializeFromFEN(snap.fen);
+        board.setLastDoubleStepPawnPosition(snap.lastDoubleStepPawn);
+
+        this.whiteTurn = snap.whiteTurn;
+
+        if (exerciseSession != null) {
+            exerciseSession.rewindPly();
+            System.out.println("Exercise ply index after undo = " + exerciseSession.getIndex());
         }
     }
 }

@@ -1,5 +1,6 @@
 package application.chesstrainerfx.view;
 
+import application.chesstrainerfx.controller.ChapterPresenter;
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
@@ -32,17 +33,18 @@ import java.util.regex.Pattern;
 public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
 
-//    private Controller controller;
-    private Controller controller = new Controller();
+    //    private Controller controller;
+    //private Controller controller = new Controller();
     private String[] parts;
-    private enum Mode { LIST, BOARD }
+
+    private enum Mode {LIST, BOARD}
 
     private final List<Exercise> exercises;
     private final String chapterTitle;
     private final Consumer<Void> onBack;
     private final ExerciseSessionBuilder exerciseSessionBuilder = new ExerciseSessionBuilder();
     private Mode mode = Mode.LIST;
-
+    private ChapterPresenter presenter;
 
     // UI onderdelen
     private Button backBtn;
@@ -65,10 +67,13 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         setBackground(Background.EMPTY);
         setStyle("-fx-background-color: transparent;");
         this.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
+
+        // Presenter aanmaken (moet vóór layout vanwege event handlers)
+        this.presenter = new ChapterPresenter(this, exercises, exerciseSessionBuilder, onBack);
+
         buildLayout();
         switchMode(Mode.LIST);
     }
-
 
 
     private void buildLayout() {
@@ -90,7 +95,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         centerStack.setCache(true);
         centerStack.setCacheHint(javafx.scene.CacheHint.SPEED);
 
-       
+
         bg.fitWidthProperty().bind(rootStack.widthProperty());
         bg.fitHeightProperty().bind(rootStack.heightProperty());
         bg.setMouseTransparent(true);
@@ -118,20 +123,16 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
         backBtn = new Button("← Back");
         backBtn.setStyle("""
-                -fx-background-color: rgba(20,20,20,0.65);
-                -fx-text-fill: white;
-                -fx-font-weight: bold;
-                -fx-background-radius: 8;
-                -fx-padding: 6 12 6 12;
-                -fx-border-color: rgba(255,255,255,0.35);
-                -fx-border-radius: 8;
-        """);
+                        -fx-background-color: rgba(20,20,20,0.65);
+                        -fx-text-fill: white;
+                        -fx-font-weight: bold;
+                        -fx-background-radius: 8;
+                        -fx-padding: 6 12 6 12;
+                        -fx-border-color: rgba(255,255,255,0.35);
+                        -fx-border-radius: 8;
+                """);
         backBtn.setOnAction(e -> {
-            if (mode == Mode.BOARD) {
-                switchMode(Mode.LIST);  // terug naar exercises-overzicht
-            } else {
-                onBack.accept(null);    // terug naar Mating Patterns
-            }
+            presenter.onBackPressed(mode == Mode.BOARD);
         });
 
         titleLabel = new Label(chapterTitle);
@@ -155,10 +156,10 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         theoryLabel = new Label(theoryText);
         theoryLabel.setWrapText(true);
         theoryLabel.setStyle("""
-            -fx-text-fill: #f5deb3;
-            -fx-font-size: 15px;
-        """);
-        int widthLabel =900;
+                    -fx-text-fill: #f5deb3;
+                    -fx-font-size: 15px;
+                """);
+        int widthLabel = 900;
 
         theoryLabel.setMaxWidth(widthLabel);
         theoryLabel.setPrefWidth(widthLabel);
@@ -176,9 +177,9 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
         Region theoryBg = new Region();
         theoryBg.setBackground(new Background(new BackgroundFill(
-                new LinearGradient(0,0,0,1,true, CycleMethod.NO_CYCLE,
-                        new Stop(0, Color.color(0,0,0,0.40)),
-                        new Stop(1, Color.color(0,0,0,0.08))
+                new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
+                        new Stop(0, Color.color(0, 0, 0, 0.40)),
+                        new Stop(1, Color.color(0, 0, 0, 0.08))
                 ),
                 CornerRadii.EMPTY, Insets.EMPTY
         )));
@@ -189,7 +190,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
         StackPane topStack = new StackPane(
                 theoryBg,
-               theoryBox
+                theoryBox
         );
         topStack.setPadding(new Insets(16, 24, 12, 24));
         topStack.setAlignment(Pos.CENTER_LEFT);
@@ -211,7 +212,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
             b.getStyleClass().add("tile");
             b.setPrefSize(160, 160);
             b.setWrapText(true);
-            b.setOnAction(e -> showExercise(ex));
+            b.setOnAction(e -> presenter.onExerciseSelected(ex));
             tilesGrid.getChildren().add(b);
         }
 
@@ -239,62 +240,31 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         boardPane.setVisible(false);  // start onzichtbaar
         boardPane.setManaged(false);
     }
-    private void showExercise(Exercise ex) {
-        // ------------------------------------------------------------
-        // 1) Reset state voor nieuwe exercise
-        // ------------------------------------------------------------
-        controller.resetMoveCounter();
 
-        // ------------------------------------------------------------
-        // 2) Pak FEN en maak een nieuw BoardModel + Controller
-        //    (Belangrijk: eerst model initten, dan pas BoardView bouwen)
-        // ------------------------------------------------------------
-        String fen = (ex.getFen() == null) ? "" : ex.getFen().trim();
+    // door presenter aangeroepen
+    public void showExerciseBoard(BoardModel boardModel,
+                                  Controller controller,
+                                  List<String> moveLines) {
 
-        BoardModel boardModel = new BoardModel();
-        boardModel.initializeFromFEN(fen);
-
-        controller = new Controller();
-        controller.syncTurnFromFEN(fen);              // zet whiteTurn op basis van "w" / "b" in FEN
-        controller.setExerciseStage(Controller.ExerciseStage.PLAYER_TO_MOVE);
-        controller.resetMoveCounter();
-        // Listener (optioneel; jij gebruikt dit voor moveCounter/hints)
-        boardModel.addListener(this);
-
-        // ------------------------------------------------------------
-        // 3) Bouw ExerciseSession uit FEN + PGN moves (zonder variaties)
-        //    -> deze methode is jouw "Test-logica"
-        //    LET OP: buildSessionFromExercise(ex) moet in ChapterWindow bestaan
-        // ------------------------------------------------------------
-        controller.setExerciseSession(
-                exerciseSessionBuilder.buildSessionFromExercise(ex)
-        );
-        // ------------------------------------------------------------
-        // 4) Bouw BoardView (met correcte side-to-move)
-        // ------------------------------------------------------------
+        // BoardView op basis van model + controller
         boardView = new BoardView(boardModel, controller, controller.isWhiteTurn(), 600);
 
-        // ------------------------------------------------------------
-        // 5) Rechts: Moves ListView (UI mag blijven zoals jij het had)
-        // ------------------------------------------------------------
+        // Moves ListView (UI)
         movesList = new ListView<>();
         movesList.setStyle("""
-        -fx-background-color: rgba(20,10,5,0.55);
-        -fx-control-inner-background: transparent;
-        -fx-text-fill: white;
-        -fx-font-family: 'Consolas';
-        -fx-font-size: 14px;
-        -fx-border-color: rgba(255,255,255,0.2);
-        -fx-border-radius: 6;
-    """);
+                    -fx-background-color: rgba(20,10,5,0.55);
+                    -fx-control-inner-background: transparent;
+                    -fx-text-fill: white;
+                    -fx-font-family: 'Consolas';
+                    -fx-font-size: 14px;
+                    -fx-border-color: rgba(255,255,255,0.2);
+                    -fx-border-radius: 6;
+                """);
 
         String cssPath = getClass().getResource("/listview-style.css").toExternalForm();
         movesList.getStylesheets().add(cssPath);
-        //movesList.setPrefWidth(200);
         movesList.setPrefWidth(320);
         movesList.setMinWidth(320);
-
-
 
         movesList.setCellFactory(lv -> new ListCell<>() {
             private final Label lbl = new Label();
@@ -302,7 +272,6 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
             {
                 lbl.setWrapText(false);
                 lbl.setStyle("-fx-text-fill: white; -fx-font-family: Consolas; -fx-font-size: 14px;");
-                // Belangrijk: label maxWidth volgt de ListView breedte (minus scrollbar/padding)
                 lbl.maxWidthProperty().bind(lv.widthProperty().subtract(35));
             }
 
@@ -318,18 +287,14 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
             }
         });
 
-        // Vul de zichtbare moves-lijst (alleen voor UI / debug)
-        fillMoves(ex.getMoves());
-        System.out.println("moves: " + ex.getMoves());
-        System.out.println("MovesList size = " + movesList.getItems().size());
+        // Moves vullen met de door de presenter aangeleverde regels
+        movesList.getItems().setAll(moveLines);
         if (!movesList.getItems().isEmpty()) {
             movesList.getSelectionModel().select(0);
         }
         movesList.setVisible(false);
 
-        // ------------------------------------------------------------
-        // 6) Buttons: Show/Hide moves + Hint
-        // ------------------------------------------------------------
+        // Buttons en hint-label
         Button showHideMovesBtn = new Button("Show moves!");
         showHideMovesBtn.setPrefHeight(30);
         showHideMovesBtn.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
@@ -346,37 +311,25 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         Label lblHint = new Label();
         lblHint.setTextFill(Color.WHEAT);
 
-        // Hint: toon de volgende verwachte zet uit session
-        // (simpel; later kun je dit mooier maken, bv. highlight squares)
-        btnHint.setOnAction(e -> {
-            String san = controller.getExpectedSan();
-            if (san != null) {
-                lblHint.setText("Next: " + san);
-            } else {
-                lblHint.setText("Exercise finished.");
-            }
-        });
+        btnHint.setOnAction(e -> lblHint.setText(presenter.getHintText()));
 
-
-        // Toggle on click
+        // Toggle moves visibility
         showHideMovesBtn.setOnAction(e -> {
             movesList.setVisible(!movesList.isVisible());
-            // Hint knop alleen tonen wanneer moves verborgen zijn (jouw oude logica)
             btnHint.setVisible(!movesList.isVisible());
         });
+        Button btnUndo = new Button("Undo");
+        btnUndo.setOnAction(e -> controller.undoLastMove(boardModel));
 
-        // ------------------------------------------------------------
-        // 7) Layout: board + moveBox rechts
-        // ------------------------------------------------------------
         VBox moveBox = new VBox(22);
         moveBox.setPadding(new Insets(32, 0, 0, 0));
-        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint);
+        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint,btnUndo);
         moveBox.setPrefWidth(320);
         moveBox.setMinWidth(320);
+
         HBox row = new HBox(30, boardView, moveBox);
         row.setAlignment(Pos.CENTER_LEFT);
 
-        // Zet de BOARD view in het center-stack en switch mode
         boardPane.getChildren().setAll(row);
         switchMode(Mode.BOARD);
     }
@@ -384,13 +337,14 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
     @Override
     public void onBoardUpdated() {
-        controller.incrementMoveCounter();
-        System.out.println(controller.getMoveCounter());
+        presenter.onBoardUpdated();
+
     }
 
     private void switchMode(Mode m) {
         mode = m;
         boolean list = (m == Mode.LIST);
+        System.out.println(list);
 
         tilesScroll.setVisible(list);
         tilesScroll.setManaged(list);
@@ -402,84 +356,9 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         // backBtn.setText(list ? "← Back" : "← Exercises");
     }
 
-    private void fillMoves(String moveString) {
-        movesList.getItems().clear();
-        if (moveString == null) return;
 
-        // --- Debug: check input ---
-        System.out.println("RAW moveString: [" + moveString + "]");
-
-        // gebruik nu de util
-        String clean = PgnUtils.cleanMoveString(moveString);
-
-        // --- Debug: check cleaned ---
-        System.out.println("CLEAN: [" + clean + "]");
-
-        if (clean.isBlank()) return;
-
-
-        //  Split per zetnummer. Fallback als split niets oplevert.
-        Pattern moveBlockPattern = Pattern.compile("\\d+\\.(?:\\.\\.)?\\s.*?(?=\\d+\\.(?:\\.\\.)?\\s|$)");
-        Matcher matcher = moveBlockPattern.matcher(clean);
-
-        int added = 0;
-        while (matcher.find()) {
-            String part = matcher.group().trim();
-            if (!part.isEmpty()) {
-                movesList.getItems().add(part);
-                added++;
-            }
-        }
-
-        System.out.println("Size of parts " + added);
-        System.out.println("Parts: " + movesList.getItems());
-
-        // 9) Fallback: als regex om wat voor reden dan ook niets vond,
-        //    dan tonen we gewoon de hele string als één item:
-        if (added == 0) {
-            movesList.getItems().add(clean);
-        }
-
-        System.out.println("MovesList size = " + movesList.getItems().size());
-    }
-
-    private static boolean parseSideToMoveFromFen(String fen) {
-        try {
-            String[] parts = fen.trim().split("\\s+");
-            return parts.length >= 2 && "w".equals(parts[1]);
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
-    /** Optioneel: eigen venster */
-    public void showInStage(Stage owner) {
-        Scene scene = new Scene(this, 1500, 1000);
-        scene.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
-        Stage stage = new Stage();
-        stage.setTitle(chapterTitle);
-        stage.setScene(scene);
-        stage.initOwner(owner);
-        stage.show();
-    }
-
-    static String removeVariations(String pgn){
-        StringBuilder result = new StringBuilder();
-        int depth = 0;
-
-        System.out.println(pgn.toCharArray());
-
-        for(char c : pgn.toCharArray()){
-            if(c == '('){
-                depth++;
-            } else if (c == ')') {
-                depth--;
-            } else if (depth == 0) {
-                result.append(c);
-            }
-
-        }
-        return result.toString();
+    public void showExerciseList() {
+        switchMode(Mode.LIST);
     }
 
 }

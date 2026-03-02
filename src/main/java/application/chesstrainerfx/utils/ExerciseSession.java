@@ -33,7 +33,17 @@ public class ExerciseSession {
         index++;
     }
 
+    public void rewindPly() {
+        if (index > 0) {
+            index--;
+        }
+    }
+
     public boolean hasNext() {
         return index < moves.size();
+    }
+
+    public int getIndex() {
+        return index;
     }
 }

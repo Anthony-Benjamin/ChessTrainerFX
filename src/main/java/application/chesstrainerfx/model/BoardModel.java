@@ -44,6 +44,13 @@ public class BoardModel {
         if (fen.isEmpty()) {
             fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
         }
+
+        // 1) Bord volledig leegmaken
+        for (SquareModel sq : squares) {
+            sq.setPiece(null);
+        }
+        lastDoubleStepPawnPosition = null; // en-passant info resetten
+
         String[] FENString = fen.split(" ");
         String FEN = FENString[0];
         String[] ranks = FEN.split("/");
@@ -63,6 +70,7 @@ public class BoardModel {
                 }
             }
         }
+        notifyListeners();
         if (FENString.length > 1) {
             boolean whiteToMove = FENString[1].equals("w");
             // meld dit via de listeners
@@ -161,6 +169,11 @@ public class BoardModel {
     }
 
     public String exportToFEN() {
+
+        return exportToFEN(true);
+    }
+
+    public String exportToFEN(boolean whiteToMove) {
         StringBuilder fen = new StringBuilder();
 
         for (int row = 0; row < 8; row++) {
@@ -185,7 +198,11 @@ public class BoardModel {
             }
         }
 
-        fen.append(" w - - 0 1"); // basis FEN metadata
+        // hier gebruiken we nu de echte beurt
+        fen.append(" ");
+        fen.append(whiteToMove ? "w" : "b");
+        fen.append(" - - 0 1"); // castling / en passant / counters kun je later nog echt maken
+
         return fen.toString();
     }
 
