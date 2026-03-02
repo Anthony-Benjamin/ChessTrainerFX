@@ -445,48 +445,63 @@ public class Controller {
         saveSnapshot(board); // beginstand (ply 0)
     }
     public void undoLastMove(BoardModel board) {
+        // We willen 1 "volledige zet" terug: max 2 plies
         if (historyIndex <= 0) {
             System.out.println("Geen zet om terug te draaien.");
             return;
         }
 
-        historyIndex--;
+        // Hoeveel stappen kúnnen we terug? (1 of 2)
+        int delta = Math.min(2, historyIndex);
+
+        // Geschiedenis-index terugzetten
+        historyIndex -= delta;
         BoardSnapshot snap = history.get(historyIndex);
 
-        System.out.println("Undo to index " + historyIndex + " / size " + history.size());
+        System.out.println("Undo full move -> to index " + historyIndex +
+                " / size " + history.size() + " (delta=" + delta + ")");
 
+        // 1) Bord + turn terugzetten
         board.initializeFromFEN(snap.fen);
         board.setLastDoubleStepPawnPosition(snap.lastDoubleStepPawn);
-
         this.whiteTurn = snap.whiteTurn;
 
+        // 2) Oefensessie ook delta plies terug
         if (exerciseSession != null) {
-            exerciseSession.rewindPly();
-            System.out.println("Exercise ply index after undo = " + exerciseSession.getIndex());
+            for (int i = 0; i < delta; i++) {
+                exerciseSession.rewindPly();
+            }
+            System.out.println("Exercise index after undo = " + exerciseSession.getIndex());
         }
     }
     public void redoMove(BoardModel board) {
-        // Kunnen we überhaupt vooruit?
         if (historyIndex >= history.size() - 1) {
-            System.out.println("Geen zet om vooruit te zetten. size=" + history.size() + ", index=" + historyIndex);
+            System.out.println("Geen zet om vooruit te zetten. size=" +
+                    history.size() + ", index=" + historyIndex);
             return;
         }
 
-        // Eén snapshot vooruit
-        historyIndex++;
+        // Maximaal 2 plies vooruit, maar niet voorbij het einde
+        int maxForward = history.size() - 1 - historyIndex;
+        int delta = Math.min(2, maxForward);
+
+        historyIndex += delta;
         BoardSnapshot snap = history.get(historyIndex);
 
-        System.out.println("Redo to index " + historyIndex + " / size " + history.size());
+        System.out.println("Redo full move -> to index " + historyIndex +
+                " / size " + history.size() + " (delta=" + delta + ")");
 
-        // 1) Bord + turn terugzetten vanuit snapshot
+        // 1) Bord + turn herstellen
         board.initializeFromFEN(snap.fen);
         board.setLastDoubleStepPawnPosition(snap.lastDoubleStepPawn);
         this.whiteTurn = snap.whiteTurn;
 
-        // 2) Oefensessie ook één ply vooruit
+        // 2) Oefensessie delta plies vooruit
         if (exerciseSession != null) {
-            exerciseSession.advancePly();
-            System.out.println("Exercise ply index after redo = " + exerciseSession.getIndex());
+            for (int i = 0; i < delta; i++) {
+                exerciseSession.advancePly();
+            }
+            System.out.println("Exercise index after redo = " + exerciseSession.getIndex());
         }
     }
 }

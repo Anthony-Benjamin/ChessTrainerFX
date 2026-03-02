@@ -263,8 +263,8 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
         String cssPath = getClass().getResource("/listview-style.css").toExternalForm();
         movesList.getStylesheets().add(cssPath);
-        movesList.setPrefWidth(320);
-        movesList.setMinWidth(320);
+        movesList.setPrefWidth(250);
+        movesList.setMinWidth(250);
 
         movesList.setCellFactory(lv -> new ListCell<>() {
             private final Label lbl = new Label();
@@ -327,8 +327,8 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         VBox moveBox = new VBox(22);
         moveBox.setPadding(new Insets(32, 0, 0, 0));
         moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint,btnUndo, btnRedo);
-        moveBox.setPrefWidth(320);
-        moveBox.setMinWidth(320);
+        moveBox.setPrefWidth(250);
+        moveBox.setMinWidth(250);
 
         HBox row = new HBox(30, boardView, moveBox);
         row.setAlignment(Pos.CENTER_LEFT);
