@@ -155,7 +155,7 @@ public class ChapterView2 extends Application {
         BoardViewSetup boardView = new BoardViewSetup(boardModel, controller, whiteToMove,800);
 
         // Bord leeg → FEN laden → UI refresh
-        for (SquareModel sq : boardModel.getSquares()) sq.setPiece(null);
+        /*for (SquareModel sq : boardModel.getSquares()) sq.setPiece(null);*/
         boardModel.initializeFromFEN(fen == null ? "" : fen);
         boardView.onBoardUpdated();
 

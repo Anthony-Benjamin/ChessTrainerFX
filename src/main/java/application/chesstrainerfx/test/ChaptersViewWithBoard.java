@@ -238,9 +238,7 @@ public class ChaptersViewWithBoard extends Application {
 
     // Reset: wis alle stukken, laad FEN, forceer redraw (BoardView.onBoardUpdated)
     private static void resetToFEN(BoardModel model, BoardView view, String fen) {
-        for (SquareModel sq : model.getSquares()) {
-            sq.setPiece(null);
-        }
+
         model.initializeFromFEN(nullToEmpty(fen));
         view.onBoardUpdated();
     }

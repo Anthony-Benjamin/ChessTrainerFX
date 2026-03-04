@@ -1,31 +1,23 @@
-package application.chesstrainerfx.utils; // of utils, kies wat jij gebruikt
+package application.chesstrainerfx.utils;
 
-import application.chesstrainerfx.model.SquareModel;
-import application.chesstrainerfx.utils.*;
-import application.pgnreader.model.Exercise;
 import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.model.SquareModel;
+import application.pgnreader.model.Exercise;
 
 import java.util.ArrayList;
 import java.util.List;
-// importeer hier ook:
-// - ExerciseSession
-// - ParsedMoves / ChessMoveParser
-// - Move
-// - MoveValidator
-// afhankelijk van waar ze in jouw project staan
 
 public class ExerciseSessionBuilder {
 
     public ExerciseSession buildSessionFromExercise(Exercise exercise) {
-
         String fen = exercise.getFen();
 
         // PGN: variaties eruit + comments/annotations eruit
         String main = PgnUtils.cleanMoveString(exercise.getMoves());
-        main = main.replaceAll("\\{[^}]*}", " ");                // {...} weg
-        main = main.replaceAll("\\[[^]]*]", " ");                // [..] weg (soms)
-        main = main.replace("*", " "); // harde fix voor losstaande *
-        main = main.replaceAll("(?i)\\b(1-0|0-1|1/2-1/2)\\b", " "); // normale resultaten
+        main = main.replaceAll("\\{[^}]*}", " ");                 // {...} weg
+        main = main.replaceAll("\\[[^]]*]", " ");                 // [..] weg (soms)
+        main = main.replace("*", " ");                            // harde fix voor losstaande *
+        main = main.replaceAll("(?i)\\b(1-0|0-1|1/2-1/2)\\b", " "); // resultaten
         main = main.replaceAll("\\s+", " ").trim();
 
         ParsedMoves parsed = ChessMoveParser.parseMoves(main);
@@ -42,12 +34,12 @@ public class ExerciseSessionBuilder {
         BoardModel temp = new BoardModel();
         temp.initializeFromFEN(fen);
 
-        boolean whiteToMove = fen.split("\\s+").length >= 2 && fen.split("\\s+")[1].equals("w");
+        String[] fenParts = fen.split("\\s+");
+        boolean whiteToMove = fenParts.length >= 2 && fenParts[1].equals("w");
         PieceColor toMove = whiteToMove ? PieceColor.WHITE : PieceColor.BLACK;
 
         List<Move> mainLine = new ArrayList<>();
         List<String> sanLine = new ArrayList<>();
-
 
         for (String san : sanPlies) {
             if (san == null || san.isBlank()) continue;
@@ -58,9 +50,10 @@ public class ExerciseSessionBuilder {
             }
 
             mainLine.add(m);
-            sanLine.add(san); // 👈 originele SAN bewaren
+            sanLine.add(san); // originele SAN bewaren
 
             applyMoveOnTempBoard(temp, m, san, toMove);
+
             toMove = (toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
         }
 
@@ -84,10 +77,8 @@ public class ExerciseSessionBuilder {
         }
 
         // promotie: e8=Q / dxe8=Q
-        String promotion = null;
         if (san.contains("=")) {
-            promotion = san.substring(san.indexOf('=') + 1); // "Q" etc
-            san = san.substring(0, san.indexOf('='));        // strip "=Q"
+            san = san.substring(0, san.indexOf('=')); // strip "=Q" etc (promotion afhandeling doen we later bij apply)
         }
 
         // target square = laatste 2 chars (bv "e6")
@@ -111,45 +102,51 @@ public class ExerciseSessionBuilder {
             idx = 1;
         }
 
-        // disambiguatie: bv Nbd2 of R1e1 of Qh4e1 (we ondersteunen file/rank)
+        // disambiguatie: bv Nbd2 of R1e1 (we ondersteunen file/rank hints)
         String middle = san.substring(idx, san.length() - 2);
-        middle = middle.replace("x", ""); // capture marker eruit
+        middle = middle.replace("x", "");
 
         Character fromFileHint = null; // 'a'..'h'
         Character fromRankHint = null; // '1'..'8'
+
         for (char c : middle.toCharArray()) {
             if (c >= 'a' && c <= 'h') fromFileHint = c;
             if (c >= '1' && c <= '8') fromRankHint = c;
         }
 
+        // Kandidaten zoeken: scan 8x8 via getSquare()
         List<Position> candidates = new ArrayList<>();
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                SquareModel sq = board.getSquare(new Position(r, c));
+                if (sq == null) continue;
 
-        for (SquareModel sq : board.getSquares()) {
-            PieceModel p = sq.getPiece();
-            if (p == null) continue;
-            if (p.getColor() != color) continue;
-            if (p.getType() != type) continue;
+                PieceModel p = sq.getPiece();
+                if (p == null) continue;
+                if (p.getColor() != color) continue;
+                if (p.getType() != type) continue;
 
-            Position from = sq.getPosition();
+                Position from = sq.getPosition();
 
-            // hints filteren
-            if (fromFileHint != null) {
-                int fileCol = fromFileHint - 'a';
-                if (from.getColumn() != fileCol) continue;
-            }
-            if (fromRankHint != null) {
-                int rank = fromRankHint - '1';     // 0..7
-                int rowExpected = 7 - rank;        // want rank '1' is row 7 in jouw systeem
-                if (from.getRow() != rowExpected) continue;
-            }
+                // hints filteren
+                if (fromFileHint != null) {
+                    int fileCol = fromFileHint - 'a';
+                    if (from.getColumn() != fileCol) continue;
+                }
+                if (fromRankHint != null) {
+                    int rank = fromRankHint - '1'; // 0..7
+                    int rowExpected = 7 - rank;    // rank '1' is row 7
+                    if (from.getRow() != rowExpected) continue;
+                }
 
-            if (MoveValidator.isValidMove(board, p, from, to)) {
-                candidates.add(from);
+                if (MoveValidator.isValidMove(board, p, from, to)) {
+                    candidates.add(from);
+                }
             }
         }
 
         // Pawn capture hint: "fxe6" → file hint zit aan begin
-        if (type == PieceType.PAWN && sanRaw.contains("x") && sanRaw.length() >= 1) {
+        if (type == PieceType.PAWN && sanRaw.contains("x") && !sanRaw.isEmpty()) {
             char file = sanRaw.charAt(0);
             if (file >= 'a' && file <= 'h') {
                 int col = file - 'a';
@@ -158,7 +155,6 @@ public class ExerciseSessionBuilder {
         }
 
         if (candidates.size() != 1) {
-            // bij 0 of meerdere: voorlopig fail fast (dan weten we welke SAN lastig is)
             System.out.println("SAN resolve ambiguity: " + sanRaw + " candidates=" + candidates);
             return null;
         }
@@ -170,17 +166,22 @@ public class ExerciseSessionBuilder {
         Position from = move.getFrom();
         Position to = move.getTo();
 
-        PieceModel piece = board.getSquare(from).getPiece();
+        SquareModel fromSq = board.getSquare(from);
+        SquareModel toSq = board.getSquare(to);
+        if (fromSq == null || toSq == null) return;
+
+        PieceModel piece = fromSq.getPiece();
         if (piece == null) return;
 
         // En passant (simpel): pawn diagonaal naar leeg veld → remove captured pawn
         if (piece.getType() == PieceType.PAWN) {
-            PieceModel target = board.getSquare(to).getPiece();
+            PieceModel target = toSq.getPiece();
             int dx = Math.abs(to.getColumn() - from.getColumn());
             if (dx == 1 && target == null) {
                 // captured pawn staat op (from.row, to.col)
                 Position cap = new Position(from.getRow(), to.getColumn());
-                board.getSquare(cap).removePiece();
+                SquareModel capSq = board.getSquare(cap);
+                if (capSq != null) capSq.removePiece();
             }
         }
 
@@ -205,17 +206,24 @@ public class ExerciseSessionBuilder {
 
         // Promotie: als SAN "=Q" etc bevat
         if (sanRaw.contains("=")) {
-            char promo = sanRaw.charAt(sanRaw.indexOf('=') + 1);
-            PieceType newType = switch (promo) {
-                case 'Q' -> PieceType.QUEEN;
-                case 'R' -> PieceType.ROOK;
-                case 'B' -> PieceType.BISHOP;
-                case 'N' -> PieceType.KNIGHT;
-                default -> PieceType.QUEEN;
-            };
-            board.getSquare(to).setPiece(new PieceModel(newType, color));
+            int idx = sanRaw.indexOf('=');
+            if (idx >= 0 && idx + 1 < sanRaw.length()) {
+                char promo = sanRaw.charAt(idx + 1);
+                PieceType newType = switch (promo) {
+                    case 'Q' -> PieceType.QUEEN;
+                    case 'R' -> PieceType.ROOK;
+                    case 'B' -> PieceType.BISHOP;
+                    case 'N' -> PieceType.KNIGHT;
+                    default  -> PieceType.QUEEN;
+                };
+                SquareModel toAfter = board.getSquare(to);
+                if (toAfter != null) {
+                    toAfter.setPiece(new PieceModel(newType, color));
+                }
+            }
         }
     }
+
     private static Position pos(String square) {
         int[] rc = CoordinateSystem.coordinateToIndex(square); // [row, col]
         return new Position(rc[0], rc[1]);

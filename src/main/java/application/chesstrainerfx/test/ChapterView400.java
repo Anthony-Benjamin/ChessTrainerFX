@@ -229,9 +229,9 @@ public class ChapterView400 extends Application {
 
     private static void resetToFEN(BoardModel model, BoardView400 view, String fen) {
         // wis alles en laad fen
-        for (SquareModel sq : model.getSquares()) {
+        /*for (SquareModel sq : model.getSquares()) {
             sq.setPiece(null);
-        }
+        }*/
         model.initializeFromFEN(nullToEmpty(fen));
         view.onBoardUpdated(); // force redraw
     }

@@ -8,17 +8,17 @@ import java.util.List;
 
 public class BoardModel {
 
-    // --------------------------------------------------------------------
-    // Fields
-    // --------------------------------------------------------------------
-    private final List<SquareModel> squares = new ArrayList<>(64);
+    // 8x8 grid is de meest logische datastructuur voor een schaakbord
+    private final SquareModel[][] squares = new SquareModel[8][8];
+
+    // listeners blijven als lijst (variabel aantal)
     private final List<BoardChangeListener> listeners = new ArrayList<>();
 
-    // En passant tracking
+    // en-passant tracking
     private Position lastDoubleStepPawnPosition = null;
 
     // --------------------------------------------------------------------
-    // Snapshot type
+    // Snapshot helper (voor Undo/Redo)
     // --------------------------------------------------------------------
     public static class BoardSnapshot {
         private final PieceModel[][] pieces; // 8x8
@@ -30,89 +30,78 @@ public class BoardModel {
         }
     }
 
-    // --------------------------------------------------------------------
-    // Constructor
-    // --------------------------------------------------------------------
     public BoardModel() {
         initializeBoard();
     }
 
     // --------------------------------------------------------------------
-    // Board initialisation
+    // Board init
     // --------------------------------------------------------------------
-    /** Maakt alle 64 velden met hun Position. */
-    private void initializeBoard() {
-        squares.clear();
+    // maakt alle velden en hun positie (1x)
+    public void initializeBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                squares.add(new SquareModel(new Position(row, col)));
+                squares[row][col] = new SquareModel(new Position(row, col));
+            }
+        }
+    }
+
+    private void clearBoard() {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                squares[row][col].setPiece(null);
             }
         }
     }
 
     // --------------------------------------------------------------------
-    // FEN parsing & initialisation
+    // FEN init
     // --------------------------------------------------------------------
-    /**
-     * Initialiseert het bord vanuit een FEN-string.
-     * Zet alleen stukken + beurt (whiteToMove).
-     */
     public void initializeFromFEN(String fen) {
         if (fen == null || fen.isEmpty()) {
             fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
         }
 
-        // 1) Bord leegmaken
         clearBoard();
         lastDoubleStepPawnPosition = null;
 
-        String[] parts = fen.split("\\s+");
-        String placement = parts[0];
-
-        parseFenPlacement(placement);
-
-        // 2) Beurt synchroniseren en listeners informeren
-        if (parts.length > 1) {
-            boolean whiteToMove = parts[1].equals("w");
-            notifyListeners();
-            notifyListenersTurnChanged(whiteToMove);
-        } else {
-            notifyListeners();
-        }
-    }
-
-    /** Leegt alle stukken op het bord. */
-    private void clearBoard() {
-        for (SquareModel sq : squares) {
-            sq.setPiece(null);
-        }
-    }
-
-    /** Parse alleen het eerste FEN-veld (stuk-plaatsing). */
-    private void parseFenPlacement(String placement) {
+        String[] fenParts = fen.split("\\s+");
+        String placement = fenParts[0];
         String[] ranks = placement.split("/");
-        int index = 0;
 
+        int row = 0;
         for (String rank : ranks) {
-            char[] chars = rank.toCharArray();
-            for (char ch : chars) {
+            int col = 0;
+            for (char ch : rank.toCharArray()) {
                 if (Character.isDigit(ch)) {
-                    index += Character.digit(ch, 10);
+                    col += Character.digit(ch, 10);
                 } else {
-                    SquareModel square = squares.get(index);
-                    square.setPiece(pieceModelFromFenChar(ch));
-                    index++;
+                    squares[row][col].setPiece(pieceModelformFENChar(ch));
+                    col++;
                 }
             }
+            row++;
+        }
+
+        notifyListeners();
+
+        if (fenParts.length > 1) {
+            boolean whiteToMove = fenParts[1].equals("w");
+            notifyListenersTurnChanged(whiteToMove);
         }
     }
 
-    // --------------------------------------------------------------------
-    // Piece helpers
-    // --------------------------------------------------------------------
-    /** Maakt een PieceModel vanuit een FEN char (bijv. 'p', 'N', 'Q'). */
-    private PieceModel pieceModelFromFenChar(char c) {
-        PieceColor color = Character.isLowerCase(c) ? PieceColor.BLACK : PieceColor.WHITE;
+    // blijft dezelfde naam/signature houden om niks te breken
+    public PieceModel pieceModelformFENChar(char c) {
+        PieceColor color;
+        if (Character.isLowerCase(c)) {
+            color = PieceColor.BLACK;
+        } else if (Character.isUpperCase(c)) {
+            color = PieceColor.WHITE;
+        } else {
+            System.out.println("geen geldige letter");
+            return null;
+        }
 
         PieceType type;
         switch (Character.toLowerCase(c)) {
@@ -123,7 +112,7 @@ public class BoardModel {
             case 'n' -> type = PieceType.KNIGHT;
             case 'p' -> type = PieceType.PAWN;
             default -> {
-                System.out.println("Onbekende FEN-letter: " + c);
+                System.out.println("geen geldige letter");
                 return null;
             }
         }
@@ -131,34 +120,35 @@ public class BoardModel {
     }
 
     // --------------------------------------------------------------------
-    // Accessors
+    // Access
     // --------------------------------------------------------------------
-    public List<SquareModel> getSquares() {
-        return squares;
-    }
-
-    /** Zoekt de SquareModel met gegeven Position; null als buiten bord of niet gevonden. */
     public SquareModel getSquare(Position pos) {
         if (pos == null) return null;
+
         int row = pos.getRow();
         int col = pos.getColumn();
 
-        for (SquareModel sq : squares) {
-            Position p = sq.getPosition();
-            if (p.getRow() == row && p.getColumn() == col) {
-                return sq;
+        if (row < 0 || row >= 8 || col < 0 || col >= 8) {
+            return null;
+        }
+        return squares[row][col];
+    }
+
+    // Optioneel/legacy: als je ooit nog een flat list nodig hebt.
+    // In jouw huidige codebase lijkt dit niet gebruikt te worden.
+    public List<SquareModel> getSquares() {
+        List<SquareModel> flat = new ArrayList<>(64);
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                flat.add(squares[r][c]);
             }
         }
-        return null;
+        return flat;
     }
 
     // --------------------------------------------------------------------
-    // Mutating operations
+    // Moves
     // --------------------------------------------------------------------
-    /**
-     * Verplaatst een stuk van from -> to.
-     * Notificeert listeners en zet hasMoved = true op het stuk.
-     */
     public void movePiece(Position from, Position to) {
         if (from == null || to == null) return;
 
@@ -172,14 +162,14 @@ public class BoardModel {
         source.removePiece();
         target.setPiece(piece);
 
-        // Markeer dat het stuk bewogen heeft (relevant voor rokade/pion-logica)
+        // handig voor rokade/pawn logica later
         piece.setHasMoved(true);
 
         notifyListeners();
     }
 
     // --------------------------------------------------------------------
-    // En passant tracking
+    // En-passant
     // --------------------------------------------------------------------
     public void setLastDoubleStepPawnPosition(Position pos) {
         this.lastDoubleStepPawnPosition = pos;
@@ -190,35 +180,9 @@ public class BoardModel {
     }
 
     // --------------------------------------------------------------------
-    // Listener API
+    // Listeners
     // --------------------------------------------------------------------
-    public void addListener(BoardChangeListener/*public BoardSnapshot createSnapshot() {
-        PieceModel[][] copy = new PieceModel[8][8];
-
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                PieceModel p = getSquare(new Position(r, c)).getPiece();
-                if (p == null) {
-                    copy[r][c] = null;
-                } else {
-                    PieceModel p2 = new PieceModel(p.getType(), p.getColor());
-                    p2.setHasMoved(p.hasMoved());
-                    copy[r][c] = p2;
-                }
-            }
-        }
-        return new BoardSnapshot(copy, lastDoubleStepPawnPosition);
-    }
-
-    public void restoreSnapshot(BoardSnapshot snap) {
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                getSquare(new Position(r, c)).setPiece(snap.pieces[r][c]);
-            }
-        }
-        this.lastDoubleStepPawnPosition = snap.lastDoubleStepPawnPosition;
-        notifyListeners();
-    }*/ listener) {
+    public void addListener(BoardChangeListener listener) {
         listeners.add(listener);
     }
 
@@ -238,16 +202,18 @@ public class BoardModel {
     // FEN export
     // --------------------------------------------------------------------
     public String exportToFEN() {
+        // jij gebruikte altijd " w - - 0 1" als basis metadata
         return exportToFEN(true);
     }
 
+    // extra overload (handig voor jou/Controller)
     public String exportToFEN(boolean whiteToMove) {
         StringBuilder fen = new StringBuilder();
 
         for (int row = 0; row < 8; row++) {
             int emptyCount = 0;
             for (int col = 0; col < 8; col++) {
-                PieceModel piece = getSquare(new Position(row, col)).getPiece();
+                PieceModel piece = squares[row][col].getPiece();
                 if (piece == null) {
                     emptyCount++;
                 } else {
@@ -261,17 +227,45 @@ public class BoardModel {
             if (emptyCount > 0) {
                 fen.append(emptyCount);
             }
-            if (row < 7) {
-                fen.append('/');
-            }
+            if (row < 7) fen.append('/');
         }
 
-        fen.append(" ");
-        fen.append(whiteToMove ? "w" : "b");
-        fen.append(" - - 0 1"); // TODO: echte rokade/en-passant/counters
-
+        fen.append(whiteToMove ? " w" : " b");
+        fen.append(" - - 0 1"); // basis metadata (later uitbreiden)
         return fen.toString();
     }
 
+    // --------------------------------------------------------------------
+    // Snapshots (Undo/Redo)
+    // --------------------------------------------------------------------
+    public BoardSnapshot createSnapshot() {
+        PieceModel[][] copy = new PieceModel[8][8];
 
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                PieceModel p = squares[r][c].getPiece();
+                if (p == null) {
+                    copy[r][c] = null;
+                } else {
+                    PieceModel p2 = new PieceModel(p.getType(), p.getColor());
+                    p2.setHasMoved(p.hasMoved());
+                    copy[r][c] = p2;
+                }
+            }
+        }
+
+        return new BoardSnapshot(copy, lastDoubleStepPawnPosition);
+    }
+
+    public void restoreSnapshot(BoardSnapshot snap) {
+        if (snap == null) return;
+
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                squares[r][c].setPiece(snap.pieces[r][c]);
+            }
+        }
+        this.lastDoubleStepPawnPosition = snap.lastDoubleStepPawnPosition;
+        notifyListeners();
+    }
 }
