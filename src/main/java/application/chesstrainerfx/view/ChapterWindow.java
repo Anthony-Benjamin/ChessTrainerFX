@@ -3,15 +3,12 @@ package application.chesstrainerfx.view;
 import application.chesstrainerfx.controller.ChapterPresenter;
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
-import application.chesstrainerfx.model.SquareModel;
-import application.chesstrainerfx.utils.*;
 import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.pgnreader.model.Exercise;
 import javafx.beans.binding.Bindings;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 
 import javafx.scene.image.Image;
@@ -21,14 +18,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
-import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
@@ -44,7 +36,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     private final Consumer<Void> onBack;
     private final ExerciseSessionBuilder exerciseSessionBuilder = new ExerciseSessionBuilder();
     private Mode mode = Mode.LIST;
-    private ChapterPresenter presenter;
+    private final ChapterPresenter presenter;
 
     // UI onderdelen
     private Button backBtn;
@@ -142,7 +134,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         headerRow.getChildren().addAll(backBtn, titleLabel, spacer);
 
 
-        String theoryText = exercises.isEmpty() ? "" : exercises.getFirst().getComments();
+        String theoryText = exercises.isEmpty() ? "" : exercises.getFirst().comments();
 
         if (theoryText == null) theoryText = "";
 
@@ -208,7 +200,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         tilesGrid.setStyle("-fx-background-color: transparent;");
 
         for (Exercise ex : exercises) {
-            Button b = new Button(ex.getTitle());
+            Button b = new Button(ex.title());
             b.getStyleClass().add("tile");
             b.setPrefSize(160, 160);
             b.setWrapText(true);
@@ -311,7 +303,28 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         Label lblHint = new Label();
         lblHint.setTextFill(Color.WHEAT);
 
-        btnHint.setOnAction(e -> lblHint.setText(presenter.getHintText()));
+        btnHint.setOnAction(e -> {
+
+            List<String> options = controller.getExpectedSans();
+
+            if (options == null || options.isEmpty()) {
+                lblHint.setText("Exercise finished.");
+                return;
+            }
+
+            if (options.size() == 1) {
+                lblHint.setText("Next: " + options.get(0));
+            } else {
+
+                StringBuilder text = new StringBuilder("Possible moves:\n");
+
+                for (String san : options) {
+                    text.append("• ").append(san).append("\n");
+                }
+
+                lblHint.setText(text.toString().trim());
+            }
+        });
 
         // Toggle moves visibility
         showHideMovesBtn.setOnAction(e -> {

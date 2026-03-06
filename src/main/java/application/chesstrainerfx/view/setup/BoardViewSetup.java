@@ -26,8 +26,8 @@ public class BoardViewSetup extends HBox implements BoardChangeListener {
     private final Circle circle = new Circle();
     private final int boardSize;
     private PieceSelectorPane pieceSelector = null;
-    private Controller controller;
-    private float backgroundsize;
+    private final Controller controller;
+    private final float backgroundsize;
 
     public BoardViewSetup(BoardModel boardModel, Controller controller, boolean isWhitePerspective,int boardSize) {
         this.boardSize = boardSize;

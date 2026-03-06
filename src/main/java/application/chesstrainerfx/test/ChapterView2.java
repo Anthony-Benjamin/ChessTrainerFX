@@ -120,8 +120,8 @@ public class ChapterView2 extends Application {
 
         // Bij selectie: FEN + MOVES tonen
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldEx, ex) -> {
-            fenArea.setText(ex != null ? nullToEmpty(ex.getFen()) : "");
-            movesArea.setText(ex != null ? nullToEmpty(ex.getMoves()) : "");
+            fenArea.setText(ex != null ? nullToEmpty(ex.fen()) : "");
+            movesArea.setText(ex != null ? nullToEmpty(ex.moves()) : "");
         });
 
         if (!exercises.isEmpty()) {
@@ -135,9 +135,9 @@ public class ChapterView2 extends Application {
                 showInfo("Geen oefening geselecteerd.", "Selecteer eerst een oefening.");
                 return;
             }
-            String fen = nullToEmpty(ex.getFen());
+            String fen = nullToEmpty(ex.fen());
             boolean whiteToMove = parseSideToMoveFromFen(fen); // 'w' → true
-            openBoardWindow(fen, chapterTitle + " – " + ex.getTitle(), whiteToMove);
+            openBoardWindow(fen, chapterTitle + " – " + ex.title(), whiteToMove);
         });
 
         Stage s = new Stage();
@@ -172,7 +172,7 @@ public class ChapterView2 extends Application {
     private static boolean parseSideToMoveFromFen(String fen) {
         try {
             String[] parts = fen.trim().split("\\s+");
-            return parts.length >= 2 ? "w".equals(parts[1]) : true;
+            return parts.length < 2 || "w".equals(parts[1]);
         } catch (Exception e) {
             return true;
         }

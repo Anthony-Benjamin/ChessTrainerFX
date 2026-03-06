@@ -66,8 +66,6 @@ public class Controller {
         NONE
     }
 
-    ;
-
     private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SelectionStage stage = SelectionStage.NONE;
     private ExerciseSession exerciseSession;
@@ -220,7 +218,7 @@ public class Controller {
 
             // ply vooruit (speler heeft juiste zet gedaan)
             if (exerciseSession != null) {
-                exerciseSession.advancePly();
+                exerciseSession.advanceWithMove(userMove);
             }
             if (isExerciseFinished()) {
                 showMateMessage();
@@ -251,22 +249,24 @@ public class Controller {
     }
 
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
-
-        handlePawnSpecials(board, sourcePos, targetPos);
         extractedLastMove = extractLastMove(board, targetPos);
 
-        board.movePiece(sourcePos, targetPos);
-        handlePromotion(board, targetView, targetPos);
-        //Beurt wisselen
+        Move move = new Move(sourcePos, targetPos);
+
+        PieceType promotionChoice = null;
+        if (selectedPiece.getType() == PieceType.PAWN && (targetPos.getRow() == 0 || targetPos.getRow() == 7)) {
+            promotionChoice = askPromotionChoice();
+        }
+
+        MoveExecutor.executeMove(board, move, promotionChoice);
+
         toggleTurn();
         board.notifyListenersTurnChanged(whiteTurn);
 
-        //Nieuwe bordtoestand +beurt vastleggen in geschiedenis
         saveSnapshot(board);
 
         lastViewMove = targetView;
         cleanupSelection();
-
     }
 
     private String extractLastMove(BoardModel board, Position targetPos) {
@@ -284,45 +284,6 @@ public class Controller {
         if (sourceView != null) sourceView.removeSelection();
         targetView.removeSelection();
         resetSelection();
-    }
-
-    // ---------------- Pawn & Promotion Logic ---------------- //
-
-    private void handlePawnSpecials(BoardModel board, Position from, Position to) {
-        if (selectedPiece.getType() != PieceType.PAWN) return;
-
-        int dx = to.getColumn() - from.getColumn();
-        int dy = to.getRow() - from.getRow();
-        int dir = (selectedPiece.getColor() == PieceColor.WHITE) ? -1 : 1;
-
-        // En passant
-        if (Math.abs(dx) == 1 && dy == dir && board.getSquare(to).getPiece() == null) {
-            Position capturePos = new Position(from.getRow(), to.getColumn());
-            board.getSquare(capturePos).setPiece(null);
-        }
-
-        // Double step tracking
-        if (Math.abs(dy) == 2) {
-            board.setLastDoubleStepPawnPosition(to);
-        } else {
-            board.setLastDoubleStepPawnPosition(null);
-        }
-    }
-
-    private void handlePromotion(BoardModel board, SquareView view, Position pos) {
-        if (selectedPiece.getType() == PieceType.PAWN && (pos.getRow() == 0 || pos.getRow() == 7)) {
-            List<PieceType> options = List.of(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT);
-
-            ChoiceDialog<PieceType> dialog = new ChoiceDialog<>(PieceType.QUEEN, options);
-            dialog.setTitle("Promotie");
-            dialog.setHeaderText("Kies een promotie voor de pion:");
-            dialog.setContentText("Promoveer naar:");
-
-            PieceType choice = dialog.showAndWait().orElse(PieceType.QUEEN);
-
-            board.getSquare(pos).setPiece(new PieceModel(choice, selectedPiece.getColor()));
-            view.update();
-        }
     }
 
     // ---------------- Selection Reset ---------------- //
@@ -369,8 +330,8 @@ public class Controller {
         Move expected = exerciseSession.getExpectedMove();
         if (expected == null) return;
 
-        Position from = expected.getFrom();
-        Position to = expected.getTo();
+        Position from = expected.from();
+        Position to = expected.to();
 
         PieceModel piece = board.getSquare(from).getPiece();
         if (piece == null) return; // safety
@@ -503,5 +464,26 @@ public class Controller {
             }
             System.out.println("Exercise index after redo = " + exerciseSession.getIndex());
         }
+    }
+    private PieceType askPromotionChoice() {
+        List<PieceType> options = List.of(
+                PieceType.QUEEN,
+                PieceType.ROOK,
+                PieceType.BISHOP,
+                PieceType.KNIGHT
+        );
+
+        ChoiceDialog<PieceType> dialog = new ChoiceDialog<>(PieceType.QUEEN, options);
+        dialog.setTitle("Promotie");
+        dialog.setHeaderText("Kies een promotie voor de pion:");
+        dialog.setContentText("Promoveer naar:");
+
+        return dialog.showAndWait().orElse(PieceType.QUEEN);
+    }
+    public List<String> getExpectedSans() {
+        if (exerciseSession == null) {
+            return List.of();
+        }
+        return exerciseSession.getExpectedSans();
     }
 }

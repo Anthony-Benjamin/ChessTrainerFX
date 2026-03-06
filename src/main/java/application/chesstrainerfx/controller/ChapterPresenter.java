@@ -1,6 +1,5 @@
 package application.chesstrainerfx.controller;
 
-import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.chesstrainerfx.utils.PgnUtils;
@@ -41,7 +40,7 @@ public class ChapterPresenter {
         this.currentExercise = ex;
 
         // --- 1) Model + controller opbouwen (was voorheen in ChapterWindow.showExercise) ---
-        String fen = (ex.getFen() == null) ? "" : ex.getFen().trim();
+        String fen = (ex.fen() == null) ? "" : ex.fen().trim();
 
         BoardModel boardModel = new BoardModel();
         boardModel.initializeFromFEN(fen);
@@ -65,7 +64,7 @@ public class ChapterPresenter {
         this.currentController = controller;
 
         // --- 2) Moves voor de ListView voorbereiden ---
-        List<String> moveLines = buildMoveLines(ex.getMoves());
+        List<String> moveLines = buildMoveLines(ex.moves());
 
         // --- 3) View laten overschakelen naar de board-weergave ---
         view.showExerciseBoard(boardModel, controller, moveLines);

@@ -135,7 +135,7 @@ public class Main extends Application {
         for (String path : paths) {
             List<Exercise> exercises = PGNReader.readChapter(path);
             if (!exercises.isEmpty()) {
-                chapters.add(new Chapter(exercises.get(0).getTitle(), exercises, path));
+                chapters.add(new Chapter(exercises.get(0).title(), exercises, path));
             }
         }
         return chapters;
@@ -144,16 +144,16 @@ public class Main extends Application {
 
     private Parent buildMatingPatterns() {
         List<Chapter> chapters = buildChapters(chapterPaths);
-        List<String> titles = chapters.stream().map(Chapter::getTitle).toList();
+        List<String> titles = chapters.stream().map(Chapter::title).toList();
 
         var view = new MatePatternsView(titles, name -> {
             Chapter chapter = chapters.stream()
-                    .filter(c -> c.getTitle().equals(name))
+                    .filter(c -> c.title().equals(name))
                     .findFirst().orElse(null);
             if (chapter != null) {
                 scene.setRoot(new ChapterWindow(
-                        chapter.getTitle(),
-                        chapter.getExercises(),
+                        chapter.title(),
+                        chapter.exercises(),
                         v -> scene.setRoot(matingRoot) // ⬅️ terug naar overzicht
                 ));
             }

@@ -13,7 +13,7 @@ import application.chesstrainerfx.utils.Position;
  * @author ebenjamin
  */
 public class SquareModel {
-    private Position position;
+    private final Position position;
     private PieceModel piece;
     
     

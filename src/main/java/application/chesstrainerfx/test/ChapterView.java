@@ -92,7 +92,7 @@ public class ChapterView extends Application {
 
         // Commentaar uit de eerste PGN (eerste Exercise)
         String firstComment = exercises.isEmpty() ? "Geen commentaar gevonden."
-                : safe(exercises.get(0).getComments());
+                : safe(exercises.get(0).comments());
 
         Label chapterLbl = new Label(chapterTitle);
         chapterLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
@@ -132,8 +132,8 @@ public class ChapterView extends Application {
         // Klik op oefening => toon FEN + moves
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, ex) -> {
             if (ex != null) {
-                fenArea.setText(safe(ex.getFen()));
-                movesArea.setText(safe(ex.getMoves()));
+                fenArea.setText(safe(ex.fen()));
+                movesArea.setText(safe(ex.moves()));
             } else {
                 fenArea.clear();
                 movesArea.clear();

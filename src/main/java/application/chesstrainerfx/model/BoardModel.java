@@ -1,6 +1,5 @@
 package application.chesstrainerfx.model;
 
-
 import application.chesstrainerfx.utils.*;
 import application.chesstrainerfx.view.BoardChangeListener;
 
@@ -8,86 +7,84 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BoardModel {
-    //een lijst van SquareModels
-    private final List<SquareModel> squares;
+
+    // Vast bord: altijd 64 velden
+    private final SquareModel[] squares = new SquareModel[64];
     private final List<BoardChangeListener> listeners = new ArrayList<>();
 
-    //helper klasse
-    public static class BoardSnapshot {
-        private final PieceModel[][] pieces; // 8x8
-        private final Position lastDoubleStepPawnPosition;
+    private Position lastDoubleStepPawnPosition = null;
 
-        private BoardSnapshot(PieceModel[][] pieces, Position lastDoubleStepPawnPosition) {
-            this.pieces = pieces;
-            this.lastDoubleStepPawnPosition = lastDoubleStepPawnPosition;
-        }
-    }
-
-
-    //TODO verbeteren
     public BoardModel() {
-        squares = new ArrayList<>(64);
         initializeBoard();
     }
 
-    // voor het aanmaken van de velden en hun positie
+    private int index(int row, int col) {
+        return row * 8 + col;
+    }
+
+    private boolean isValidIndex(int row, int col) {
+        return row >= 0 && row < 8 && col >= 0 && col < 8;
+    }
+
+    // Voor het aanmaken van de velden en hun positie
     public void initializeBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                squares.add(new SquareModel(new Position(row, col)));
+                squares[index(row, col)] = new SquareModel(new Position(row, col));
             }
         }
     }
 
-    // zet de stukken in de lijst squares
+    // Zet de stukken op basis van FEN
     public void initializeFromFEN(String fen) {
-        if (fen.isEmpty()) {
+        if (fen == null || fen.isEmpty()) {
             fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
         }
 
-        // 1) Bord volledig leegmaken
+        // Bord leegmaken
         for (SquareModel sq : squares) {
             sq.setPiece(null);
         }
-        lastDoubleStepPawnPosition = null; // en-passant info resetten
+        lastDoubleStepPawnPosition = null;
 
-        String[] FENString = fen.split(" ");
-        String FEN = FENString[0];
-        String[] ranks = FEN.split("/");
-        // een teller voor de squares
-        int counter = 0;
-        // loop rij voor rij
-        for (String rank : ranks) {
-            //zet rij om in characters
-            char[] chars = rank.toCharArray();
-            for (char character : chars) {
-                //if character is a number put a space in list instead of character
+        String[] fenParts = fen.split(" ");
+        String boardPart = fenParts[0];
+        String[] ranks = boardPart.split("/");
+
+        for (int row = 0; row < ranks.length && row < 8; row++) {
+            String rank = ranks[row];
+            int col = 0;
+
+            for (char character : rank.toCharArray()) {
                 if (Character.isDigit(character)) {
-                    counter += Integer.parseInt(String.valueOf(character));
+                    col += Character.getNumericValue(character);
                 } else {
-                    squares.get(counter).setPiece(pieceModelformFENChar(character));
-                    counter++;
+                    if (isValidIndex(row, col)) {
+                        squares[index(row, col)].setPiece(pieceModelFormFENChar(character));
+                    }
+                    col++;
                 }
             }
         }
+
         notifyListeners();
-        if (FENString.length > 1) {
-            boolean whiteToMove = FENString[1].equals("w");
-            // meld dit via de listeners
+
+        if (fenParts.length > 1) {
+            boolean whiteToMove = fenParts[1].equals("w");
             notifyListenersTurnChanged(whiteToMove);
         }
     }
 
-    //geeft een PieceModel terug dat is opgebouwd uit PieceType en PieceColor
-    public PieceModel pieceModelformFENChar(char c) {
+    // Geeft een PieceModel terug op basis van FEN-char
+    public PieceModel pieceModelFormFENChar(char c) {
         PieceColor color = null;
         PieceType type = null;
+
         if (Character.isLowerCase(c)) {
             color = PieceColor.BLACK;
         } else if (Character.isUpperCase(c)) {
             color = PieceColor.WHITE;
         }
-
 
         switch (Character.toLowerCase(c)) {
             case 'k':
@@ -111,44 +108,39 @@ public class BoardModel {
             default:
                 System.out.println("geen geldige letter");
         }
+
         return new PieceModel(type, color);
     }
 
-    public List<SquareModel> getSquares() {
+    public SquareModel[] getSquares() {
         return squares;
     }
 
     public SquareModel getSquare(Position pos) {
-        SquareModel square = null;
-        if (pos != null) {
-            int row = pos.getRow();
-            int col = pos.getColumn();
+        if (pos == null) return null;
 
-            for (SquareModel sq : squares) {
-                if (sq.getPosition().getRow() == row && sq.getPosition().getColumn() == col) {
-                    square = sq;
-                }
+        int row = pos.getRow();
+        int col = pos.getColumn();
 
-            }
-        }
-        return square;
+        if (!isValidIndex(row, col)) return null;
+
+        return squares[index(row, col)];
     }
-
 
     public void movePiece(Position from, Position to) {
+        if (from == null || to == null) return;
 
-        if (from != null && to != null) {
-            SquareModel source = getSquare(from);
-            SquareModel target = getSquare(to);
-            PieceModel piece = source.getPiece();
-            source.removePiece();
-            target.setPiece(piece);
-            notifyListeners();
-        }
+        SquareModel source = getSquare(from);
+        SquareModel target = getSquare(to);
 
+        if (source == null || target == null) return;
+
+        PieceModel piece = source.getPiece();
+        source.removePiece();
+        target.setPiece(piece);
+
+        notifyListeners();
     }
-
-    private Position lastDoubleStepPawnPosition = null;
 
     public void setLastDoubleStepPawnPosition(Position pos) {
         this.lastDoubleStepPawnPosition = pos;
@@ -168,8 +160,13 @@ public class BoardModel {
         }
     }
 
-    public String exportToFEN() {
+    public void notifyListenersTurnChanged(boolean whiteToMove) {
+        for (BoardChangeListener l : listeners) {
+            l.onTurnChanged(whiteToMove);
+        }
+    }
 
+    public String exportToFEN() {
         return exportToFEN(true);
     }
 
@@ -178,8 +175,10 @@ public class BoardModel {
 
         for (int row = 0; row < 8; row++) {
             int emptyCount = 0;
+
             for (int col = 0; col < 8; col++) {
-                PieceModel piece = getSquare(new Position(row, col)).getPiece();
+                PieceModel piece = squares[index(row, col)].getPiece();
+
                 if (piece == null) {
                     emptyCount++;
                 } else {
@@ -190,254 +189,20 @@ public class BoardModel {
                     fen.append(piece.getFENChar());
                 }
             }
+
             if (emptyCount > 0) {
                 fen.append(emptyCount);
             }
+
             if (row < 7) {
                 fen.append('/');
             }
         }
 
-        // hier gebruiken we nu de echte beurt
         fen.append(" ");
         fen.append(whiteToMove ? "w" : "b");
-        fen.append(" - - 0 1"); // castling / en passant / counters kun je later nog echt maken
+        fen.append(" - - 0 1");
 
         return fen.toString();
     }
-
-    public void notifyListenersTurnChanged(boolean whiteToMove) {
-        for (BoardChangeListener l : listeners) {
-            l.onTurnChanged(whiteToMove);
-        }
-    }
-
-    public void playCounterMove(String move, PieceColor color) {
-        Position from = null;
-        Position to;
-
-        // doelveld = laatste 2 tekens (bv "e6")
-        String target = move.substring(move.length() - 2);
-        to = algebraicToPosition(target);
-
-        // =========================
-        // ♟️ PION-CAPTURE (fxe6)
-        // =========================
-        if (move.contains("x") && Character.isLowerCase(move.charAt(0))) {
-            char fileChar = move.charAt(0); // f
-            int file = fileChar - 'a';
-
-            for (SquareModel sq : squares) {
-                PieceModel p = sq.getPiece();
-                if (p != null &&
-                        p.getType() == PieceType.PAWN &&
-                        p.getColor() == color &&
-                        sq.getPosition().getColumn() == file) {
-
-                    from = sq.getPosition();
-                    break;
-                }
-            }
-        }
-
-        // =========================
-        // ♟️ STUK-CAPTURE (Bxe6)
-        // =========================
-        else if (move.contains("x") && Character.isUpperCase(move.charAt(0))) {
-            char pieceChar = move.charAt(0); // B, R, Q, N, K
-            PieceType type = pieceTypeFromChar(pieceChar);
-
-            for (SquareModel sq : squares) {
-                PieceModel p = sq.getPiece();
-                if (p != null &&
-                        p.getType() == type &&
-                        p.getColor() == color) {
-
-                    boolean canReach = switch (type) {
-                        case BISHOP -> canBishopReach(sq.getPosition(), to);
-                        case ROOK -> canRookReach(sq.getPosition(), to);
-                        case QUEEN -> canQueenReach(sq.getPosition(), to);
-                        case KNIGHT -> canKnightReach(sq.getPosition(), to);
-                        case KING -> canKingReach(sq.getPosition(), to);
-                        default -> false;
-                    };
-
-                    if (canReach) {
-                        from = sq.getPosition();
-                        break;
-                    }
-                }
-            }
-        }
-
-        // =========================
-        // ♟️ GEWONE STUK-ZET (Be6)
-        // =========================
-        else if (Character.isUpperCase(move.charAt(0))) {
-            char pieceChar = move.charAt(0);
-            PieceType type = pieceTypeFromChar(pieceChar);
-
-            for (SquareModel sq : squares) {
-                PieceModel p = sq.getPiece();
-                if (p != null &&
-                        p.getType() == type &&
-                        p.getColor() == color) {
-
-                    boolean canReach = switch (type) {
-                        case BISHOP -> canBishopReach(sq.getPosition(), to);
-                        case ROOK -> canRookReach(sq.getPosition(), to);
-                        case QUEEN -> canQueenReach(sq.getPosition(), to);
-                        case KNIGHT -> canKnightReach(sq.getPosition(), to);
-                        case KING -> canKingReach(sq.getPosition(), to);
-                        default -> false;
-                    };
-
-                    if (canReach) {
-                        from = sq.getPosition();
-                        break;
-                    }
-                }
-            }
-        }
-
-        // =========================
-        // ♟️ PION VOORUIT (e6)
-        // =========================
-        else {
-            for (SquareModel sq : squares) {
-                PieceModel p = sq.getPiece();
-                if (p != null &&
-                        p.getType() == PieceType.PAWN &&
-                        p.getColor() == color) {
-
-                    from = sq.getPosition();
-                    break;
-                }
-            }
-        }
-
-        // =========================
-        // 🚀 UITVOEREN
-        // =========================
-        if (from != null && to != null) {
-            movePiece(from, to);
-            // System.out.println("From? " + from + " to? " + to);
-
-        } else {
-            System.out.println("Geen geldige zet gevonden voor: " + move);
-        }
-
-    }
-
-    private Position algebraicToPosition(String alg) {
-        int col = alg.charAt(0) - 'a';
-        int row = 8 - Character.getNumericValue(alg.charAt(1));
-        return new Position(row, col);
-    }
-
-    private PieceType pieceTypeFromChar(char c) {
-        switch (c) {
-            case 'R':
-                return PieceType.ROOK;
-            case 'N':
-                return PieceType.KNIGHT;
-            case 'B':
-                return PieceType.BISHOP;
-            case 'Q':
-                return PieceType.QUEEN;
-            case 'K':
-                return PieceType.KING;
-            default:
-                return PieceType.PAWN;
-        }
-    }
-
-
-    private boolean canKnightReach(Position from, Position to) {
-        int dr = Math.abs(to.getRow() - from.getRow());
-        int dc = Math.abs(to.getColumn() - from.getColumn());
-        return (dr == 2 && dc == 1) || (dr == 1 && dc == 2);
-    }
-
-    private boolean canRookReach(Position from, Position to) {
-        if (from.getRow() != to.getRow() && from.getColumn() != to.getColumn()) {
-            return false;
-        }
-
-        int rowStep = Integer.compare(to.getRow(), from.getRow());
-        int colStep = Integer.compare(to.getColumn(), from.getColumn());
-
-        int r = from.getRow() + rowStep;
-        int c = from.getColumn() + colStep;
-
-        while (r != to.getRow() || c != to.getColumn()) {
-            SquareModel sq = getSquare(new Position(r, c));
-            if (sq == null || sq.getPiece() != null) return false;
-            r += rowStep;
-            c += colStep;
-        }
-        return true;
-    }
-
-    private boolean canBishopReach(Position from, Position to) {
-        int rowDiff = to.getRow() - from.getRow();
-        int colDiff = to.getColumn() - from.getColumn();
-
-        if (Math.abs(rowDiff) != Math.abs(colDiff)) return false;
-
-        int rowStep = rowDiff > 0 ? 1 : -1;
-        int colStep = colDiff > 0 ? 1 : -1;
-
-        int r = from.getRow() + rowStep;
-        int c = from.getColumn() + colStep;
-
-        while (r != to.getRow() || c != to.getColumn()) {
-            SquareModel sq = getSquare(new Position(r, c));
-            if (sq == null || sq.getPiece() != null) return false;
-            r += rowStep;
-            c += colStep;
-        }
-        return true;
-    }
-
-    private boolean canQueenReach(Position from, Position to) {
-        return canRookReach(from, to) || canBishopReach(from, to);
-    }
-
-    private boolean canKingReach(Position from, Position to) {
-
-        int dr = Math.abs(to.getRow() - from.getRow());
-        int dc = Math.abs(to.getColumn() - from.getColumn());
-//        System.out.println("canKingReach? " + (dr <= 1 && dc <= 1));
-        return dr <= 1 && dc <= 1;
-    }
-
-    public BoardSnapshot createSnapshot() {
-        PieceModel[][] copy = new PieceModel[8][8];
-
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                PieceModel p = getSquare(new Position(r, c)).getPiece();
-                if (p == null) {
-                    copy[r][c] = null;
-                } else {
-                    PieceModel p2 = new PieceModel(p.getType(), p.getColor());
-                    p2.setHasMoved(p.hasMoved());
-                    copy[r][c] = p2;
-                }
-            }
-        }
-        return new BoardSnapshot(copy, lastDoubleStepPawnPosition);
-    }
-
-    public void restoreSnapshot(BoardSnapshot snap) {
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                getSquare(new Position(r, c)).setPiece(snap.pieces[r][c]);
-            }
-        }
-        this.lastDoubleStepPawnPosition = snap.lastDoubleStepPawnPosition;
-        notifyListeners();
-    }
-
 }

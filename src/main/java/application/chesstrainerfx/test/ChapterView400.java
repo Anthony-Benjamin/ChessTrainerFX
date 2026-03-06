@@ -137,12 +137,12 @@ public class ChapterView400 extends Application {
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldEx, ex) -> {
             if (ex == null) return;
 
-            commentsArea.setText(nullToEmpty(ex.getComments()));
+            commentsArea.setText(nullToEmpty(ex.comments()));
 
             ExState st = state.computeIfAbsent(ex, k -> {
                 ExState s = new ExState();
-                s.fen = nullToEmpty(k.getFen());
-                s.uciMoves = tokenizeUCI(k.getMoves());
+                s.fen = nullToEmpty(k.fen());
+                s.uciMoves = tokenizeUCI(k.moves());
                 s.cursor = 0;
                 return s;
             });

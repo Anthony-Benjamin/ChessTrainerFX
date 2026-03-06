@@ -14,10 +14,10 @@ public class PGNReaderTest {
         List<Exercise> pgn = PGNReader.readChapter(path);
 
         for (Exercise exercise:pgn){
-            System.out.println(exercise.getTitle());
-            System.out.println(exercise.getFen());
-            System.out.println(exercise.getMoves());
-            System.out.println(exercise.getComments());
+            System.out.println(exercise.title());
+            System.out.println(exercise.fen());
+            System.out.println(exercise.moves());
+            System.out.println(exercise.comments());
         }
 
     }

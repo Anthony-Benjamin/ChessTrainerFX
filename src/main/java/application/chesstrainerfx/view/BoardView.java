@@ -20,7 +20,7 @@ public class BoardView extends HBox implements BoardChangeListener {
     private final int boardSize;          // totale breedte/hoogte van het speelvlak (8×8)
     private final double squareSize;      // grootte van één veld
     private final double frameThickness;  // dikte van de rand = 1/3 van square
-    private Label turnLabel;
+    private final Label turnLabel;
 
     public BoardView(BoardModel boardModel, Controller controller, boolean isWhitePerspective, int boardSize) {
         this.boardModel = boardModel;

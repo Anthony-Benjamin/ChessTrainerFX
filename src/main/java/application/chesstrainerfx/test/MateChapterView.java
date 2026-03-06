@@ -60,9 +60,9 @@ public class MateChapterView extends Application {
 
             List<Exercise> exercises = PGNReader.readChapter(pngPath);
             for (Exercise exercise : exercises) {
-                if (exercise.getTitle().matches("^\\d.*")) {
-                    System.out.println(exercise.getTitle());
-                    titles.add(exercise.getTitle());
+                if (exercise.title().matches("^\\d.*")) {
+                    System.out.println(exercise.title());
+                    titles.add(exercise.title());
                 }
             }
         }

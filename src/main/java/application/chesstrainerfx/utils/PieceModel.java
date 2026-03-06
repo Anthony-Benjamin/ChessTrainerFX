@@ -6,8 +6,8 @@ package application.chesstrainerfx.utils;
  * @author ebenjamin
  */
 public class PieceModel {
-    private PieceType pieceType;
-    private PieceColor pieceColor;
+    private final PieceType pieceType;
+    private final PieceColor pieceColor;
     private boolean hasMoved;
 
     public PieceModel(PieceType pieceType, PieceColor pieceColor) {
