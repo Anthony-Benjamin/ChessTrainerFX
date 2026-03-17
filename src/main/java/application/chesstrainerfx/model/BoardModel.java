@@ -14,19 +14,38 @@ public class BoardModel {
 
     private Position lastDoubleStepPawnPosition = null;
 
+    /**
+     * Constructs a new BoardModel and initializes the chess board.
+     */
     public BoardModel() {
         initializeBoard();
     }
 
+    /**
+     * Calculates the linear array index for a given row and column.
+     *
+     * @param row The row (0-7).
+     * @param col The column (0-7).
+     * @return The corresponding index in the `squares` array.
+     */
     private int index(int row, int col) {
         return row * 8 + col;
     }
 
+    /**
+     * Checks if a given row and column are within the valid bounds of the chess board.
+     *
+     * @param row The row to check.
+     * @param col The column to check.
+     * @return True if the row and column are valid, false otherwise.
+     */
     private boolean isValidIndex(int row, int col) {
         return row >= 0 && row < 8 && col >= 0 && col < 8;
     }
 
-    // Voor het aanmaken van de velden en hun positie
+    /**
+     * Initializes all 64 squares of the chess board, assigning each a Position object.
+     */
     public void initializeBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -35,7 +54,12 @@ public class BoardModel {
         }
     }
 
-    // Zet de stukken op basis van FEN
+    /**
+     * Initializes the chess board's piece setup and game state from a FEN string.
+     * If the FEN string is null or empty, a default FEN is used.
+     *
+     * @param fen The FEN (Forsyth-Edwards Notation) string representing the board state.
+     */
     public void initializeFromFEN(String fen) {
         if (fen == null || fen.isEmpty()) {
             fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
@@ -75,7 +99,13 @@ public class BoardModel {
         }
     }
 
-    // Geeft een PieceModel terug op basis van FEN-char
+    /**
+     * Creates a PieceModel object based on a FEN character.
+     * The character determines the piece type and color (uppercase for White, lowercase for Black).
+     *
+     * @param c The FEN character representing a piece (e.g., 'p', 'R', 'k').
+     * @return A new PieceModel instance, or null if the character is invalid.
+     */
     public PieceModel pieceModelFormFENChar(char c) {
         PieceColor color = null;
         PieceType type = null;
@@ -106,16 +136,28 @@ public class BoardModel {
                 type = PieceType.PAWN;
                 break;
             default:
-                System.out.println("geen geldige letter");
+                System.out.println("geen geldige letter"); // Consider logging or throwing an exception
+                return null; // Return null for invalid characters
         }
 
         return new PieceModel(type, color);
     }
 
+    /**
+     * Returns the array of all 64 SquareModel objects representing the board.
+     *
+     * @return An array of SquareModel objects.
+     */
     public SquareModel[] getSquares() {
         return squares;
     }
 
+    /**
+     * Retrieves the SquareModel at a specific position on the board.
+     *
+     * @param pos The Position object (row, col) of the desired square.
+     * @return The SquareModel at the given position, or null if the position is invalid.
+     */
     public SquareModel getSquare(Position pos) {
         if (pos == null) return null;
 
@@ -127,6 +169,13 @@ public class BoardModel {
         return squares[index(row, col)];
     }
 
+    /**
+     * Moves a piece from a source position to a target position.
+     * This method assumes the move is valid according to game rules; it only handles the physical transfer.
+     *
+     * @param from The starting Position of the piece.
+     * @param to The destination Position for the piece.
+     */
     public void movePiece(Position from, Position to) {
         if (from == null || to == null) return;
 
@@ -142,34 +191,70 @@ public class BoardModel {
         notifyListeners();
     }
 
+    /**
+     * Sets the position of a pawn that just performed a double-step move.
+     * This is crucial for determining potential en passant captures.
+     *
+     * @param pos The Position of the pawn that just moved two squares.
+     */
     public void setLastDoubleStepPawnPosition(Position pos) {
         this.lastDoubleStepPawnPosition = pos;
     }
 
+    /**
+     * Retrieves the position of the pawn that most recently performed a double-step move.
+     *
+     * @return The Position of the double-stepped pawn, or null if no such move occurred in the last turn.
+     */
     public Position getLastDoubleStepPawnPosition() {
         return lastDoubleStepPawnPosition;
     }
 
+    /**
+     * Adds a BoardChangeListener to receive notifications about board updates and turn changes.
+     *
+     * @param listener The BoardChangeListener to add.
+     */
     public void addListener(BoardChangeListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Notifies all registered listeners that the board state has been updated.
+     */
     private void notifyListeners() {
         for (BoardChangeListener listener : listeners) {
             listener.onBoardUpdated();
         }
     }
 
+    /**
+     * Notifies all registered listeners that the turn has changed.
+     *
+     * @param whiteToMove True if it's White's turn, false if it's Black's turn.
+     */
     public void notifyListenersTurnChanged(boolean whiteToMove) {
         for (BoardChangeListener l : listeners) {
             l.onTurnChanged(whiteToMove);
         }
     }
 
+    /**
+     * Exports the current board state to a FEN (Forsyth-Edwards Notation) string,
+     * assuming it's White's turn to move.
+     *
+     * @return A FEN string representing the current board state.
+     */
     public String exportToFEN() {
         return exportToFEN(true);
     }
 
+    /**
+     * Exports the current board state to a FEN (Forsyth-Edwards Notation) string.
+     *
+     * @param whiteToMove True if it's White's turn, false if it's Black's turn.
+     * @return A FEN string representing the current board state and whose turn it is.
+     */
     public String exportToFEN(boolean whiteToMove) {
         StringBuilder fen = new StringBuilder();
 
@@ -201,8 +286,7 @@ public class BoardModel {
 
         fen.append(" ");
         fen.append(whiteToMove ? "w" : "b");
-        fen.append(" - - 0 1");
-
+        fen.append(" - - 0 1"); // Simplistic castling, en passant, halfmove, and fullmove counters
         return fen.toString();
     }
 }
