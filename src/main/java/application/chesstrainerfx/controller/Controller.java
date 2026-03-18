@@ -7,6 +7,7 @@ import application.chesstrainerfx.view.SquareView;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Alert;
 import javafx.animation.PauseTransition;
+import javafx.scene.control.DialogPane;
 import javafx.util.Duration;
 
 import java.util.List;
@@ -402,6 +403,12 @@ public class Controller {
 
     private void showWrongMoveMessage() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(
+                getClass().getResource("/css/alert.css").toExternalForm()
+        );
+
         alert.setTitle("Onjuiste zet");
         alert.setHeaderText(null);
         alert.setContentText("Dit is niet de juiste zet. Probeer opnieuw.");
@@ -413,6 +420,7 @@ public class Controller {
         alert.setTitle("Oefening klaar");
         alert.setHeaderText(null);
         alert.setContentText("Mat! 🎉");
+
         alert.showAndWait();
     }
 

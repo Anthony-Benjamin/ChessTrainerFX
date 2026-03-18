@@ -58,21 +58,24 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     private BoardView boardView;
     private ListView<String> movesList;
 
+    private Stage stage;
 
-    public ChapterWindow(String chapterTitle, List<Exercise> exercises, Consumer<Void> onBack) {
+
+    public ChapterWindow(String chapterTitle, List<Exercise> exercises, Consumer<Void> onBack, Stage stage) {
         this.exercises = exercises;
         this.chapterTitle = chapterTitle;
         this.onBack = onBack;
-
+        this.stage = stage;
         setBackground(Background.EMPTY);
         setStyle("-fx-background-color: transparent;");
         this.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
 
         // Presenter aanmaken (moet vóór layout vanwege event handlers)
-        this.presenter = new ChapterPresenter(this, exercises, exerciseSessionBuilder, onBack);
+        this.presenter = new ChapterPresenter(this, exercises, exerciseSessionBuilder, onBack, this.stage);
 
         buildLayout();
         switchMode(Mode.LIST);
+
     }
 
 
@@ -341,7 +344,6 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     @Override
     public void onBoardUpdated() {
         presenter.onBoardUpdated();
-
     }
 
     private void switchMode(Mode m) {

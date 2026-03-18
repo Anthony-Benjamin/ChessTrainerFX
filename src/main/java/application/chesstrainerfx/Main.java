@@ -16,13 +16,14 @@ import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Main extends Application {
-
+    public String title = "ChessTrainer — Home";
 
 
 // TODO: Hint van een zet
@@ -70,14 +71,23 @@ public class Main extends Application {
     private Parent homeRoot;
     private Parent matingRoot;
 
+    public Stage getStage() {
+        return stage;
+    }
+
+    private Stage stage;
+
     @Override
     public void start(Stage stage) {
+
+        this.stage = stage;
         homeRoot = buildHome();
         scene = new Scene(homeRoot, 1500, 1000);
         scene.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
         // cache:
         matingRoot = buildMatingPatterns();
-        stage.setTitle("ChessTrainer — Home");
+//        stage.initStyle(StageStyle.UNDECORATED);
+        stage.setTitle(title);
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
@@ -143,6 +153,7 @@ public class Main extends Application {
 
 
     private Parent buildMatingPatterns() {
+
         List<Chapter> chapters = buildChapters(chapterPaths);
         List<String> titles = chapters.stream().map(Chapter::getTitle).toList();
 
@@ -151,11 +162,13 @@ public class Main extends Application {
                     .filter(c -> c.getTitle().equals(name))
                     .findFirst().orElse(null);
             if (chapter != null) {
+                System.out.println(chapter.getExercises());
                 scene.setRoot(new ChapterWindow(
                         chapter.getTitle(),
                         chapter.getExercises(),
-                        v -> scene.setRoot(matingRoot) // ⬅️ terug naar overzicht
+                        v -> scene.setRoot(matingRoot) ,this.stage// ⬅️ terug naar overzicht
                 ));
+                stage.setTitle(chapter.getExercises().getFirst().toString());
             }
         });
 

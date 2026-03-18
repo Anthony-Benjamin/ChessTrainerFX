@@ -1,11 +1,11 @@
 package application.chesstrainerfx.controller;
 
-import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.chesstrainerfx.utils.PgnUtils;
 import application.chesstrainerfx.view.ChapterWindow;
 import application.pgnreader.model.Exercise;
+import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,27 +19,30 @@ public class ChapterPresenter {
     private final List<Exercise> exercises;
     private final ExerciseSessionBuilder sessionBuilder;
     private final Consumer<Void> onBack;
+    private final Stage stage;
 
     private Exercise currentExercise;
     private Controller currentController;
     private BoardModel currentBoard;
 
+
     public ChapterPresenter(
             ChapterWindow view,
             List<Exercise> exercises,
             ExerciseSessionBuilder sessionBuilder,
-            Consumer<Void> onBack
-    ) {
+            Consumer<Void> onBack,
+            Stage stage) {
         this.view = view;
         this.exercises = exercises;
         this.sessionBuilder = sessionBuilder;
         this.onBack = onBack;
+        this.stage = stage;
     }
 
     /** Wordt aangeroepen als de gebruiker op een exercise-tegel klikt. */
     public void onExerciseSelected(Exercise ex) {
         this.currentExercise = ex;
-
+        stage.setTitle(stage.getTitle() + "-" + ex.getTitle());
         // --- 1) Model + controller opbouwen (was voorheen in ChapterWindow.showExercise) ---
         String fen = (ex.getFen() == null) ? "" : ex.getFen().trim();
 
