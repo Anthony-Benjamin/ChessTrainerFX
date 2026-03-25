@@ -1,5 +1,5 @@
 .dialog-pane{
-    -fx-background-color: #ffdddd;
+    -fx-background-color: #FCF3E8; /* dialog venster background color */
 }
 
 .dialog-pane > *.button-bar > *.container {
@@ -7,7 +7,7 @@
 }
 
 .dialog-pane .button{
-    -fx-background-color: #cc4444;
+    -fx-background-color: #ECAF6F;
     -fx-text-fill: white;
 }
 

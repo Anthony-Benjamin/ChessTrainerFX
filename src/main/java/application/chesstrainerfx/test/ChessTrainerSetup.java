@@ -14,9 +14,12 @@ public class ChessTrainerSetup extends Application {
     public void start(Stage stage) throws Exception {
         BoardModel model = new BoardModel();
         model.initializeFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
         Controller controller = new Controller();
-        BoardViewSetup boardView = new BoardViewSetup(model, controller,true,400);
+
+        BoardViewSetup boardView = new BoardViewSetup(model, controller,false,400);
         boardView.setAlignment(Pos.TOP_LEFT);
+
         StackPane container = new StackPane();
         container.getChildren().add(boardView);
         StackPane root = new StackPane(container);

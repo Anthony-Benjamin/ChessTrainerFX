@@ -21,21 +21,6 @@ public class PieceSelectorPane extends VBox {
         grid.setHgap(5);
         grid.setVgap(5);
 
-//        // Wit
-//        addPieceButton(grid, 0, 0, "♙", PieceType.PAWN, PieceColor.WHITE, listener);
-//        addPieceButton(grid, 1, 0, "♖", PieceType.ROOK, PieceColor.WHITE, listener);
-//        addPieceButton(grid, 2, 0, "♘", PieceType.KNIGHT, PieceColor.WHITE, listener);
-//        addPieceButton(grid, 3, 0, "♗", PieceType.BISHOP, PieceColor.WHITE, listener);
-//        addPieceButton(grid, 4, 0, "♕", PieceType.QUEEN, PieceColor.WHITE, listener);
-//        addPieceButton(grid, 5, 0, "♔", PieceType.KING, PieceColor.WHITE, listener);
-//
-//        // Zwart
-//        addPieceButton(grid, 0, 1, "♟", PieceType.PAWN, PieceColor.BLACK, listener);
-//        addPieceButton(grid, 1, 1, "♜", PieceType.ROOK, PieceColor.BLACK, listener);
-//        addPieceButton(grid, 2, 1, "♞", PieceType.KNIGHT, PieceColor.BLACK, listener);
-//        addPieceButton(grid, 3, 1, "♝", PieceType.BISHOP, PieceColor.BLACK, listener);
-//        addPieceButton(grid, 4, 1, "♛", PieceType.QUEEN, PieceColor.BLACK, listener);
-//        addPieceButton(grid, 5, 1, "♚", PieceType.KING, PieceColor.BLACK, listener);
 
 // White pieces
         addPieceButton(grid, 0, 0, "WHITEPAWN.png", PieceType.PAWN, PieceColor.WHITE, listener);
