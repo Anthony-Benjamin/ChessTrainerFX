@@ -3,6 +3,7 @@ module application.chesstrainerfx {
     requires javafx.fxml;
     requires javafx.graphics;
     requires java.sql;
+    //requires application.chesstrainerfx;
 //    requires application.chesstrainerfx;
 
 

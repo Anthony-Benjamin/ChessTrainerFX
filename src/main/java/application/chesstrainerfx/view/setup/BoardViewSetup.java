@@ -25,7 +25,7 @@ public class BoardViewSetup extends HBox implements BoardChangeListener {
     private final boolean isWhitePerspective;
     private final Circle circle = new Circle();
     private final int boardSize;
-    private PieceSelectorPane pieceSelector = null;
+    private PieceSelectorPane pieceSelectorWhite = null;
     private Controller controller;
     private float backgroundsize;
 
@@ -43,7 +43,7 @@ public class BoardViewSetup extends HBox implements BoardChangeListener {
 
         this.getChildren().add(boardWithBackground);
 
-        pieceSelector = new PieceSelectorPane(selected -> controller.setSelectedPieceForSetup(selected));
+        pieceSelectorWhite = new PieceSelectorPane(selected -> controller.setSelectedPieceForSetup(selected));
         controlPane = new VBox(20);
         controlPane.setAlignment(Pos.TOP_CENTER);
 
@@ -86,13 +86,13 @@ public class BoardViewSetup extends HBox implements BoardChangeListener {
 
         if (controller.isSetupMode()) {
             System.out.println("Entering setup mode");
-            if (!controlPane.getChildren().contains(pieceSelector)) {
-                controlPane.getChildren().add(pieceSelector);
+            if (!controlPane.getChildren().contains(pieceSelectorWhite)) {
+                controlPane.getChildren().add(pieceSelectorWhite);
             }
             setupBtn.setText("Leave Setup");
         } else {
             System.out.println("Leaving setup mode");
-            controlPane.getChildren().remove(pieceSelector);
+            controlPane.getChildren().remove(pieceSelectorWhite);
             setupBtn.setText("Position Setup");
         }
     }
