@@ -5,6 +5,7 @@ import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.utils.PieceSelectorPane;
 import application.chesstrainerfx.utils.Position;
+import application.chesstrainerfx.view.BoardChangeListener;
 import application.chesstrainerfx.view.SquareView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,13 +16,13 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
-public class BoardEditor extends HBox {
+public class BoardEditor extends HBox implements BoardChangeListener {
 
     private final int boardSize;
     private final float backgroundsize;
     private final BoardModel boardModel;
     private final Controller controller;
-    private final boolean isWhitePerspective;
+    private boolean isWhitePerspective;
     private final SquareView[][] squareViews = new SquareView[8][8];
 
 
@@ -29,6 +30,7 @@ public class BoardEditor extends HBox {
         this.boardSize = boardSize;
         backgroundsize = boardSize+(boardSize * 0.07f);
         this.boardModel = boardModel;
+        boardModel.addListener(this);
         this.controller = controller;
         this.isWhitePerspective = isWhitePerspective;
         this.setSpacing(20);
@@ -38,9 +40,6 @@ public class BoardEditor extends HBox {
         StackPane boardWithBackground = createBoardStack(boardModel, controller, isWhitePerspective);
 
         this.getChildren().add(boardWithBackground);
-
-
-
     }
 
     private StackPane createBoardStack(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
@@ -142,5 +141,29 @@ public class BoardEditor extends HBox {
         VBox.setVgrow(boardStack, Priority.NEVER);
 
         return boardStack;
+    }
+    public void initializeBoard(){
+//        boardModel = initializeBoard();
+    }
+
+    @Override
+    public void onBoardUpdated() {
+//        System.out.println("onBoardUpdated()");
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                squareViews[row][col].update();
+            }
+        }
+    }
+
+    public void flipBoard(){
+        if(isWhitePerspective){
+            this.isWhitePerspective = false;
+        }else{
+            this.isWhitePerspective = true;
+        }
+        StackPane flippedBoard = createBoardStack(boardModel, controller, !isWhitePerspective);
+        this.getChildren().clear();
+        this.getChildren().add(flippedBoard);
     }
 }

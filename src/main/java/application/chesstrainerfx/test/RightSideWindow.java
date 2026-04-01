@@ -1,12 +1,10 @@
 package application.chesstrainerfx.test;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -17,13 +15,14 @@ public class RightSideWindow extends Application {
     public void start(Stage stage) throws Exception {
         int widthButtonSize = 150;
 
-        HBox startAndClearBox = new HBox();
+        HBox startAndClearBox = new HBox(5);
         startAndClearBox.setAlignment(Pos.CENTER);
         Button startBtn = new Button("Start Position");
         Button clearBoardBtn = new Button("Clear Board");
         startBtn.setMinWidth(widthButtonSize);
         clearBoardBtn.setMinWidth(widthButtonSize);
         startAndClearBox.setSpacing(10);
+//        startAndClearBox.setPadding(new Insets(5));
         startAndClearBox.getChildren().addAll(startBtn, clearBoardBtn);
 
         HBox flipBoardBox = new HBox();
@@ -34,6 +33,17 @@ public class RightSideWindow extends Application {
         importFENBtn.setMinWidth(widthButtonSize);
         flipBoardBox.setSpacing(10);
         flipBoardBox.getChildren().addAll(flipBoardBtn, importFENBtn);
+
+        // Move window
+        VBox movesWindowLayout = new VBox();
+        Label movesTitlelbl = new Label("Moves");
+        movesTitlelbl.setStyle("-fx-font-weight: bold;");
+        TextArea movesWindow = new TextArea();
+        movesWindow.setMaxWidth(150);
+        movesWindow.setMaxHeight(150);
+        movesWindowLayout.setAlignment(Pos.CENTER);
+        movesWindowLayout.getChildren().addAll(movesTitlelbl, movesWindow);
+        // end Move window
 
         HBox isWhiteTurnBox = new HBox();
         isWhiteTurnBox.setAlignment(Pos.CENTER);
@@ -52,6 +62,7 @@ public class RightSideWindow extends Application {
         castlingBox.getChildren().add(castlingBoxTitle);
 
         HBox whiteCheckBox = new HBox();
+        whiteCheckBox.setSpacing(4);
         Label white = new Label("White");
         CheckBox kingSideCastling = new CheckBox();
         Label lblKingSide = new Label("O-O");;
@@ -61,6 +72,7 @@ public class RightSideWindow extends Application {
         whiteCheckBox.setAlignment(Pos.CENTER);
 
         HBox blackCheckBox = new HBox();
+        blackCheckBox.setSpacing(4);
         Label blackLbl = new Label("Black");
         CheckBox kingSideCastlingBlack = new CheckBox();
         Label lblBlackKingSide = new Label("O-O");
@@ -71,9 +83,9 @@ public class RightSideWindow extends Application {
 
         VBox root = new VBox();
         root.setSpacing(10);
-        root.getChildren().addAll(startAndClearBox, flipBoardBox, isWhiteTurnBox, castlingBox, whiteCheckBox, blackCheckBox);
+        root.getChildren().addAll(startAndClearBox, flipBoardBox, movesWindowLayout, isWhiteTurnBox, castlingBox, whiteCheckBox, blackCheckBox);
 
-        Scene scene = new Scene(root, 500, 300);
+        Scene scene = new Scene(root, 500, 400);
         stage.setTitle("Right side panel");
         stage.setScene(scene);
         stage.show();

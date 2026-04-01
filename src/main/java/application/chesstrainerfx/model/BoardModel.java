@@ -46,12 +46,13 @@ public class BoardModel {
         }
     }
 
-    private void clearBoard() {
+    public void clearBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 squares[row][col].setPiece(null);
             }
         }
+        notifyListeners();
     }
 
     // --------------------------------------------------------------------
@@ -59,7 +60,7 @@ public class BoardModel {
     // --------------------------------------------------------------------
     public void initializeFromFEN(String fen) {
         if (fen == null || fen.isEmpty()) {
-            fen = "rn1qK1nR/pppppppp/3bbbb1/pppppppp/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1";
+            fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         }
 
         clearBoard();
