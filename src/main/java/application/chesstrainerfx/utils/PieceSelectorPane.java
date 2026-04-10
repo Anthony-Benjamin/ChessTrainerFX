@@ -62,13 +62,13 @@ public class PieceSelectorPane extends VBox {
 //        grid.add(btn, col, row);
         Image image = new Image(getClass().getResourceAsStream("/images/" + imageName));
         ImageView imageView = new ImageView(image);
-        imageView.setFitWidth(32);
-        imageView.setFitHeight(32);
+        imageView.setFitWidth(60);
+        imageView.setFitHeight(60);
         imageView.setPreserveRatio(true);
 
         Button btn = new Button();
 
-        btn.setMinSize(40, 40);
+        btn.setMinSize(80, 80);
         btn.setGraphic(imageView);
         btn.setOnDragDetected(event -> {
             Dragboard db = btn.startDragAndDrop(TransferMode.MOVE);
@@ -81,10 +81,10 @@ public class PieceSelectorPane extends VBox {
 
             // 👉 schaal de afbeelding (bijv. 50%)
             ImageView iv = new ImageView(image);
-            iv.setFitWidth(img.getWidth() * 0.8);
-            iv.setFitHeight(img.getHeight() * 0.8);
+            iv.setFitWidth(btn.getWidth() * 0.8);
+            iv.setFitHeight(btn.getHeight() * 0.8);
 
-            WritableImage scaledImage = iv.snapshot(null, null);
+            WritableImage scaledImage = iv.snapshot(params, null);
 
             db.setDragView(scaledImage);
 
