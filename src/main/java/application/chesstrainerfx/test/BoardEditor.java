@@ -155,15 +155,4 @@ public class BoardEditor extends HBox implements BoardChangeListener {
             }
         }
     }
-
-    public void flipBoard(){
-        if(isWhitePerspective){
-            this.isWhitePerspective = false;
-        }else{
-            this.isWhitePerspective = true;
-        }
-        StackPane flippedBoard = createBoardStack(boardModel, controller, !isWhitePerspective);
-        this.getChildren().clear();
-        this.getChildren().add(flippedBoard);
-    }
 }

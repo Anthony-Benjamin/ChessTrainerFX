@@ -20,26 +20,27 @@ public class BoardEditorDemo extends Application {
     private Button flipBoardBtn;
     private Button clearBoardBtn;
     private BoardEditor board;
+    private boolean isWhite;
+    private HBox root;
 
     @Override
     public void start(Stage stage) throws Exception {
+        isWhite = true;
 
-        HBox root = new HBox(10);
+        root = new HBox(10);
         root.setAlignment(Pos.CENTER);
+        root.getChildren().addAll(createBoardEditor(isWhite), createSidePanel());
 
-
-
-        root.getChildren().addAll(createBoardEditor(), createSidePanel());
         stage.setTitle("Board Editor");
         stage.setScene(new Scene(root, 1200, 1000));
         stage.show();
     }
 
-    public VBox createBoardEditor(){
+    public VBox createBoardEditor(boolean isWhite){
         PieceSelectorPane blackPieces = new PieceSelectorPane(new PieceSelectorPane.PieceSelectionListener() {
             @Override
             public void onPieceSelected(PieceModel piece) {
-
+                System.out.println(piece.getType() + "" + piece.getColor());
             }
         });
 
@@ -60,7 +61,7 @@ public class BoardEditorDemo extends Application {
 
         model = new BoardModel();
         Controller controller = new Controller();
-        boolean isWhite = true;
+
         int boardSize = 600;
         board = new BoardEditor(model, controller, isWhite, boardSize);
         board.setAlignment(Pos.CENTER);
@@ -82,7 +83,13 @@ public class BoardEditorDemo extends Application {
         fenTextField.setMinWidth(560);
         fenBox.getChildren().addAll(fenLabel, fenTextField);
         fenBox.setAlignment(Pos.CENTER);
-        panel.getChildren().addAll(boardTitle, blackPiecesBox, board, whitePiecesBox, fenBox);
+
+        if(isWhite){
+            panel.getChildren().addAll(boardTitle, blackPiecesBox, board, whitePiecesBox, fenBox);
+        }else{
+            panel.getChildren().addAll(boardTitle, whitePiecesBox, board,blackPiecesBox , fenBox);
+        }
+
         return panel;
     }
 
@@ -109,7 +116,15 @@ public class BoardEditorDemo extends Application {
         flipBoardBox.setAlignment(Pos.CENTER);
         flipBoardBtn = new Button("Flip Board");
         flipBoardBtn.setOnAction(e -> {
-            board.flipBoard();
+            System.out.println(root.getChildren());
+
+            root.getChildren().clear();
+
+            isWhite = !isWhite;
+            System.out.println(isWhite);
+            root.getChildren().addAll(createBoardEditor(isWhite),createSidePanel());
+
+
         });
         Button importFENBtn = new Button("Export FEN");
         flipBoardBtn.setMinWidth(widthButtonSize);
@@ -184,7 +199,6 @@ public class BoardEditorDemo extends Application {
                 blackCheckBox,
                 saveButtonLayout
         );
-
         return root;
     }
 }

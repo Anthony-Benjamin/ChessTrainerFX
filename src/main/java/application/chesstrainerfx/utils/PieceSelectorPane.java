@@ -1,11 +1,18 @@
 package application.chesstrainerfx.utils;
 
 import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 
 public class PieceSelectorPane extends VBox {
 
@@ -60,8 +67,33 @@ public class PieceSelectorPane extends VBox {
         imageView.setPreserveRatio(true);
 
         Button btn = new Button();
+
         btn.setMinSize(40, 40);
         btn.setGraphic(imageView);
+        btn.setOnDragDetected(event -> {
+            Dragboard db = btn.startDragAndDrop(TransferMode.MOVE);
+
+            // Maak snapshot van node
+            SnapshotParameters params = new SnapshotParameters();
+            params.setFill(Color.TRANSPARENT);
+
+            WritableImage img = btn.snapshot(params, null);
+
+            // 👉 schaal de afbeelding (bijv. 50%)
+            ImageView iv = new ImageView(image);
+            iv.setFitWidth(img.getWidth() * 0.8);
+            iv.setFitHeight(img.getHeight() * 0.8);
+
+            WritableImage scaledImage = iv.snapshot(null, null);
+
+            db.setDragView(scaledImage);
+
+            ClipboardContent content = new ClipboardContent();
+            content.putString(btn.getText());
+            db.setContent(content);
+
+            event.consume();
+        });
         btn.setOnAction(e -> listener.onPieceSelected(new PieceModel(type, color)));
 
         grid.add(btn, col, row);
