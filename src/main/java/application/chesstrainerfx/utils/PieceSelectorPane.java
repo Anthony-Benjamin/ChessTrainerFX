@@ -1,9 +1,9 @@
 package application.chesstrainerfx.utils;
 
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -55,48 +55,42 @@ public class PieceSelectorPane extends VBox {
         getChildren().addAll(grid, clearBtn);
     }
 
-    private void addPieceButton(GridPane grid, int col, int row, String imageName, PieceType type, PieceColor color, PieceSelectionListener listener) {
-//        Button btn = new Button(label);
-//        btn.setMinSize(40, 40);
-//        btn.setOnAction(e -> listener.onPieceSelected(new PieceModel(type, color)));
-//        grid.add(btn, col, row);
+    private void addPieceLbl(GridPane grid, int col, int row, String imageName, PieceType type, PieceColor color, PieceSelectionListener listener) {
+
         Image image = new Image(getClass().getResourceAsStream("/images/" + imageName));
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(60);
         imageView.setFitHeight(60);
         imageView.setPreserveRatio(true);
 
-        Button btn = new Button();
+        Label lbl = new Label();
 
-        btn.setMinSize(80, 80);
-        btn.setGraphic(imageView);
-        btn.setOnDragDetected(event -> {
-            Dragboard db = btn.startDragAndDrop(TransferMode.MOVE);
-
+        lbl.setMinSize(80, 80);
+        lbl.setGraphic(imageView);
+        lbl.setOnDragDetected(event -> {
+            Dragboard db = lbl.startDragAndDrop(TransferMode.MOVE);
             // Maak snapshot van node
             SnapshotParameters params = new SnapshotParameters();
             params.setFill(Color.TRANSPARENT);
-
-            WritableImage img = btn.snapshot(params, null);
+            WritableImage img = lbl.snapshot(params, null);
 
             // 👉 schaal de afbeelding (bijv. 50%)
             ImageView iv = new ImageView(image);
-            iv.setFitWidth(btn.getWidth() * 0.8);
-            iv.setFitHeight(btn.getHeight() * 0.8);
+            iv.setFitWidth(lbl.getWidth() * 0.8);
+            iv.setFitHeight(lbl.getHeight() * 0.8);
 
             WritableImage scaledImage = iv.snapshot(params, null);
 
             db.setDragView(scaledImage);
 
             ClipboardContent content = new ClipboardContent();
-            content.putString(btn.getText());
+            content.putString(lbl.getText());
             db.setContent(content);
 
             event.consume();
         });
-        btn.setOnAction(e -> listener.onPieceSelected(new PieceModel(type, color)));
 
-        grid.add(btn, col, row);
+        grid.add(lbl, col, row);
     }
 
     public GridPane blackPieces(){
@@ -105,12 +99,12 @@ public class PieceSelectorPane extends VBox {
         grid.setVgap(5);
 
         // Black pieces
-        addPieceButton(grid, 0, 1, "BLACKPAWN.png", PieceType.PAWN, PieceColor.BLACK, listener);
-        addPieceButton(grid, 1, 1, "BLACKROOK.png", PieceType.ROOK, PieceColor.BLACK, listener);
-        addPieceButton(grid, 2, 1, "BLACKKNIGHT.png", PieceType.KNIGHT, PieceColor.BLACK, listener);
-        addPieceButton(grid, 3, 1, "BLACKBISHOP.png", PieceType.BISHOP, PieceColor.BLACK, listener);
-        addPieceButton(grid, 4, 1, "BLACKQUEEN.png", PieceType.QUEEN, PieceColor.BLACK, listener);
-        addPieceButton(grid, 5, 1, "BLACKKING.png", PieceType.KING, PieceColor.BLACK, listener);
+        addPieceLbl(grid, 0, 1, "BLACKPAWN.png", PieceType.PAWN, PieceColor.BLACK, listener);
+        addPieceLbl(grid, 1, 1, "BLACKROOK.png", PieceType.ROOK, PieceColor.BLACK, listener);
+        addPieceLbl(grid, 2, 1, "BLACKKNIGHT.png", PieceType.KNIGHT, PieceColor.BLACK, listener);
+        addPieceLbl(grid, 3, 1, "BLACKBISHOP.png", PieceType.BISHOP, PieceColor.BLACK, listener);
+        addPieceLbl(grid, 4, 1, "BLACKQUEEN.png", PieceType.QUEEN, PieceColor.BLACK, listener);
+        addPieceLbl(grid, 5, 1, "BLACKKING.png", PieceType.KING, PieceColor.BLACK, listener);
 
         return grid;
     }
@@ -120,12 +114,12 @@ public class PieceSelectorPane extends VBox {
         grid.setHgap(5);
         grid.setVgap(5);
 
-        addPieceButton(grid, 0, 0, "WHITEPAWN.png", PieceType.PAWN, PieceColor.WHITE, listener);
-        addPieceButton(grid, 1, 0, "WHITEROOK.png", PieceType.ROOK, PieceColor.WHITE, listener);
-        addPieceButton(grid, 2, 0, "WHITEKNIGHT.png", PieceType.KNIGHT, PieceColor.WHITE, listener);
-        addPieceButton(grid, 3, 0, "WHITEBISHOP.png", PieceType.BISHOP, PieceColor.WHITE, listener);
-        addPieceButton(grid, 4, 0, "WHITEQUEEN.png", PieceType.QUEEN, PieceColor.WHITE, listener);
-        addPieceButton(grid, 5, 0, "WHITEKING.png", PieceType.KING, PieceColor.WHITE, listener);
+        addPieceLbl(grid, 0, 0, "WHITEPAWN.png", PieceType.PAWN, PieceColor.WHITE, listener);
+        addPieceLbl(grid, 1, 0, "WHITEROOK.png", PieceType.ROOK, PieceColor.WHITE, listener);
+        addPieceLbl(grid, 2, 0, "WHITEKNIGHT.png", PieceType.KNIGHT, PieceColor.WHITE, listener);
+        addPieceLbl(grid, 3, 0, "WHITEBISHOP.png", PieceType.BISHOP, PieceColor.WHITE, listener);
+        addPieceLbl(grid, 4, 0, "WHITEQUEEN.png", PieceType.QUEEN, PieceColor.WHITE, listener);
+        addPieceLbl(grid, 5, 0, "WHITEKING.png", PieceType.KING, PieceColor.WHITE, listener);
 
         return grid;
     }
