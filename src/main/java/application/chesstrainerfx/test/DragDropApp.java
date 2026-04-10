@@ -35,7 +35,7 @@ public class DragDropApp extends Application {
             ClipboardContent content = new ClipboardContent();
             content.putImage(source.getImage());
             db.setContent(content);
-
+        source.setImage(null);
             event.consume();
         });
 
@@ -78,7 +78,7 @@ public class DragDropApp extends Application {
         HBox root = new HBox(50, source, target);
         root.setStyle("-fx-padding: 40;");
 
-        Scene scene = new Scene(root, 400, 200);
+        Scene scene = new Scene(root, 1000, 400);
         stage.setTitle("JavaFX Drag & Drop Example");
         stage.setScene(scene);
         stage.show();

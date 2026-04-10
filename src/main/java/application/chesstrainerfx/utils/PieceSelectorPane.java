@@ -68,6 +68,7 @@ public class PieceSelectorPane extends VBox {
         lbl.setMinSize(80, 80);
         lbl.setGraphic(imageView);
         lbl.setOnDragDetected(event -> {
+            System.out.println(" detected!");
             Dragboard db = lbl.startDragAndDrop(TransferMode.MOVE);
             // Maak snapshot van node
             SnapshotParameters params = new SnapshotParameters();
@@ -84,7 +85,8 @@ public class PieceSelectorPane extends VBox {
             db.setDragView(scaledImage);
 
             ClipboardContent content = new ClipboardContent();
-            content.putString(lbl.getText());
+//            content.putString(lbl.getText());
+            content.putImage(imageView.getImage());
             db.setContent(content);
 
             event.consume();

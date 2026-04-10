@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -63,6 +64,19 @@ public class SquareView extends StackPane {
         pieceImageView.setPreserveRatio(true);
 
 
+        this.setOnDragOver(event ->{
+            System.out.println("Event drag over!" + event);
+            if (event.getGestureSource() != pieceImageView &&
+                    event.getDragboard().hasImage()) {
+
+                event.acceptTransferModes(TransferMode.MOVE);
+            }
+            event.consume();
+        });
+
+        this.setOnDragDropped(event ->{
+            System.out.println("Event drag drop!" + event);
+        });
 
         getChildren().addAll(background /*fileLabel, rankLabel*/, highlight, pieceImageView);
         update();
