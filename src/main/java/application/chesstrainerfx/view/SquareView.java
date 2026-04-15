@@ -1,14 +1,18 @@
 package application.chesstrainerfx.view;
 
+import application.chesstrainerfx.test.DragContext;
+import application.chesstrainerfx.utils.PieceColor;
 import application.chesstrainerfx.utils.PieceModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.utils.PieceType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -65,18 +69,40 @@ public class SquareView extends StackPane {
 
 
         this.setOnDragOver(event ->{
+            //event.acceptTransferModes(TransferMode.MOVE);
             System.out.println("Event drag over!" + event);
-            if (event.getGestureSource() != pieceImageView &&
-                    event.getDragboard().hasImage()) {
-
+            if (event.getGestureSource() !=  pieceImageView &&
+                    event.getDragboard().hasString()) {
+                System.out.println("Transfer");
                 event.acceptTransferModes(TransferMode.MOVE);
             }
             event.consume();
         });
 
         this.setOnDragDropped(event ->{
-            System.out.println("Event drag drop!" + event);
+//            System.out.println("Event drag drop!" + event);
+            Dragboard db = event.getDragboard();
+            if(db.hasString()){
+//                System.out.println(db.getString());
+//                String[] array = db.getString().split(" ");
+//                System.out.println(array[0]);
+//                System.out.println(array[1]);
+//                PieceType type = PieceType.valueOf(array[1]);
+//                PieceColor color = PieceColor.valueOf(array[0]);
+//
+//                PieceModel pieceModel = new PieceModel(type, color);
+                System.out.println("The dragged context: " + DragContext.draggedPiece.getType() + DragContext.draggedPiece.getColor());
+//                model.setPiece(pieceModel);
+                model.setPiece(DragContext.draggedPiece);
+                System.out.println("Event drag drop!" + event);
+                update();
+            }
+            event.consume();
         });
+
+//        this.setOnDragDetected(event -> {
+//            System.out.println("Dragged detected on: " + event.getSource().toString());
+//        });
 
         getChildren().addAll(background /*fileLabel, rankLabel*/, highlight, pieceImageView);
         update();

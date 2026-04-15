@@ -1,5 +1,6 @@
 package application.chesstrainerfx.utils;
 
+import application.chesstrainerfx.test.DragContext;
 import javafx.geometry.Insets;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
@@ -67,6 +68,7 @@ public class PieceSelectorPane extends VBox {
 
         lbl.setMinSize(80, 80);
         lbl.setGraphic(imageView);
+
         lbl.setOnDragDetected(event -> {
             System.out.println(" detected!");
             Dragboard db = lbl.startDragAndDrop(TransferMode.MOVE);
@@ -82,12 +84,15 @@ public class PieceSelectorPane extends VBox {
 
             WritableImage scaledImage = iv.snapshot(params, null);
 
-            db.setDragView(scaledImage);
+            db.setDragView(scaledImage, 30, 30);
 
             ClipboardContent content = new ClipboardContent();
-//            content.putString(lbl.getText());
-            content.putImage(imageView.getImage());
+            content.putString(color + " " +type);
+////            content.putImage(imageView.getImage());
             db.setContent(content);
+
+            DragContext.draggedPiece = new PieceModel(type, color);
+
 
             event.consume();
         });
