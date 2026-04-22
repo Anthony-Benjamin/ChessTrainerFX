@@ -127,11 +127,29 @@ public class BoardEditorDemo extends Application {
 
 
         });
+
+        HBox isWhiteTurnBox = new HBox();
+        isWhiteTurnBox.setAlignment(Pos.CENTER);
+        ComboBox<String> whoseTurnSelector = new ComboBox<>();
+        whoseTurnSelector.getItems().addAll("White to move", "Black to move");
+        whoseTurnSelector.setValue("White to move");
+        isWhiteTurnBox.getChildren().add(whoseTurnSelector);
+
         Button exportFENBtn = new Button("Export FEN");
         flipBoardBtn.setMinWidth(widthButtonSize);
         exportFENBtn.setMinWidth(widthButtonSize);
         exportFENBtn.setOnAction(e -> {
-            fenTextField.setText(model.exportToFEN());
+            System.out.println(whoseTurnSelector.getValue());
+//            if(whoseTurnSelector.getValue().equals("White to move")){
+//                fenTextField.setText(model.exportToFEN(true));;
+//            }else {
+//                fenTextField.setText(model.exportToFEN(false));;
+//            }
+////            fenTextField.setText(model.exportToFEN(false));
+////            fenTextField.setText(model.exportToFEN(false));
+
+            boolean whiteToMove = "White to move".equals(whoseTurnSelector.getValue());
+            fenTextField.setText(model.exportToFEN(whiteToMove));
         });
         flipBoardBox.setSpacing(10);
         flipBoardBox.getChildren().addAll(flipBoardBtn, exportFENBtn);
@@ -147,12 +165,7 @@ public class BoardEditorDemo extends Application {
         movesWindowLayout.getChildren().addAll(movesTitlelbl, movesWindow);
         // end Move window
 
-        HBox isWhiteTurnBox = new HBox();
-        isWhiteTurnBox.setAlignment(Pos.CENTER);
-        ComboBox<String> whoseTurnSelector = new ComboBox<>();
-        whoseTurnSelector.getItems().addAll("White to move", "Black to move");
-        whoseTurnSelector.setValue("White to move");
-        isWhiteTurnBox.getChildren().add(whoseTurnSelector);
+
 
 
         VBox castlingBox = new VBox();
@@ -186,6 +199,12 @@ public class BoardEditorDemo extends Application {
         HBox saveButtonLayout = new HBox();
         saveButtonLayout.setPadding(new Insets(10, 0, 0, 0));
         Button saveExerciseBtn = new Button("Save exercise");
+
+        saveExerciseBtn.setOnAction(e -> {
+            System.out.println("Exercise saved.");
+            System.out.println(generatePGN("Example 2", "8/8/8/8/8/8/4N3/4K3 b - - 0 1", "1. Kh8#"));
+        });
+
         saveButtonLayout.getChildren().add(saveExerciseBtn);
 //        saveButtonLayout.setAlignment(Pos.CENTER_LEFT);
 
@@ -205,4 +224,68 @@ public class BoardEditorDemo extends Application {
         );
         return root;
     }
+
+//    String generatePGN(String title){
+////        [Event "F"]
+////        [Site "S"]
+////        [Date "YYYY.MM.DD"]
+////        [Round "R"]
+////        [White "W"]
+////        [Black "B"]
+////        [Result "1-0"]
+//
+////[Event "?"]
+////[Site "?"]
+////[Date "????.??.??"]
+////[Round "?"]
+////[White "31. Boden's Mate"]
+////[Black "?"]
+////[Result "*"]
+////[Annotator ""]
+////[SetUp "1"]
+////[FEN "2kr4/3p4/8/8/8/6B1/8/5BK1 w - - 0 1"]
+////[PlyCount "1"]
+////[EventDate "2023.02.03"]
+////[SourceVersionDate "2025.08.18"]
+//
+//        StringBuilder pgn = new StringBuilder();
+//        pgn.append("[Event \"" + "F\"]\n");
+//        pgn.append("[Site \"" + "S\"]\n");
+//        pgn.append("[Date " + "\"YYYY.MM.DD\"]\n");
+//        pgn.append("[Round " + "\"R\"]\n");
+//        pgn.append("[White \"" + title + "\"]\n");
+//        pgn.append("[Black " + "\"B\"]\n");
+//        pgn.append("[Result " + "\"1-0\"]\n");
+//
+//        return pgn.toString();
+//    }
+
+public static String generatePGN(String title, String fen, String moves) {
+    StringBuilder pgn = new StringBuilder();
+
+    appendTag(pgn, "Event", "?");
+    appendTag(pgn, "Site", "?");
+    appendTag(pgn, "Date", "????.??.??");
+    appendTag(pgn, "Round", "?");
+    appendTag(pgn, "White", title);
+    appendTag(pgn, "Black", "?");
+    appendTag(pgn, "Result", "*");
+
+
+    appendTag(pgn, "FEN", fen);
+
+    pgn.append("\n");
+    pgn.append(moves);
+
+    return pgn.toString();
+}
+
+    private static void appendTag(StringBuilder sb, String key, String value) {
+        sb.append("[")
+                .append(key)
+                .append(" \"")
+                .append(value)
+                .append("\"]\n");
+    }
+
 }
