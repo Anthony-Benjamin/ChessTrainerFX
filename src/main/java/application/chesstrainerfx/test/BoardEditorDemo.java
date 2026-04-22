@@ -22,6 +22,7 @@ public class BoardEditorDemo extends Application {
     private BoardEditor board;
     private boolean isWhite;
     private HBox root;
+    private TextField fenTextField;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -79,7 +80,7 @@ public class BoardEditorDemo extends Application {
         HBox fenBox = new HBox();
         fenBox.setMinHeight(50);
         Label fenLabel = new Label("FEN: ");
-        TextField fenTextField = new TextField();
+        fenTextField = new TextField();
         fenTextField.setMinWidth(560);
         fenBox.getChildren().addAll(fenLabel, fenTextField);
         fenBox.setAlignment(Pos.CENTER);
@@ -126,11 +127,14 @@ public class BoardEditorDemo extends Application {
 
 
         });
-        Button importFENBtn = new Button("Export FEN");
+        Button exportFENBtn = new Button("Export FEN");
         flipBoardBtn.setMinWidth(widthButtonSize);
-        importFENBtn.setMinWidth(widthButtonSize);
+        exportFENBtn.setMinWidth(widthButtonSize);
+        exportFENBtn.setOnAction(e -> {
+            fenTextField.setText(model.exportToFEN());
+        });
         flipBoardBox.setSpacing(10);
-        flipBoardBox.getChildren().addAll(flipBoardBtn, importFENBtn);
+        flipBoardBox.getChildren().addAll(flipBoardBtn, exportFENBtn);
 
         // Move window
         VBox movesWindowLayout = new VBox();
