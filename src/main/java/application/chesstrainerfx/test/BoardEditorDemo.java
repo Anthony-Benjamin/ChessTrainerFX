@@ -9,10 +9,14 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.util.Optional;
 
 public class BoardEditorDemo extends Application {
     private Button startBtn;
@@ -98,6 +102,7 @@ public class BoardEditorDemo extends Application {
         int widthButtonSize = 150;
 
         HBox startAndClearBox = new HBox(5);
+        startAndClearBox.setPadding(new Insets(153, 0, 0, 0));
         startAndClearBox.setAlignment(Pos.CENTER);
         startBtn = new Button("Start Position");
         startBtn.setOnAction(e ->{
@@ -202,17 +207,57 @@ public class BoardEditorDemo extends Application {
 
         saveExerciseBtn.setOnAction(e -> {
             System.out.println("Exercise saved.");
-            System.out.println(generatePGN("Example 2", "8/8/8/8/8/8/4N3/4K3 b - - 0 1", "1. Kh8#"));
+//            showInfo("Hallo welkom" , " Nu nog een titel vragen");
+            boolean whiteToMove = "White to move".equals(whoseTurnSelector.getValue());
+            System.out.println(generatePGN("Example 2",model.exportToFEN(whiteToMove),  movesWindow.getText()));
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Blitz Grieg");
+//            dialog.setHeaderText("Filename");
+            dialog.setContentText("Blitz krieg");
+
+
+            Optional<String> result = dialog.showAndWait();
+            String filename = result.get();
+            System.out.println(filename);
         });
 
         saveButtonLayout.getChildren().add(saveExerciseBtn);
 //        saveButtonLayout.setAlignment(Pos.CENTER_LEFT);
 
+        //====================================================
+        // Gear wheel section
+        //====================================================
+        HBox gearHBox = new HBox();
+        Button gearBtn = new Button();
+        gearHBox.setAlignment(Pos.TOP_RIGHT);
+
+        Image image = new Image(getClass().getResource("/images/gear.png").toExternalForm());
+//        Image gearImage = new Image("/images/gear.png");
+        ImageView gearImage =  new ImageView(image);
+        gearImage.setOnMouseClicked(e -> {
+            System.out.println("Test");
+        });
+        gearImage.setOnMouseEntered(e -> {
+            Image gearOverImg = new Image(getClass().getResource("/images/gear_over.png").toExternalForm());
+            gearImage.setImage(gearOverImg);
+        });
+
+        gearImage.setOnMouseExited(e -> {
+          gearImage.setImage(image);
+        });
+
+        gearImage.setFitWidth(30);
+        gearImage.setFitHeight(30);
+        gearHBox.getChildren().add(gearImage);
+        System.out.println(gearImage);
+
         VBox root = new VBox();
         root.setSpacing(10);
 //        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(165, 0, 0, 75));
+//        root.setPadding(new Insets(165, 0, 0, 75));
+        root.setPadding(new Insets(10, 0, 0, 75));
         root.getChildren().addAll(
+                gearHBox,
                 startAndClearBox,
                 flipBoardBox,
                 movesWindowLayout,
@@ -287,5 +332,11 @@ public static String generatePGN(String title, String fen, String moves) {
                 .append(value)
                 .append("\"]\n");
     }
-
+    private static void showInfo(String header, String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Info");
+        a.setHeaderText(header);
+        a.setContentText(msg);
+        a.show();
+    }
 }
