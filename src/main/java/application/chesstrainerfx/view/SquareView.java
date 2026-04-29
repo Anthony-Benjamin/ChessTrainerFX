@@ -1,6 +1,7 @@
 package application.chesstrainerfx.view;
 
 import application.chesstrainerfx.test.DragContext;
+import application.chesstrainerfx.utils.CoordinateSystem;
 import application.chesstrainerfx.utils.PieceColor;
 import application.chesstrainerfx.utils.PieceModel;
 import application.chesstrainerfx.model.SquareModel;
@@ -9,9 +10,12 @@ import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.PieceType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.StackPane;
@@ -69,40 +73,48 @@ public class SquareView extends StackPane {
 
 
         this.setOnDragOver(event ->{
-            //event.acceptTransferModes(TransferMode.MOVE);
-            System.out.println("Event drag over!" + event);
-            if (event.getGestureSource() !=  pieceImageView &&
-                    event.getDragboard().hasString()) {
-                System.out.println("Transfer");
-                event.acceptTransferModes(TransferMode.MOVE);
-            }
-            event.consume();
+            System.out.println("Set on Drag Over");
+           if (event.getGestureSource() != this && event.getDragboard().hasImage()) {
+               System.out.println("Event.getGestureSource " + event.getGestureSource());
+        event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+    }
+    event.consume();
         });
 
         this.setOnDragDropped(event ->{
-//            System.out.println("Event drag drop!" + event);
+            System.out.println("Set on Drag Dropped");
             Dragboard db = event.getDragboard();
-            if(db.hasString()){
-//                System.out.println(db.getString());
-//                String[] array = db.getString().split(" ");
-//                System.out.println(array[0]);
-//                System.out.println(array[1]);
-//                PieceType type = PieceType.valueOf(array[1]);
-//                PieceColor color = PieceColor.valueOf(array[0]);
-//
-//                PieceModel pieceModel = new PieceModel(type, color);
-                System.out.println("The dragged context: " + DragContext.draggedPiece.getType() + DragContext.draggedPiece.getColor());
-//                model.setPiece(pieceModel);
+//            System.out.println("x=" + event.getX() + "y=" + event.getY());
+            if(db.hasImage()){
+                System.out.println("db has image");
+                //this.pieceImageView.setImage(db.getImage());
                 model.setPiece(DragContext.draggedPiece);
-                System.out.println("Event drag drop!" + event);
+                update();
+            }
+            event.setDropCompleted(true);
+            event.consume();
+        });
+
+
+        this.setOnDragDetected(event -> {
+            System.out.println("Dragged detected on: " + (SquareView) event.getSource());
+            Dragboard db = pieceImageView.startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
+            content.putImage(pieceImageView.getImage());
+            DragContext.draggedPiece = model.getPiece();
+            db.setContent(content);
+            event.consume();
+        });
+
+        this.setOnDragDone(event -> {
+            if (event.getTransferMode() == TransferMode.MOVE) {
+                // Verwijder de source hier
+//                this.setVisible(false); // of uit lijst verwijderen
+                this.model.removePiece();
                 update();
             }
             event.consume();
         });
-
-//        this.setOnDragDetected(event -> {
-//            System.out.println("Dragged detected on: " + event.getSource().toString());
-//        });
 
         getChildren().addAll(background /*fileLabel, rankLabel*/, highlight, pieceImageView);
         update();

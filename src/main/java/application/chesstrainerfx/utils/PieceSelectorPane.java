@@ -87,8 +87,8 @@ public class PieceSelectorPane extends VBox {
             db.setDragView(scaledImage, 30, 30);
 
             ClipboardContent content = new ClipboardContent();
-            content.putString(color + " " +type);
-////            content.putImage(imageView.getImage());
+//            content.putString(color + " " +type);
+            content.putImage(imageView.getImage());
             db.setContent(content);
 
             DragContext.draggedPiece = new PieceModel(type, color);

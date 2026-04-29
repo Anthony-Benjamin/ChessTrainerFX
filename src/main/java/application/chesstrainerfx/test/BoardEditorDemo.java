@@ -65,6 +65,7 @@ public class BoardEditorDemo extends Application {
         blackPiecesBox.setAlignment(Pos.CENTER);
 
         model = new BoardModel();
+        model.initializeFromFEN("r6r/8/8/8/8/8/8/R6R w - - 0 1");
         Controller controller = new Controller();
 
         int boardSize = 600;
