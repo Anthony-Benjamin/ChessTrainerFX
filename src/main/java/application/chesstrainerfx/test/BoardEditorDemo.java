@@ -9,13 +9,14 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Optional;
 
 public class BoardEditorDemo extends Application {
@@ -34,7 +35,7 @@ public class BoardEditorDemo extends Application {
 
         root = new HBox(10);
         root.setAlignment(Pos.CENTER);
-        root.getChildren().addAll(createBoardEditor(isWhite), createSidePanel());
+        root.getChildren().addAll(createBoardEditor(isWhite), createSidePanel(stage));
 
         stage.setTitle("Board Editor");
         stage.setScene(new Scene(root, 1200, 1000));
@@ -99,7 +100,7 @@ public class BoardEditorDemo extends Application {
         return panel;
     }
 
-    public VBox createSidePanel(){
+    public VBox createSidePanel(Stage stage){
         int widthButtonSize = 150;
 
         HBox startAndClearBox = new HBox(5);
@@ -129,7 +130,7 @@ public class BoardEditorDemo extends Application {
 
             isWhite = !isWhite;
             System.out.println(isWhite);
-            root.getChildren().addAll(createBoardEditor(isWhite),createSidePanel());
+            root.getChildren().addAll(createBoardEditor(isWhite),createSidePanel(stage));
 
 
         });
@@ -226,31 +227,30 @@ public class BoardEditorDemo extends Application {
 //        saveButtonLayout.setAlignment(Pos.CENTER_LEFT);
 
         //====================================================
-        // Gear wheel section
+        // Category section
         //====================================================
-        HBox gearHBox = new HBox();
-        Button gearBtn = new Button();
-        gearHBox.setAlignment(Pos.TOP_RIGHT);
+        HBox categoryHBox = new HBox();
+        Button categoriesBtn = new Button("Set category");
+        categoryHBox.setAlignment(Pos.TOP_RIGHT);
+        categoryHBox.getChildren().add(categoriesBtn);
+//        String path = "/home/ebenjamin/IdeaProjects/ChessTrainerFX/src/main/resources/pgn";
+        String home = System.getProperty("user.home");
+        String path = home + "/IdeaProjects/ChessTrainerFX/src/main/resources/pgn/Puzzles/";
+//        System.out.println(path);
 
-        Image image = new Image(getClass().getResource("/images/gear.png").toExternalForm());
-//        Image gearImage = new Image("/images/gear.png");
-        ImageView gearImage =  new ImageView(image);
-        gearImage.setOnMouseClicked(e -> {
-            System.out.println("Test");
-        });
-        gearImage.setOnMouseEntered(e -> {
-            Image gearOverImg = new Image(getClass().getResource("/images/gear_over.png").toExternalForm());
-            gearImage.setImage(gearOverImg);
-        });
+        categoriesBtn.setOnMouseClicked(e -> {
+            File mainDirectory = new File(System.getProperty("user.home"));
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialDirectory(new File(path));
 
-        gearImage.setOnMouseExited(e -> {
-          gearImage.setImage(image);
+            File file = fileChooser.showSaveDialog(stage);
+            if (file != null) {
+                System.out.println("File object: " + file);
+                mainDirectory = file.getParentFile(); // 👈 update!
+                System.out.println("Main directory: " + mainDirectory.getName());
+                stage.setTitle(mainDirectory.getName());
+            }
         });
-
-        gearImage.setFitWidth(30);
-        gearImage.setFitHeight(30);
-        gearHBox.getChildren().add(gearImage);
-        System.out.println(gearImage);
 
         VBox root = new VBox();
         root.setSpacing(10);
@@ -258,7 +258,7 @@ public class BoardEditorDemo extends Application {
 //        root.setPadding(new Insets(165, 0, 0, 75));
         root.setPadding(new Insets(10, 0, 0, 75));
         root.getChildren().addAll(
-                gearHBox,
+                categoryHBox,
                 startAndClearBox,
                 flipBoardBox,
                 movesWindowLayout,
