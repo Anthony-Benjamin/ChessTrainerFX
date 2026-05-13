@@ -15,7 +15,10 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -28,6 +31,9 @@ public class BoardEditorDemo extends Application {
     private boolean isWhite;
     private HBox root;
     private TextField fenTextField;
+    private File mainDirectory;
+    private ComboBox<Object> whoseTurnSelector;
+    private TextArea movesWindow;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -137,7 +143,7 @@ public class BoardEditorDemo extends Application {
 
         HBox isWhiteTurnBox = new HBox();
         isWhiteTurnBox.setAlignment(Pos.CENTER);
-        ComboBox<String> whoseTurnSelector = new ComboBox<>();
+        whoseTurnSelector = new ComboBox<>();
         whoseTurnSelector.getItems().addAll("White to move", "Black to move");
         whoseTurnSelector.setValue("White to move");
         isWhiteTurnBox.getChildren().add(whoseTurnSelector);
@@ -165,7 +171,7 @@ public class BoardEditorDemo extends Application {
         VBox movesWindowLayout = new VBox();
         Label movesTitlelbl = new Label("Moves");
         movesTitlelbl.setStyle("-fx-font-weight: bold;");
-        TextArea movesWindow = new TextArea();
+        movesWindow = new TextArea();
         movesWindow.setMaxWidth(150);
         movesWindow.setMaxHeight(150);
         movesWindowLayout.setAlignment(Pos.CENTER);
@@ -208,19 +214,58 @@ public class BoardEditorDemo extends Application {
         Button saveExerciseBtn = new Button("Save exercise");
 
         saveExerciseBtn.setOnAction(e -> {
-            System.out.println("Exercise saved.");
-//            showInfo("Hallo welkom" , " Nu nog een titel vragen");
-            boolean whiteToMove = "White to move".equals(whoseTurnSelector.getValue());
-            System.out.println(generatePGN("Example 2",model.exportToFEN(whiteToMove),  movesWindow.getText()));
+            System.out.println("Main directory: " + mainDirectory);
             TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Blitz Grieg");
-//            dialog.setHeaderText("Filename");
-            dialog.setContentText("Blitz krieg");
+            dialog.setHeaderText("Enter a file name to save your exercise");
+            dialog.setTitle("Exercise name");
+            Optional<String> exampleTitle = dialog.showAndWait();
+//            System.out.println("exampleTitle " + exampleTitle.get());
+
+            if(exampleTitle != null){
+                System.out.println(exampleTitle.get() + " saved in: " + mainDirectory);
+                System.out.println(exampleTitle.get());
+                String titel = exampleTitle.get();
+                boolean whosTurn = whoseTurnSelector.getValue().equals("White to move") ? true : false;
+                String fen = model.exportToFEN(whosTurn);
+                String moves = movesWindow.getText();
+
+                System.out.println(generatePGN(titel, fen, moves));
+//                System.out.println(exampleTitle + " saved to " + mainDirectory.getName());
+            }
+//            FileChooser fileChooser = new FileChooser();
+//            fileChooser.setInitialDirectory(mainDirectory);
+//            File filePGN = fileChooser.showSaveDialog(stage);
+//            System.out.println(filePGN);
+//
+//            if (filePGN != null) {
+//
+//                try (BufferedWriter writer =
+//                             new BufferedWriter(new FileWriter(filePGN))) {
+//
+////                    writer.write("Hallo wereld!");
+//
+//                    writer.write(generatePGN("Example 1", "rnbqkbnr/pppppppp/8/8/4P3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1", "1. Rxh6+ gxh6 2. Qf7# *"));
+//                    writer.newLine();
+//                    writer.write("Dit wordt opgeslagen.");
+//
+//                } catch (IOException error) {
+//                    error.printStackTrace();
+//                }
+//            }
+
+//            System.out.println("Exercise saved.");
+////            showInfo("Hallo welkom" , " Nu nog een titel vragen");
+//            boolean whiteToMove = "White to move".equals(whoseTurnSelector.getValue());
+//            System.out.println(generatePGN("Example 2",model.exportToFEN(whiteToMove),  movesWindow.getText()));
+//            TextInputDialog dialog = new TextInputDialog();
+//            dialog.setTitle("Blitz Grieg");
+////            dialog.setHeaderText("Filename");
+//            dialog.setContentText("Blitz krieg");
 
 
-            Optional<String> result = dialog.showAndWait();
-            String filename = result.get();
-            System.out.println(filename);
+//            Optional<String> result = dialog.showAndWait();
+//            String filename = result.get();
+//            System.out.println(filename);
         });
 
         saveButtonLayout.getChildren().add(saveExerciseBtn);
@@ -234,22 +279,17 @@ public class BoardEditorDemo extends Application {
         categoryHBox.setAlignment(Pos.TOP_RIGHT);
         categoryHBox.getChildren().add(categoriesBtn);
 //        String path = "/home/ebenjamin/IdeaProjects/ChessTrainerFX/src/main/resources/pgn";
-        String home = System.getProperty("user.home");
-        String path = home + "/IdeaProjects/ChessTrainerFX/src/main/resources/pgn/Puzzles/";
+
 //        System.out.println(path);
 
         categoriesBtn.setOnMouseClicked(e -> {
-            File mainDirectory = new File(System.getProperty("user.home"));
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setInitialDirectory(new File(path));
-
-            File file = fileChooser.showSaveDialog(stage);
-            if (file != null) {
-                System.out.println("File object: " + file);
-                mainDirectory = file.getParentFile(); // 👈 update!
-                System.out.println("Main directory: " + mainDirectory.getName());
-                stage.setTitle(mainDirectory.getName());
-            }
+            String home = System.getProperty("user.home");
+            String path = home + "/IdeaProjects/ChessTrainerFX/src/main/resources/pgn/Puzzles/";
+            mainDirectory = new File(path);
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setInitialDirectory(mainDirectory);
+            mainDirectory = directoryChooser.showDialog(stage);
+//            System.out.println(mainDirectory);
         });
 
         VBox root = new VBox();
