@@ -71,7 +71,7 @@ public class BoardEditorDemo extends Application {
         blackPiecesBox.setAlignment(Pos.CENTER);
 
         model = new BoardModel();
-        model.initializeFromFEN("r6r/8/8/8/8/8/8/R6R w - - 0 1");
+        model.initializeFromFEN("1r3b2/2nR4/2pNn1kp/1p2PN2/6P1/7P/r7/2B1R1K1 w - - 0 1");
         Controller controller = new Controller();
 
         int boardSize = 600;
@@ -230,22 +230,6 @@ public class BoardEditorDemo extends Application {
             String fen = model.exportToFEN(whoseTurn);
             String moves = movesWindow.getText();
             saveToFile(file, generatePGN(fileName.get(), model.exportToFEN(whoseTurn), moves));
-
-//            TextInputDialog dialog = new TextInputDialog();
-//            dialog.setHeaderText("Enter a file name to save your exercise");
-//            dialog.setTitle("Exercise name");
-//            Optional<String> fileName = dialog.showAndWait();
-//
-//            if(fileName.isPresent()){
-//                String titel = fileName.get();
-//                System.out.println("File name: " + titel);
-//                boolean whoseTurn = whoseTurnSelector.getValue().equals("White to move");
-//                String fen = model.exportToFEN(whoseTurn);
-//                String moves = movesWindow.getText();
-//                saveToFile(file, generatePGN(titel, fen, moves));
-////                System.out.println(generatePGN(titel, fen, moves));
-////                System.out.println(fileName + " saved to " + mainDirectory.getName());
-//            }
         });
 
         saveButtonLayout.getChildren().add(saveExerciseBtn);
@@ -254,10 +238,12 @@ public class BoardEditorDemo extends Application {
         //====================================================
         // Category section
         //====================================================
-        HBox categoryHBox = new HBox();
+        HBox categoryHBox = new HBox(5);
         Button categoriesBtn = new Button("Set category");
         categoryHBox.setAlignment(Pos.TOP_RIGHT);
-        categoryHBox.getChildren().add(categoriesBtn);
+        Label setCategoryStatusLbl = new Label("☒");
+        setCategoryStatusLbl.setStyle("-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 20px");
+        categoryHBox.getChildren().addAll(categoriesBtn, setCategoryStatusLbl);
 //        String path = "/home/ebenjamin/IdeaProjects/ChessTrainerFX/src/main/resources/pgn";
 
 //        System.out.println(path);
@@ -269,6 +255,9 @@ public class BoardEditorDemo extends Application {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setInitialDirectory(mainDirectory);
             mainDirectory = directoryChooser.showDialog(stage);
+
+            setCategoryStatusLbl.setText("☑");
+            setCategoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
             System.out.println("New main directory: " + mainDirectory);
 //            System.out.println(mainDirectory);
         });
@@ -355,6 +344,9 @@ public static String generatePGN(String title, String fen, String moves) {
     appendTag(pgn, "FEN", fen);
 
     pgn.append("\n");
+    if(moves.startsWith("1 -")){
+        moves = moves.replace("1 -", "1.");
+    }
     pgn.append(moves);
 
     return pgn.toString();

@@ -24,6 +24,7 @@ public class BoardEditor extends HBox implements BoardChangeListener {
     private final Controller controller;
     private boolean isWhitePerspective;
     private final SquareView[][] squareViews = new SquareView[8][8];
+    private GridPane boardGrid;
 
 
     public BoardEditor(BoardModel boardModel, Controller controller, boolean isWhitePerspective, int boardSize) {
@@ -42,10 +43,16 @@ public class BoardEditor extends HBox implements BoardChangeListener {
         this.getChildren().add(boardWithBackground);
     }
 
+    public boolean isPointInsideBoard(double sceneX, double sceneY){
+
+        return boardGrid.localToScene(boardGrid.getBoundsInLocal())
+                .contains(sceneX, sceneY);
+    }
+
     private StackPane createBoardStack(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
 
         // --- bordraster ---
-        GridPane boardGrid = new GridPane();
+        boardGrid = new GridPane();
         boardGrid.setAlignment(Pos.CENTER);
         double squareSize = boardSize / 8.0;
 

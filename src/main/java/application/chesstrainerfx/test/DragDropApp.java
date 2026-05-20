@@ -52,6 +52,7 @@ public class DragDropApp extends Application {
         // 🔵 Handle drop
         target.setOnDragDropped(event -> {
             Dragboard db = event.getDragboard();
+
             boolean success = false;
             oldtargetImage = target.getImage();
             if (db.hasImage()) {
