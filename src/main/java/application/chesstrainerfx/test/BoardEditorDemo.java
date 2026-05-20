@@ -17,9 +17,8 @@ import javafx.stage.Stage;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.Optional;
 
 public class BoardEditorDemo extends Application {
@@ -214,58 +213,39 @@ public class BoardEditorDemo extends Application {
         Button saveExerciseBtn = new Button("Save exercise");
 
         saveExerciseBtn.setOnAction(e -> {
-            System.out.println("Main directory: " + mainDirectory);
+            if(mainDirectory == null){
+                System.out.println("Please select directory to save file!");
+                return;
+            }
+
             TextInputDialog dialog = new TextInputDialog();
             dialog.setHeaderText("Enter a file name to save your exercise");
             dialog.setTitle("Exercise name");
-            Optional<String> exampleTitle = dialog.showAndWait();
-//            System.out.println("exampleTitle " + exampleTitle.get());
+            Optional<String> fileName = dialog.showAndWait();
 
-            if(exampleTitle != null){
-                System.out.println(exampleTitle.get() + " saved in: " + mainDirectory);
-                System.out.println(exampleTitle.get());
-                String titel = exampleTitle.get();
-                boolean whosTurn = whoseTurnSelector.getValue().equals("White to move") ? true : false;
-                String fen = model.exportToFEN(whosTurn);
-                String moves = movesWindow.getText();
+            File file = new File(mainDirectory.getPath() + "/"+ fileName.get() + ".pgn");
+            System.out.println("file: " + file);
 
-                System.out.println(generatePGN(titel, fen, moves));
-//                System.out.println(exampleTitle + " saved to " + mainDirectory.getName());
-            }
-//            FileChooser fileChooser = new FileChooser();
-//            fileChooser.setInitialDirectory(mainDirectory);
-//            File filePGN = fileChooser.showSaveDialog(stage);
-//            System.out.println(filePGN);
-//
-//            if (filePGN != null) {
-//
-//                try (BufferedWriter writer =
-//                             new BufferedWriter(new FileWriter(filePGN))) {
-//
-////                    writer.write("Hallo wereld!");
-//
-//                    writer.write(generatePGN("Example 1", "rnbqkbnr/pppppppp/8/8/4P3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1", "1. Rxh6+ gxh6 2. Qf7# *"));
-//                    writer.newLine();
-//                    writer.write("Dit wordt opgeslagen.");
-//
-//                } catch (IOException error) {
-//                    error.printStackTrace();
-//                }
-//            }
+            boolean whoseTurn = whoseTurnSelector.getValue().equals("White to move");
+            String fen = model.exportToFEN(whoseTurn);
+            String moves = movesWindow.getText();
+            saveToFile(file, generatePGN(fileName.get(), model.exportToFEN(whoseTurn), moves));
 
-//            System.out.println("Exercise saved.");
-////            showInfo("Hallo welkom" , " Nu nog een titel vragen");
-//            boolean whiteToMove = "White to move".equals(whoseTurnSelector.getValue());
-//            System.out.println(generatePGN("Example 2",model.exportToFEN(whiteToMove),  movesWindow.getText()));
 //            TextInputDialog dialog = new TextInputDialog();
-//            dialog.setTitle("Blitz Grieg");
-////            dialog.setHeaderText("Filename");
-//            dialog.setContentText("Blitz krieg");
-
-
-//            Optional<String> result = dialog.showAndWait();
-//            String filename = result.get();
-//            System.out.println(filename);
+//            dialog.setHeaderText("Enter a file name to save your exercise");
+//            dialog.setTitle("Exercise name");
+//            Optional<String> fileName = dialog.showAndWait();
+//
+//            if(fileName.isPresent()){
+//                String titel = fileName.get();
+//                System.out.println("File name: " + titel);
+//                boolean whoseTurn = whoseTurnSelector.getValue().equals("White to move");
+//                String fen = model.exportToFEN(whoseTurn);
+//                String moves = movesWindow.getText();
+//                saveToFile(file, generatePGN(titel, fen, moves));
+////                System.out.println(generatePGN(titel, fen, moves));
+////                System.out.println(fileName + " saved to " + mainDirectory.getName());
+//            }
         });
 
         saveButtonLayout.getChildren().add(saveExerciseBtn);
@@ -289,6 +269,7 @@ public class BoardEditorDemo extends Application {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setInitialDirectory(mainDirectory);
             mainDirectory = directoryChooser.showDialog(stage);
+            System.out.println("New main directory: " + mainDirectory);
 //            System.out.println(mainDirectory);
         });
 
@@ -309,6 +290,19 @@ public class BoardEditorDemo extends Application {
                 saveButtonLayout
         );
         return root;
+    }
+
+    private void saveToFile(File file, String pgn) {
+        if (file != null) {
+            try (BufferedWriter writer =
+                         Files.newBufferedWriter(file.toPath())) {
+
+                writer.write(pgn);
+
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
 //    String generatePGN(String title){
