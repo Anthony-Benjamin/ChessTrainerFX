@@ -11,8 +11,6 @@ module application.chesstrainerfx {
     exports application.chesstrainerfx;
     exports application.chesstrainerfx.view;
     opens application.chesstrainerfx.view to javafx.fxml;
-    exports application.chesstrainerfx.test;
-    opens application.chesstrainerfx.test to javafx.fxml;
     exports application.chesstrainerfx.utils;
     opens application.chesstrainerfx.utils to javafx.fxml;
     exports application.chesstrainerfx.model;
