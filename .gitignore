@@ -44,7 +44,11 @@ Thumbs.db
 *.log
 logs/
 
+# PGN Resources
+src/main/resources/pgn/
+
 # Misc
 .env
 .env.local
 *.tmp
+

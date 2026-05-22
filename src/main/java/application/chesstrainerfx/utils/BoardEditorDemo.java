@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Optional;
 
-public class ExerciseCreator extends Application {
+public class BoardEditorDemo extends Application {
     private Button startBtn;
     private BoardModel model;
     private Button flipBoardBtn;
