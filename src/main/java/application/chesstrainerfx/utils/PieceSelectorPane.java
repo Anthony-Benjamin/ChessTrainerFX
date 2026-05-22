@@ -1,6 +1,6 @@
 package application.chesstrainerfx.utils;
 
-import application.chesstrainerfx.test.DragContext;
+import application.chesstrainerfx.utils.DragContext;
 import javafx.geometry.Insets;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;

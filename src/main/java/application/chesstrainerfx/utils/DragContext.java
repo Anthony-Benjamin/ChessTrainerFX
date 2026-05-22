@@ -1,4 +1,4 @@
-package application.chesstrainerfx.test;
+package application.chesstrainerfx.utils;
 
 import application.chesstrainerfx.utils.PieceModel;
 

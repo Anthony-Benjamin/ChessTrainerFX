@@ -1,0 +1,119 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "21. Morphy's Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7k/7p/8/2B5/8/6R1/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bd4# {Morphy’s Mate is named after the legendary American chess
+player, Paul Morphy. The checkmate is executed by a bishop and rook: Morphy's
+mate is a common method of checkmating. It was named after Paul Morphy . It
+works by using the bishop to attack the black king and a rook and Black's own
+pawn to confine it. In many respects it is very similar to the Corner mate.} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Intro Position 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7k/6Rp/8/8/3B4/8/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rg4# (1. Rg5#) (1. Rg3#) (1. Rg2#) *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6rk/Q4p1p/2b3q1/8/8/3B4/5PPP/4NRK1 b - - 0 1"]
+[PlyCount "13"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,13,-29987,-29988,-29989,-29990,-29991,-29992,-29993,-29994,-29995,
+-29996,-29997,-29998,-29999,-30000]} {[#]} 1... Qxg2+ 2. Nxg2 Rxg2+ 3. Kh1
+Rxf2+ 4. Kg1 Rg2+ 5. Kh1 Rg4+ 6. Be4 Bxe4+ 7. Rf3 Bxf3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3r3k/pb4p1/2q5/R5Np/1Pp2Pr1/2Q2B2/2P4P/R6K b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+1... Rd3 2. cxd3 Qxf3+ 3. Nxf3 Bxf3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3b1rk1/1q3p1p/1p6/p1n1Pp2/2P5/2R5/PB1Q2PP/7K w - - 0 22"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 22. Rg3+ Kh8 23. Qxd8 Rxd8 24. e6+ *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3r1rk1/p2R1ppp/1p1bp3/3qB3/3PR3/5Q1P/PP3PP1/6K1 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,7,443,447,447,445,29997,29998,29999,-30000]} {[#]} 1. Rxd6 Rxd6 2. Qf6
+gxf6 3. Rg4+ Kh8 4. Bxf6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2r3k1/p1q1Bp1p/8/3pRp2/4bP2/7P/Pr4P1/3QR2K w - - 0 28"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 28. R1xe4 dxe4 29. Qg4+ fxg4 30. Rg5+ Kh8 31. Bf6# *
+

@@ -1,0 +1,101 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "23. Corner Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7k/7p/8/6N1/8/8/8/6RK w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Nf7# {We have seen different mating patterns using Rook and Bishop.
+Now let's see some using Rook and Knight. We have seen already similar mate
+using Rook and Bishop. Now isntead of Bishop, there will be Knight. 1. Corner
+Mate, as the name suggests, is a checkmate pattern against an enemy king that
+is trapped in a corner. The actual checkmate is often executed by a knight.} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/3Q1p2/6p1/P5r1/R1q1n3/7B/7P/5R1K b - - 0 1"]
+[PlyCount "3"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Qxf1+ 2. Bxf1 Nf2# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "k2rb2r/p2qb1pp/P2p1p2/1NpPp3/2P1P1N1/6P1/1RQ1BP1P/6K1 w - - 0 25"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+25. Nxe5 fxe5 26. Bg4 Qxg4 27. Nc7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2k3r1/ppp2p1p/3p2r1/3Pbq2/2QBn2N/1P2P2P/P4PP1/2R2R1K b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Qxh3+ 2. gxh3 Rg1+ 3. Rxg1 Nxf2# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1n3r1k/pp2q2p/1b2p3/1Q1pNp2/3P4/1P4RP/1B3P1K/8 w - - 0 1"]
+[PlyCount "9"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Ba3 Qxa3 2. Qe8 h6 3. Qg6 Qe7 4. Qxh6+ Qh7 5. Qxf8+ *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "8/2Q3pk/6rp/8/3N1Pn1/q3r3/6BP/4NR1K b - - 0 32"]
+[PlyCount "9"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+32... Rxe1 33. Rxe1 Qh3 34. Kg1 (34. Bxh3 Nf2#) 34... Ne3 35. Re2 Rxg2+ 36.
+Rxg2 Qxg2# *
+

@@ -1,6 +1,6 @@
 package application.chesstrainerfx.view;
 
-import application.chesstrainerfx.test.DragContext;
+import application.chesstrainerfx.utils.DragContext;
 import application.chesstrainerfx.utils.CoordinateSystem;
 import application.chesstrainerfx.utils.PieceColor;
 import application.chesstrainerfx.utils.PieceModel;

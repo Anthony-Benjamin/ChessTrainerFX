@@ -1,0 +1,102 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "3. Cozio's Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "8/8/1Q6/8/6pk/5q2/8/6K1 w - - 0 4"]
+[PlyCount "3"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,3,29997,29998,29999,-30000]} {[#]} 4. Qh6+ {Thedovetail mateis a
+common method of checkmating, and is also known asCozio's mate, named after a
+study byCarlo Cozio, published in 1766. It involves trapping the black king in
+the patternshown. It does not matter how the queen is supported and it does
+not matter which type Black's other two pieces are so long as neither is an
+unpinned knight.} Kg3 5. Qh2# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7k/2q1bpp1/8/3N3P/1p2P1Q1/1P6/PK3P2/1R6 b - - 0 1"]
+[PlyCount "3"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Bf6+ 2. Nxf6 Qc3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7R/1Q3r2/1b2rkp1/5p2/3q1P2/8/6R1/7K w - - 0 50"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 50. Rxg6+ Kxg6 51. Qg2+ Kf6 52. Qg5# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2r5/4k3/3p4/B1nP4/4qp2/5Q2/P2K4/3R1R2 b - - 0 28"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 28... Nb3+ 29. Qxb3 Rc2+ 30. Qxc2 Qe3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5r1k/R2R2p1/7p/1q1Q4/N1n1P3/3b2P1/5PKP/8 b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,5,-760,-1044,-1175,-29986,-29999,-30000]} {[#]} 1... Ne3+ 2. fxe3
+Bxe4+ 3. Qxe4 Qf1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5rk1/4np1p/4P1p1/7n/4q3/7P/r2B1QP1/4NRK1 w - - 0 1"]
+[PlyCount "9"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,9,29989,29990,29991,29992,29995,29996,29997,29998,29999,-30000]} {[#]
+} 1. Qxf7+ Rxf7 2. exf7+ Kf8 3. Bh6+ Ng7 4. Bxg7+ Kxg7 5. f8=Q# *

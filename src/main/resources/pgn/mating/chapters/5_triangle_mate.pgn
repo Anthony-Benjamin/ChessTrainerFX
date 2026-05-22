@@ -1,0 +1,131 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "5. Triangle Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/7R/8/5Q2/8/8/8/6K1 w - - 0 2"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#] The Triangle Mate, also known as the Fish Tail Mate, is a queen and rook
+checkmate pattern that resembles the visual appearance of a triangle} 2. Qf7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Intro Position 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "8/6p1/6k1/7R/8/5Q2/8/6K1 w - - 0 1"]
+[PlyCount "0"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]}  *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Intro Position 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5R2/6kp/8/8/8/5Q2/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Qf6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3rrb2/1R3pk1/3p1n1p/2p1pQ2/2P1Pqp1/3P2R1/5NP1/6K1 w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,5,591,578,29997,29998,29999,-30000]} {[#]} 1. Rxg4+ Nxg4 2. Rxf7+ Kg8
+3. Qh7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/2q2p1p/1p1p4/6r1/1r1n1Np1/pP4P1/P4R1P/3R1QK1 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rxd4 Rxd4 2. Ne6 fxe6 3. Rf8+ Kg7 4. Qf6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3q2k1/6p1/5p1r/1p6/2P2r2/RPQP3P/6P1/6KR b - - 0 1"]
+[PlyCount "9"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,9,-477,-547,-29993,-29994,-29995,-29996,-29997,-29998,-29999,-30000]} 
+{[#]} 1... b4 2. Qxb4 Qd4+ 3. Kh2 Rxh3+ 4. Kxh3 Rh4+ 5. Kg3 Qf4# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4r1k1/2r2p1p/6p1/4b3/1P3Pq1/P2BQ3/5KP1/3R2BR b - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Bd4 2. Qxd4 Rc2+ 3. Bxc2 Re2+ 4. Kf1 Qxg2# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2R3nk/1r4p1/p2p2pp/2p5/q2P3R/1rn3P1/4B1PK/4Q3 w - - 0 1"]
+[PlyCount "9"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bb5 axb5 2. Qe6 Qc4 3. Rxh6+ gxh6 4. Rxg8+ Kh7 5. Qxg6# *
+

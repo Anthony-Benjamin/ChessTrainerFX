@@ -1,0 +1,146 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "13. Back Rank Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Re8# {The black king is trapped on the back rank, behind his own pawn
+shield, hence the name “Back Rank Mate”.} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/5ppp/p7/qp6/8/4B2P/1P3PP1/4RK2 w - - 0 1"]
+[PlyCount "3"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bb6 (1. Bd2 $2 Qd8) 1... Qxb6 2. Re8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2r3k1/2r2ppp/4p1q1/8/5Q2/4P3/5PPP/RR4K1 b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Qxb1+ 2. Rxb1 Rc1+ 3. Rxc1 Rxc1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1k6/p1p1r1q1/5b1p/8/6P1/PpP3QP/1P6/K4B1R b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+1... Bh4 2. Qxh4 Qg5 3. Qxg5 (3. Qf2 Qc1#) 3... Re1+ *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4rrk1/4bppp/2q5/1p6/4Q3/2P4P/1P3PP1/R1B1R1K1 b - - 0 1"]
+[PlyCount "3"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,3,-382,-396,-29999,-30000]} {[#]} 1... Bd6 2. Qxc6 Rxe1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2r5/5pkp/2q3p1/3p1rB1/2nP1Q2/7P/4RPP1/4R1K1 w - - 0 2"]
+[PlyCount "7"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 2. Bh6+ Kg8 (2... Kf6 3. g4 $3 Rxf4 4. g5+ Kf5 5. Re5+ Nxe5 6. Rxe5#) 3.
+Qc7 $3 Qa8 (3... Rxc7 4. Re8+ Qxe8 5. Rxe8#) (3... Qxc7 4. Re8+ Rxe8 5. Rxe8#)
+4. Qxc8+ Qxc8 5. Re8+ *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 6"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r3r1k1/1p1b1pp1/1p5p/3Pq3/1R6/P2Q1B2/1P4PP/R6K b - - 0 24"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[Source "ChessBase"]
+[SourceVersion "1"]
+[SourceVersionDate "2025.08.18"]
+[SourceQuality "1"]
+
+{[%evp 0,5,10,-1170,-29993,-29994,-29995,-29996]} {[#]} 24... Rxa3 25. bxa3 (
+25. Rxa3 Qe1+ 26. Qf1 Qxf1#) 25... Qxa1+ 26. Rb1 Re1+ *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 7"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2r1r1k1/1p1q1ppp/3p1b2/p2P4/3Q4/5N2/PP2RPPP/4R1K1 w - - 0 18"]
+[PlyCount "13"]
+[EventDate "2023.02.03"]
+[Source "ChessBase"]
+[SourceVersion "1"]
+[SourceVersionDate "2025.08.18"]
+[SourceQuality "1"]
+
+{[%evp 0,13,50,103,94,99,94,94,94,83,314,328,1027,1070,1119,1124]} {[#]} 18.
+Qg4 $1 (18. Rxe8+ Rxe8 19. Rxe8+ Qxe8) (18. Qa4 Qxa4) 18... Qb5 (18... Qxg4 19.
+Rxe8+ {[%csl Rg8]} Rxe8 20. Rxe8#) (18... Qd8 19. Rxe8+ Qxe8 20. Rxe8+) 19. Qc4
+$3 (19. a4 Qxe2 20. Rxe2 Rc1+ 21. Ne1 Rxe1+ 22. Rxe1 Rxe1#) 19... Qd7 (19...
+Rxc4 20. Rxe8+) 20. Qc7 $3 Qb5 (20... Qa4 21. Re4 h6 (21... Qb5 22. Qxb7) 22.
+Qxc8 $1 (22. Rxa4 Rxe1+ 23. Nxe1 Rxc7) 22... Qxe4 23. Qxe8+ $18) 21. a4 $1 (21.
+Qxb7 $2 Qxe2 22. Rxe2 Rc1+ $19) 21... Qxa4 (21... Qxe2 22. Rxe2 Rxc7 (22...
+Rxe2 23. Qxc8+) 23. Rxe8#) 22. Re4 $1 (22. Qxc8 Rxc8) 22... Qb5 (22... Qxe4 23.
+Rxe4 $18) 23. Qxb7 $1 Qa4 24. Rxa4 *
+

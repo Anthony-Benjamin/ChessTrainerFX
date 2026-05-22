@@ -1,0 +1,101 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "8. Balestra Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4k3/8/5Q2/8/8/8/6B1/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bc6# {The Balestra Mate sees exemplary coordination between a queen
+and a bishop. The queen ends up protecting the flight squares and the bishop
+delivers the checkmate. The name is somewhat obscure. Balestra is a fencing
+term, meaning to step forward and then lunge, which is relatable to the final
+jab by the bishop.} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/4Qpp1/7p/5q2/3bR3/r4B2/P5PP/5K2 b - - 0 37"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 37... Rxf3+ 38. gxf3 Qxf3+ 39. Ke1 Bc3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r4b1r/4kp2/pp2pp1p/n1p5/qnP5/P4N1P/1P1Q1PP1/1BKRR3 w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Qd6+ Ke8 2. Rxe6+ fxe6 3. Bg6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2r2r1k/pp4pp/1q1bb3/6Q1/1P6/P1PP1PP1/5NBP/RN2KR2 b Q - 0 21"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 21... Bf4 22. gxf4 Qe3+ 23. Kd1 Bb3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1r1k1b1r/1bqn2p1/p3Q2p/1p2P3/8/4B1PP/PPP3P1/3RRBK1 w - - 0 21"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 21. Rxd7+ (21. Bb6 Bc5+ 22. Bxc5 Qxc5+ 23. Kh2 Qe7) 21... Qxd7 22. Rd1 (
+22. Bb6+ Kc8) 22... Qxd1 23. Bb6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r7/4bQpk/1p5p/1Pn1p2P/2n5/3qP1R1/P1N2P2/2KR4 b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Nb3+ 2. axb3 Ra1+ 3. Nxa1 Ba3# *
+

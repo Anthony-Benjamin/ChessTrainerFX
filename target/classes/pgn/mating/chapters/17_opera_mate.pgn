@@ -1,0 +1,119 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "17. Opera Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4k3/5p2/8/6B1/8/8/8/3R2K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+
+{[#]} 1. Rd8# {The opera mateis a common method of checkmating. It works by
+attacking an uncastled king on the back rank with a rook using a bishop to
+protect it. An enemy pawn or a piece other than a knight is used to restrict
+the enemy king's movement. It is a type of Anderssen's mateand closely
+resemblesMayet's mate. The checkmate was named after its implementation byPaul
+Morphyin 1858 at a game at the Paris opera against Duke Karl of Brunswickand
+Count Isouard; see Opera game.} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Intro Position 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 16"]
+[PlyCount "3"]
+[EventDate "2023.02.03"]
+[Source "ChessBase"]
+[SourceVersion "1"]
+[SourceVersionDate "2025.08.18"]
+[SourceQuality "1"]
+
+{[#]} 16. Qb8+ Nxb8 17. Rd8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2k1r3/pp3pp1/2p5/8/3P1b1p/1QP2BqP/PP3BP1/5KR1 b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+
+{[#]} 1... Qxf2+ 2. Kxf2 Bg3+ 3. Kf1 Re1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1qk2r2/1p1b2b1/1B2p2p/Q5p1/8/P1P4P/1P6/1K1R4 w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Qc5+ Bc6 2. Qxf8+ Bxf8 3. Rd8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2r1kb1r/1pp2ppp/1pn5/1N2n1B1/Q5q1/8/PP3PPP/3R1RK1 w k - 0 10"]
+[PlyCount "3"]
+[EventDate "2021.??.??"]
+
+{[#]} 10. Nxc7+ Rxc7 11. Rd8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3r1rk1/1pq2ppp/8/2p3Q1/6b1/1P2P3/1BP2PPP/R3KB1R b KQ - 0 17"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 17... Qa5+ 18. c3 Qxa1+ 19. Bxa1 Rd1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r2Bk2r/5p1p/1p2b1p1/p1p2p2/2P2P2/1P1R3R/6P1/6K1 w kq - 0 6"]
+[PlyCount "3"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,3,-145,467,29987,29988]} {[#]} 6. Bf6 Rg8 (6... O-O 7. Rxh7 Kxh7 8.
+Rh3+ Kg8 9. Rh8#) 7. Rd6 {[%cal Gh3d3,Gd6d8]} *
+
