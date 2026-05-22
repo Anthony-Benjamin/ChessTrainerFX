@@ -33,6 +33,15 @@ public class BoardEditorDemo extends Application {
     private File mainDirectory;
     private ComboBox<Object> whoseTurnSelector;
     private TextArea movesWindow;
+    private VBox boardEditorPanel;
+    private HBox boardTitle;
+    private HBox blackPiecesBox;
+    private HBox whitePiecesBox;
+    private HBox fenBox;
+    private CheckBox whiteKingSideCastling;
+    private CheckBox whiteQueenSideCastling;
+    private CheckBox blackKingSideCastling;
+    private CheckBox blackQueenSideCastling;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -55,18 +64,18 @@ public class BoardEditorDemo extends Application {
             }
         });
 
-        VBox panel = new VBox(10);
-        panel.setPadding(new Insets(0, 0, 0, 50));
+        boardEditorPanel = new VBox(10);
+        boardEditorPanel.setPadding(new Insets(0, 0, 0, 50));
         Label titleLabel = new Label("Board Editor");
         titleLabel.setMinHeight(100);
         titleLabel.setAlignment(Pos.CENTER);
         titleLabel.setStyle("-fx-font-size: 30px; -fx-font-family: Garamond; -fx-font-weight: bold;");
 
-        HBox boardTitle = new HBox();
+        boardTitle = new HBox();
         boardTitle.setAlignment(Pos.CENTER);
         boardTitle.getChildren().add(titleLabel);
 
-        HBox blackPiecesBox = new HBox();
+        blackPiecesBox = new HBox();
         blackPiecesBox.getChildren().add(blackPieces.blackPieces());
         blackPiecesBox.setAlignment(Pos.CENTER);
 
@@ -78,7 +87,7 @@ public class BoardEditorDemo extends Application {
         board = new BoardEditor(model, controller, isWhite, boardSize);
         board.setAlignment(Pos.CENTER);
 
-        HBox whitePiecesBox = new HBox();
+        whitePiecesBox = new HBox();
         PieceSelectorPane whitePieces = new PieceSelectorPane(new PieceSelectorPane.PieceSelectionListener() {
             @Override
             public void onPieceSelected(PieceModel piece) {
@@ -88,7 +97,7 @@ public class BoardEditorDemo extends Application {
         whitePiecesBox.getChildren().add(whitePieces.whitePieces());
         whitePiecesBox.setAlignment(Pos.CENTER);
 
-        HBox fenBox = new HBox();
+        fenBox = new HBox();
         fenBox.setMinHeight(50);
         Label fenLabel = new Label("FEN: ");
         fenTextField = new TextField();
@@ -97,12 +106,12 @@ public class BoardEditorDemo extends Application {
         fenBox.setAlignment(Pos.CENTER);
 
         if(isWhite){
-            panel.getChildren().addAll(boardTitle, blackPiecesBox, board, whitePiecesBox, fenBox);
+            boardEditorPanel.getChildren().addAll(boardTitle, blackPiecesBox, board, whitePiecesBox, fenBox);
         }else{
-            panel.getChildren().addAll(boardTitle, whitePiecesBox, board,blackPiecesBox , fenBox);
+            boardEditorPanel.getChildren().addAll(boardTitle, whitePiecesBox, board,blackPiecesBox , fenBox);
         }
 
-        return panel;
+        return boardEditorPanel;
     }
 
     public VBox createSidePanel(Stage stage){
@@ -129,15 +138,13 @@ public class BoardEditorDemo extends Application {
         flipBoardBox.setAlignment(Pos.CENTER);
         flipBoardBtn = new Button("Flip Board");
         flipBoardBtn.setOnAction(e -> {
-            System.out.println(root.getChildren());
-
-            root.getChildren().clear();
-
             isWhite = !isWhite;
-            System.out.println(isWhite);
-            root.getChildren().addAll(createBoardEditor(isWhite),createSidePanel(stage));
-
-
+            board.flip();
+            if (isWhite) {
+                boardEditorPanel.getChildren().setAll(boardTitle, blackPiecesBox, board, whitePiecesBox, fenBox);
+            } else {
+                boardEditorPanel.getChildren().setAll(boardTitle, whitePiecesBox, board, blackPiecesBox, fenBox);
+            }
         });
 
         HBox isWhiteTurnBox = new HBox();
@@ -161,7 +168,7 @@ public class BoardEditorDemo extends Application {
 ////            fenTextField.setText(model.exportToFEN(false));
 
             boolean whiteToMove = "White to move".equals(whoseTurnSelector.getValue());
-            fenTextField.setText(model.exportToFEN(whiteToMove));
+            fenTextField.setText(model.exportToFEN(whiteToMove, buildCastlingString()));
         });
         flipBoardBox.setSpacing(10);
         flipBoardBox.getChildren().addAll(flipBoardBtn, exportFENBtn);
@@ -191,21 +198,21 @@ public class BoardEditorDemo extends Application {
         HBox whiteCheckBox = new HBox();
         whiteCheckBox.setSpacing(4);
         Label white = new Label("White");
-        CheckBox kingSideCastling = new CheckBox();
-        Label lblKingSide = new Label("O-O");;
-        CheckBox queenSideCastling = new CheckBox();
-        Label lblQueenSide = new Label("O-O-O");;
-        whiteCheckBox.getChildren().addAll(white, kingSideCastling, lblKingSide, queenSideCastling, lblQueenSide);
+        whiteKingSideCastling = new CheckBox();
+        Label lblKingSide = new Label("O-O");
+        whiteQueenSideCastling = new CheckBox();
+        Label lblQueenSide = new Label("O-O-O");
+        whiteCheckBox.getChildren().addAll(white, whiteKingSideCastling, lblKingSide, whiteQueenSideCastling, lblQueenSide);
         whiteCheckBox.setAlignment(Pos.CENTER);
 
         HBox blackCheckBox = new HBox();
         blackCheckBox.setSpacing(4);
         Label blackLbl = new Label("Black");
-        CheckBox kingSideCastlingBlack = new CheckBox();
+        blackKingSideCastling = new CheckBox();
         Label lblBlackKingSide = new Label("O-O");
-        CheckBox blackQueenSideCastling = new CheckBox();
+        blackQueenSideCastling = new CheckBox();
         Label lblBlackQueenSide = new Label("O-O-O");
-        blackCheckBox.getChildren().addAll(blackLbl, kingSideCastlingBlack, lblBlackKingSide, blackQueenSideCastling, lblBlackQueenSide);
+        blackCheckBox.getChildren().addAll(blackLbl, blackKingSideCastling, lblBlackKingSide, blackQueenSideCastling, lblBlackQueenSide);
         blackCheckBox.setAlignment(Pos.CENTER);
 
         HBox saveButtonLayout = new HBox();
@@ -223,13 +230,19 @@ public class BoardEditorDemo extends Application {
             dialog.setTitle("Exercise name");
             Optional<String> fileName = dialog.showAndWait();
 
-            File file = new File(mainDirectory.getPath() + "/"+ fileName.get() + ".pgn");
+            if (fileName.isEmpty() || fileName.get().isBlank()) {
+                System.out.println("Save cancelled: no file name entered.");
+                return;
+            }
+            String name = fileName.get().trim();
+
+            File file = new File(mainDirectory.getPath() + "/"+ name + ".pgn");
             System.out.println("file: " + file);
 
             boolean whoseTurn = whoseTurnSelector.getValue().equals("White to move");
-            String fen = model.exportToFEN(whoseTurn);
+            String fen = model.exportToFEN(whoseTurn, buildCastlingString());
             String moves = movesWindow.getText();
-            saveToFile(file, generatePGN(fileName.get(), model.exportToFEN(whoseTurn), moves));
+            saveToFile(file, generatePGN(name, fen, moves));
         });
 
         saveButtonLayout.getChildren().add(saveExerciseBtn);
@@ -251,15 +264,22 @@ public class BoardEditorDemo extends Application {
         categoriesBtn.setOnMouseClicked(e -> {
             String home = System.getProperty("user.home");
             String path = home + "/IdeaProjects/ChessTrainerFX/src/main/resources/pgn/Puzzles/";
-            mainDirectory = new File(path);
+            File initialDir = new File(path);
+
+            // Fallback naar home directory als het ingestelde pad niet bestaat
+            if (!initialDir.exists()) {
+                initialDir = new File(home);
+            }
+
             DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setInitialDirectory(mainDirectory);
+            directoryChooser.setInitialDirectory(initialDir);
             mainDirectory = directoryChooser.showDialog(stage);
 
-            setCategoryStatusLbl.setText("☑");
-            setCategoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
-            System.out.println("New main directory: " + mainDirectory);
-//            System.out.println(mainDirectory);
+            if (mainDirectory != null) {
+                setCategoryStatusLbl.setText("☑");
+                setCategoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
+                System.out.println("New main directory: " + mainDirectory);
+            }
         });
 
         VBox root = new VBox();
@@ -279,6 +299,16 @@ public class BoardEditorDemo extends Application {
                 saveButtonLayout
         );
         return root;
+    }
+
+    /** Bouwt het FEN-rokadeveld uit de checkboxes ("KQkq", "Kq", "-", ...). */
+    private String buildCastlingString() {
+        StringBuilder sb = new StringBuilder();
+        if (whiteKingSideCastling.isSelected())  sb.append('K');
+        if (whiteQueenSideCastling.isSelected()) sb.append('Q');
+        if (blackKingSideCastling.isSelected())  sb.append('k');
+        if (blackQueenSideCastling.isSelected()) sb.append('q');
+        return sb.isEmpty() ? "-" : sb.toString();
     }
 
     private void saveToFile(File file, String pgn) {

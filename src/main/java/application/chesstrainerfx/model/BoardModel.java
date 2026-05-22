@@ -199,6 +199,12 @@ public class BoardModel {
         }
     }
 
+    public void notifyCheck(boolean inCheck) {
+        for (BoardChangeListener l : listeners) {
+            l.onCheck(inCheck);
+        }
+    }
+
     // --------------------------------------------------------------------
     // FEN export
     // --------------------------------------------------------------------
@@ -209,6 +215,11 @@ public class BoardModel {
 
     // extra overload (handig voor jou/Controller)
     public String exportToFEN(boolean whiteToMove) {
+        return exportToFEN(whiteToMove, "-");
+    }
+
+    // overload met expliciete rokaderechten ("KQkq", "Kq", "-", ...)
+    public String exportToFEN(boolean whiteToMove, String castling) {
         StringBuilder fen = new StringBuilder();
 
         for (int row = 0; row < 8; row++) {
@@ -232,7 +243,8 @@ public class BoardModel {
         }
 
         fen.append(whiteToMove ? " w" : " b");
-        fen.append(" - - 0 1"); // basis metadata (later uitbreiden)
+        fen.append(' ').append(castling == null || castling.isBlank() ? "-" : castling);
+        fen.append(" - 0 1"); // en-passant, halfmove, fullmove (later uitbreiden)
         return fen.toString();
     }
 

@@ -153,6 +153,12 @@ public class BoardEditor extends HBox implements BoardChangeListener {
 //        boardModel = initializeBoard();
     }
 
+    /** Draait het bordperspectief om zonder het model aan te raken. */
+    public void flip() {
+        isWhitePerspective = !isWhitePerspective;
+        getChildren().setAll(createBoardStack(boardModel, controller, isWhitePerspective));
+    }
+
     @Override
     public void onBoardUpdated() {
 //        System.out.println("onBoardUpdated()");

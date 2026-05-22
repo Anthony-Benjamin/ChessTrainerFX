@@ -1,0 +1,105 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "4. Kill Box Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/8/5Q2/8/8/8/6K1/7R w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rh8# {The Kill Box Mate occurs when a queen and rook work together to
+checkmate the enemy king in a box:Thekill box mateis a box-shaped checkmate.
+The checkmate is delivered by a rook with the queen's assistance. The rook is
+adjacent to the king, while the queen supports the rook, being separated from
+it by one empty square on the same diagonal as the rook. This forms a 3 by 3
+box shape, inside which the enemy king is trapped. The king could be anywhere
+on the board, but must have no escape squares available to him due either to
+being on the edge of the board or to being blocked off by friendly or enemy
+pieces.} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1k5r/1pp2p1r/p4bp1/8/2P2B2/1P2Pq2/P2Q2B1/3RR1K1 b - - 0 1"]
+[PlyCount "3"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Rh1+ 2. Bxh1 Rxh1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "8/5p1k/1p3Qpp/2q5/3b4/1b1B3P/1r3PP1/R5K1 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bxg6+ fxg6 2. Ra7+ Kg8 3. Ra8+ Kh7 4. Rh8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1k5r/pp3pp1/8/2Nn4/1P4q1/4P1P1/P1Q2P2/2R1BKRr b - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Nxe3+ 2. fxe3 Qf3+ 3. Qf2 Rxg1+ 4. Kxg1 Rh1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4kr2/3b1p2/4pQ1p/q5b1/8/2p4P/1rB2PP1/3RR1K1 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rxe6+ fxe6 (1... Bxe6 2. Ba4+ Qxa4 (2... Rb5 3. Bxb5+ Qxb5 4. Rd8#) 3.
+Rd8#) 2. Bg6+ Rf7 3. Qxf7+ Kd8 4. Qxd7# {[%csl Rd8]} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Exampel 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1r2nR2/7k/3q2pp/4p2n/3pB3/3P2P1/1r1Q3P/5RK1 w - - 0 29"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 29. Rh8+ Kxh8 30. Qxh6+ Kg8 31. Bd5+ Qxd5 32. Rf8# *
+

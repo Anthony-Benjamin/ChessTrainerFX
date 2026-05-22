@@ -168,11 +168,31 @@ public class BoardView extends HBox implements BoardChangeListener {
 
     @Override
     public void onTurnChanged(boolean whiteToMove) {
+        this.whiteToMove = whiteToMove;
         updateTurnLabel(whiteToMove);
     }
 
+    @Override
+    public void onCheck(boolean inCheck) {
+        if (inCheck) {
+            turnLabel.setText((whiteToMove ? "White to move" : "Black to move") + "   —   Schaak!");
+            turnLabel.setStyle("""
+                        -fx-text-fill: #ff6b6b;
+                        -fx-font-size: 18px;
+                        -fx-font-weight: bold;
+                    """);
+        }
+    }
+
+    private boolean whiteToMove = true;
+
     private void updateTurnLabel(boolean whiteToMove) {
         turnLabel.setText(whiteToMove ? "White to move" : "Black to move");
+        turnLabel.setStyle("""
+                    -fx-text-fill: beige;
+                    -fx-font-size: 18px;
+                    -fx-font-weight: bold;
+                """);
     }
 
 }

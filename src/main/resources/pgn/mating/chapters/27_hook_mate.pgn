@@ -1,0 +1,99 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "27. Hook Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/6p1/6N1/5P2/8/8/8/3R2K1 w - - 0 1"]
+[PlyCount "3"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rd8+ {1. The Hook Mate is a very useful and instructive checkmate
+pattern that demonstrates optimal coordination between a rook and knight. The
+pattern is named after it’s visual appearance that resemble a hook.} Kf7 (
+1... Kh7 2. Rh8#) 2. Rf8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6rk/pp3Qp1/1q5p/3pNP2/n1p5/2P5/PP6/2K1R3 w - - 0 38"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 38. Ng6+ Kh7 39. Qxg8+ Kxg8 40. Re8+ Kf7 41. Rf8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3r2k1/1pR3p1/1p3q2/2b5/1P3pN1/P1N3nP/6PK/Q7 b - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Qxc3 2. Qxc3 Bg1+ 3. Kxg1 Rd1+ 4. Kf2 Rf1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7k/6p1/p5Qp/2q5/2B2p2/1P3N1P/P4pPK/3r4 b - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Qxc4 2. bxc4 f1=N+ 3. Kg1 Ng3+ 4. Kf2 Rf1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "Q2n1r2/2r1k1pp/4p3/1pn1N3/1Bp2P2/4P1Pq/1P2K2P/3R4 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bxc5+ Rxc5 2. Rd7+ Kf6 3. Qxd8+ Rxd8 4. Rf7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/4rp1p/6p1/4P1P1/1np4P/8/3N1PK1/R7 w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Ra8+ Kg7 2. Ne4 Rxe5 (2... Nd5 3. Nf6 Nxf6 4. exf6#) (2... h6 3. Nf6
+hxg5 4. hxg5) (2... Z0 3. Nf6 Z0 4. Rg8#) 3. Nf6 *

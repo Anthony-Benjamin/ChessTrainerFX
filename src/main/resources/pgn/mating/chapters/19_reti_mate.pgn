@@ -1,0 +1,101 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "19. Reti's Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1nb5/1pk5/2p5/6B1/8/8/8/2KR4 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bd8# {Reti’s Mate is named after a famous game between two chess
+legends, Richard Reti and Savielly Tartakower. The patternis basedon the X-Ray
+ability of a bishop (or queen):Réti's mateis a famous method of checkmating.
+The checkmate is named afterRichard Réti, who delivered it in an
+11-movegameagainstSavielly Tartakowerin 1910 inVienna. It works by trapping
+the enemy king with four of its own pieces that are situated on flight squares
+and then attacking it with a bishop that isprotected by a rook or queen.} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "rnb1kb1r/pp3ppp/2p5/4q3/4n3/3Q4/PPPB1PPP/2KR1BNR w kq - 0 9"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 9. Qd8+ Kxd8 10. Bg5+ Kc7 (10... Ke8 11. Rd8#) 11. Bd8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2kr2nr/pp3ppp/8/4p3/2p1P1b1/2Pn1N2/PPK2PPP/RNB2B1R b - - 0 1"]
+[PlyCount "3"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Ne1+ 2. Nxe1 Bd1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1r4k1/p2r1ppp/2p3q1/1n5b/5Q2/P1P3P1/1PR3BP/1KB2NR1 b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Qxc2+ 2. Kxc2 Nxa3+ 3. bxa3 Bd1# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6br/r4k1p/1np2pp1/1p6/1B4P1/P1N2N1q/1P1R3P/4R2K w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Ng5+ fxg5 2. Rf2+ Kg7 3. Bf8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1n3bn1/r3k1p1/4ppR1/B1p1N2b/B1P2P1r/4N3/PP6/1K2R3 w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+1. Nf5+ exf5 2. Nf7+ Kxf7 3. Be8# *

@@ -1,0 +1,107 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "20. Pillsbury Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5rk1/5p1p/8/8/8/8/1B6/5R1K w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rg1# {Pillsbury’s Mate is a common method of checkmating and is
+named forHarry Nelson Pillsbury, occurs when a bishop controls the corner
+square next to a castled king, whilst a rook delivers the mate. For this to
+happen, the pawn shield in front of the king must be compromised and black’s
+rook must still be next to the king:} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5rk1/prpn1p1p/1p3p1B/8/3P4/4P3/PP3PqP/R2QK2R w KQ - 0 17"]
+[PlyCount "9"]
+[EventDate "2023.02.03"]
+[Source "ChessBase"]
+[SourceVersion "1"]
+[SourceVersionDate "2025.08.18"]
+[SourceQuality "1"]
+
+{[#]} 17. Qf3 Qxf3 18. Rg1+ Kh8 19. Bg7+ Kg8 20. Bxf6+ Qg3 21. Rxg3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r5rk/pb2n2p/1p3pq1/4p3/2PP4/1P6/P1B2PPP/R2QNRK1 b - - 0 1"]
+[PlyCount "11"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Qxg2+ 2. Nxg2 Rxg2+ 3. Kh1 Rg1+ 4. Kxg1 Rg8+ 5. Bg6 Rxg6+ 6. Qg4
+Rxg4# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1k2r2r/1pp5/p7/4n3/4p1b1/P1N1P3/1P1Q1PPP/2R2R1K b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+1... Nf3 2. gxf3 Bxf3+ 3. Kg1 Rhg8# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r1b2r1k/1q1nbppp/pp2p3/4Q1B1/3N4/2N3R1/PPP2PPP/3R2K1 w - - 0 21"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[Source "ChessBase"]
+[SourceVersion "1"]
+[SourceVersionDate "2025.08.18"]
+[SourceQuality "1"]
+
+{[#]} 21. Bh6 Nxe5 22. Bxg7+ Kg8 23. Bxe5+ Bg5 24. Rxg5# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4rr1k/3q1p1p/3p1bpP/2pPpPBn/2N1P3/1P3Q2/5P2/3RR1K1 w - - 0 21"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,5,71,345,29993,29994,29995,29996]} {[#]} 21. Qxh5 gxh5 22. Bxf6+ Kg8
+23. Kh2 *

@@ -1,0 +1,116 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "9. Bucking Branco Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7k/8/6Q1/4N3/8/8/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Nf7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Intro Position 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "7k/5Q2/8/4N3/8/8/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Ng6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "q7/7k/4p1pp/3pN3/3Pb3/2P3QP/r5PK/4R3 w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,5,579,601,29997,29998,29999,-30000]} {[#]} 1. Rxe4 dxe4 2. Qxg6+ Kh8
+3. Nf7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1q6/Q5pk/8/8/3B3p/3nP1P1/1r4P1/R2R2K1 b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Rxg2+ 2. Kxg2 (2. Kf1 Rf2+ 3. Kg1 Qxg3+ 4. Kh1 Qh2#) (2. Kh1 Rh2+ 3.
+Kg1 (3. Kxh2 Qxg3+ 4. Kh1 Nf2#) 3... Qxg3+ 4. Kf1 Qf2#) 2... Qxg3+ 3. Kh1 (3.
+Kf1 Qf2#) 3... Nf2# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1r4k1/1p3p2/q2n1p2/P3N1p1/2R5/4r1PP/Q5PK/3R4 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rxd6 Qxd6 2. Rc8+ Rxc8 3. Qxf7+ Kh8 4. Ng6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "3rr1k1/5p2/1Q6/1p2N3/8/qPp5/P1P3P1/1K5R w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,7,29993,29994,29995,29996,29997,29998,29999,-30000]} {[#]} 1. Rh8+
+Kxh8 2. Qf6+ Kg8 3. Qxf7+ Kh8 4. Ng6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2b5/q1p1b1kp/r1p3p1/5P2/2Np4/8/PPP3Q1/1K5R w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+1. Rxh7+ Kxh7 2. Qxg6+ Kh8 3. Ne5 Be6 4. fxe6 *
+

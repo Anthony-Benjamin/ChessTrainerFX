@@ -6,6 +6,7 @@ package application.chesstrainerfx.utils;
 
 
 import application.chesstrainerfx.model.BoardModel;
+import application.chesstrainerfx.model.SquareModel;
 
 /**
  *
@@ -218,5 +219,112 @@ public class MoveValidator {
         return false;
     }
 
+    // ---------------- Schaak / mat detectie ---------------- //
+
+    /** Zoekt de positie van de koning van de gegeven kleur (null als die ontbreekt). */
+    public static Position findKing(BoardModel board, PieceColor color) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                PieceModel p = board.getSquare(new Position(row, col)).getPiece();
+                if (p != null && p.getType() == PieceType.KING && p.getColor() == color) {
+                    return new Position(row, col);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static PieceColor opposite(PieceColor color) {
+        return color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+    }
+
+    /** Wordt {@code square} aangevallen door minstens één stuk van {@code byColor}? */
+    public static boolean isSquareAttackedBy(BoardModel board, Position square, PieceColor byColor) {
+        if (square == null) return false;
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Position from = new Position(row, col);
+                PieceModel attacker = board.getSquare(from).getPiece();
+                if (attacker == null || attacker.getColor() != byColor) continue;
+                if (isValidMove(board, attacker, from, square)) return true;
+            }
+        }
+        return false;
+    }
+
+    /** Staat de koning van {@code color} schaak? */
+    public static boolean isKingInCheck(BoardModel board, PieceColor color) {
+        Position kingPos = findKing(board, color);
+        if (kingPos == null) return false;
+        return isSquareAttackedBy(board, kingPos, opposite(color));
+    }
+
+    /**
+     * Simuleert een zet en kijkt of de eigen koning daarna schaak staat.
+     * De bordtoestand wordt na de controle volledig hersteld.
+     */
+    public static boolean moveLeavesKingInCheck(BoardModel board, PieceModel piece,
+                                                Position from, Position to) {
+        SquareModel fromSq = board.getSquare(from);
+        SquareModel toSq = board.getSquare(to);
+        if (fromSq == null || toSq == null) return false;
+
+        PieceModel moving = fromSq.getPiece();
+        PieceModel captured = toSq.getPiece();
+
+        // En-passant: een pion die schuin naar een leeg veld gaat, slaat de pion ernaast.
+        SquareModel epSquare = null;
+        PieceModel epPawn = null;
+        if (moving != null && moving.getType() == PieceType.PAWN
+                && from.getColumn() != to.getColumn() && captured == null) {
+            epSquare = board.getSquare(new Position(from.getRow(), to.getColumn()));
+            if (epSquare != null) epPawn = epSquare.getPiece();
+        }
+
+        // Zet simuleren.
+        fromSq.setPiece(null);
+        toSq.setPiece(moving);
+        if (epSquare != null) epSquare.setPiece(null);
+
+        boolean inCheck = isKingInCheck(board, piece.getColor());
+
+        // Bord herstellen.
+        fromSq.setPiece(moving);
+        toSq.setPiece(captured);
+        if (epSquare != null) epSquare.setPiece(epPawn);
+
+        return inCheck;
+    }
+
+    /** Volledig legale zet: geometrisch geldig én laat de eigen koning niet schaak staan. */
+    public static boolean isLegalMove(BoardModel board, PieceModel piece,
+                                      Position from, Position to) {
+        return isValidMove(board, piece, from, to)
+                && !moveLeavesKingInCheck(board, piece, from, to);
+    }
+
+    /** Heeft {@code color} nog minstens één legale zet? */
+    public static boolean hasAnyLegalMove(BoardModel board, PieceColor color) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Position from = new Position(row, col);
+                PieceModel p = board.getSquare(from).getPiece();
+                if (p == null || p.getColor() != color) continue;
+                for (int tr = 0; tr < 8; tr++) {
+                    for (int tc = 0; tc < 8; tc++) {
+                        if (isLegalMove(board, p, from, new Position(tr, tc))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Staat de koning van {@code color} schaakmat? */
+    public static boolean isCheckmate(BoardModel board, PieceColor color) {
+        return isKingInCheck(board, color) && !hasAnyLegalMove(board, color);
+    }
 
 }

@@ -1,0 +1,110 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "11. Damiano's Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r3rqk1/6p1/5pP1/8/8/1pP5/1P6/1KQR3R w - - 0 1"]
+[PlyCount "9"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{This checkmate idea was first published by Pedro Damiano, a Portugese chess
+player, in 1512. He also gives an example of a game that concluded with
+Damiano’s checkmate pattern.[#]} 1. Rh8+ (1. Z0 Ra1+ 2. Kxa1 Ra8+ 3. Kb1 Ra1+
+4. Kxa1 Qa8+ 5. Kb1 Qa2#) 1... Kxh8 2. Rh1+ Kg8 3. Rh8+ Kxh8 {[#]} 4. Qh1+ Kg8
+5. Qh7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5r1k/5pp1/1q2pbP1/8/8/2QR4/5P1P/6K1 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Rh3+ Kg8 2. Rh8+ Kxh8 3. Qh3+ Kg8 4. Qh7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r1b2rk1/ppn2pp1/4pq2/b1pn3R/3P4/2NBPN2/PP1K1PP1/3QR3 w - - 0 1"]
+[PlyCount "13"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,13,0,29982,29987,29988,29989,29990,29991,29992,29993,29994,29995,
+29996,29999,-30000]} {[#]} 1. Bh7+ (1. Rh8+ $2 Kxh8 2. Rh1+ Kg8 3. Rh8+ Kxh8 4.
+Qh1+ Qh6 (4... Kg8 5. Qh7#)) 1... Kh8 2. Bg6+ Kg8 3. Rh8+ Kxh8 4. Rh1+ Kg8 5.
+Rh8+ Kxh8 6. Qh1+ Kg8 7. Qh7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r3rqk1/1p3ppp/1bp1b3/n1n1pN1P/p3P1P1/2P2N2/PPQ1BP2/1KBR3R b - - 0 1"]
+[PlyCount "15"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Bb3 2. axb3 axb3 3. Qd2 Nc4 4. Bxc4 Ra1+ 5. Kxa1 Ra8+ 6. Kb1 Ra1+ 7.
+Kxa1 Qa8+ 8. Kb1 Qa2# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "Qn3rk1/3p2p1/p3pqP1/1pnBr3/3b4/1PN5/P1PP1PR1/5NKR w - - 0 1"]
+[PlyCount "11"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,11,-259,-399,-321,29988,29989,29990,29991,29992,29993,29994,29999,
+-30000]} 1. Bxe6+ dxe6 2. Rh8+ Kxh8 3. Rh2+ Kg8 4. Rh8+ Kxh8 5. Qh1+ Kg8 6.
+Qh7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "q1r1k2r/1b3pp1/p3p3/P1b4n/1pN1P2p/3BBP2/1P2Q1PP/R4R1K b k - 0 21"]
+[PlyCount "15"]
+[EventDate "2023.02.03"]
+[Source "ChessBase"]
+[SourceVersion "1"]
+[SourceVersionDate "2025.08.18"]
+[SourceQuality "1"]
+
+{[#]} 21... Ng3+ 22. hxg3 hxg3+ 23. Kg1 Ke7 24. Qe1 Rh1+ 25. Kxh1 Rh8+ 26. Kg1
+Rh1+ 27. Kxh1 Qh8+ 28. Kg1 Qh2# *
+

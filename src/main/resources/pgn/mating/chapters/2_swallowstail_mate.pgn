@@ -1,0 +1,100 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "2. Swallow's Tail Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "8/5p1p/6k1/8/5Q1P/8/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Qg5# {[%csl Rf7,Rh7][%cal Rg6h7,Rg6f7] Swallow’s Tail Mate visually
+resembles the appearance of a swallow’s tail. It’s also known as
+Gueridon’s Checkmate and it’s similar to theEpaulette Mate:} *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/5p2/4q1p1/7p/1P4r1/PB5K/2Q2P1P/2R3R1 b - - 0 1"]
+[PlyCount "3"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Rg3+ 2. Kxg3 Qg4# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5b1r/6k1/Q2N2pp/3n3P/3q4/5BP1/1r3PK1/8 w - - 0 1"]
+[PlyCount "3"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,3,29995,29996,29999,-30000]} {[#]} 1. Nf5+ gxf5 2. Qg6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "8/4k3/3p3q/pBnPp3/1p2P1p1/1P4Pr/P5K1/4R1Q1 b - - 0 51"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[Source "ChessBase"]
+[SourceVersion "1"]
+[SourceVersionDate "2025.08.18"]
+[SourceQuality "1"]
+
+{[#]} 51... Rxg3+ 52. Kxg3 Qh3+ 53. Kf2 Qf3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "4b1r1/5k1p/1qp3p1/1pr2nP1/p1P5/2B5/PN3PNP/Q2R2K1 w - - 0 1"]
+[PlyCount "5"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Nxa4 bxa4 2. Ba5 Qxa5 3. Qf6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "1krb4/pp1r1pq1/2p3pp/8/3N4/QP3P2/P1R2BKP/8 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Ne6 fxe6 2. Qxa7+ Kc7 3. Rxc6+ Kxc6 4. Qc5# *

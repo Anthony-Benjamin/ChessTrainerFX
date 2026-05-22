@@ -203,7 +203,7 @@ public class Controller {
         view.setSelectedTarget();
 
 
-        boolean valid = MoveValidator.isValidMove(board, selectedPiece, sourcePos, targetPos);
+        boolean valid = MoveValidator.isLegalMove(board, selectedPiece, sourcePos, targetPos);
 
 
         if (valid) {
@@ -222,6 +222,11 @@ public class Controller {
             // ply vooruit (speler heeft juiste zet gedaan)
             if (exerciseSession != null) {
                 exerciseSession.advancePly();
+            }
+
+            // Schaak / mat detecteren op het bord
+            if (checkGameState(board)) {
+                return;
             }
             if (isExerciseFinished()) {
                 showMateMessage();
@@ -394,6 +399,11 @@ public class Controller {
 
             // ply vooruit
             exerciseSession.advancePly();
+
+            // Schaak / mat detecteren na de tegenzet
+            if (checkGameState(board)) {
+                return;
+            }
             if (isExerciseFinished()) {
                 showMateMessage();
             }
@@ -426,6 +436,26 @@ public class Controller {
 
     private boolean isExerciseFinished() {
         return exerciseSession != null && !exerciseSession.hasNext();
+    }
+
+    /**
+     * Detecteert schaak/mat voor de partij die nu aan zet is, meldt de
+     * schaakstatus aan de listeners en toont bij mat een melding.
+     *
+     * @return true als de partij door schaakmat is afgelopen.
+     */
+    private boolean checkGameState(BoardModel board) {
+        PieceColor sideToMove = currentTurnColor();
+        boolean inCheck = MoveValidator.isKingInCheck(board, sideToMove);
+        boolean mate = inCheck && !MoveValidator.hasAnyLegalMove(board, sideToMove);
+
+        board.notifyCheck(inCheck && !mate);
+
+        if (mate) {
+            showMateMessage();
+            return true;
+        }
+        return false;
     }
 
 

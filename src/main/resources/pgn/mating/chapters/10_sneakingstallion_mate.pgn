@@ -1,0 +1,129 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "10. Sneaky Stallion Mate"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/5p2/7Q/3N4/8/8/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Nf6# (1. Ne7#) *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Intro Position 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/7p/5Q2/3N4/8/8/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Ne7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Intro Position 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "6k1/7p/5Q2/8/6N1/8/8/6K1 w - - 0 1"]
+[PlyCount "1"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Nh6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 1"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "2kr1b2/Qp1q1pp1/6p1/N1p1p1n1/2P5/4PP1r/P4PK1/R1B2R2 b - - 0 1"]
+[PlyCount "5"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Rh2+ 2. Kxh2 Qh3+ 3. Kg1 Nxf3# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 2"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5r2/3q1pk1/4bbpp/8/5B2/4N2P/3Q1PP1/5RK1 w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2023.02.03"]
+[SourceVersionDate "2025.08.18"]
+
+{[%evp 0,7,236,231,29995,29996,29997,29998,29999,-30000]} 1. Bxh6+ Kxh6 2. Ng4+
+Kh7 3. Qh6+ Kg8 4. Nxf6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 3"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r5k1/2p2Npp/3p4/1n2p3/1N2P3/2q2Q1P/p5P1/5R1K w - - 0 4"]
+[PlyCount "9"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 4. Nh6+ gxh6 5. Qf7+ Kh8 6. Qf6+ Kg8 7. Nd5 Qg3 8. Ne7# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 4"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "r1q2r2/1pp1npkp/p3b1p1/8/5RN1/3P1B2/PPP3PP/R4Q1K w - - 0 1"]
+[PlyCount "7"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1. Bxb7 Qxb7 2. Rb4 Qxb4 3. Qf6+ Kg8 4. Nh6# *
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Example 5"]
+[Black "?"]
+[Result "*"]
+[Annotator ""]
+[SetUp "1"]
+[FEN "5rk1/3q1ppp/6n1/8/1N1pP1r1/Q2P4/2N2PPP/R4RK1 b - - 0 1"]
+[PlyCount "7"]
+[EventDate "2021.??.??"]
+[SourceVersionDate "2025.08.18"]
+
+{[#]} 1... Rxg2+ 2. Kxg2 Qg4+ 3. Kh1 Qf3+ 4. Kg1 Nf4 *
+
