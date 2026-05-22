@@ -1,5 +1,5 @@
 // File: MatingPatternsView.java
-package application.chesstrainerfx.test;
+package application.chesstrainerfx.view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

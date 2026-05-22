@@ -3,7 +3,6 @@
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/controller/Controller.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/model/BoardModel.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/model/SquareModel.java
-/home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/test/MatePatternsView.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/utils/BoardEditor.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/utils/BoardEditorDemo.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/utils/ChessMainlineExtractor.java
@@ -27,6 +26,7 @@
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/view/BoardChangeListener.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/view/BoardView.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/view/ChapterWindow.java
+/home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/view/MatePatternsView.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/view/SplashScreen.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/view/SquareView.java
 /home/badev/claude/ChessTrainerFX/src/main/java/application/chesstrainerfx/view/setup/BoardViewSetup.java

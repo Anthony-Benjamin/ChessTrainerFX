@@ -2,7 +2,7 @@
 package application.chesstrainerfx;
 
 import application.chesstrainerfx.view.ChapterWindow;
-import application.chesstrainerfx.test.MatePatternsView;
+import application.chesstrainerfx.view.MatePatternsView;
 import application.pgnreader.io.PGNReader;
 import application.pgnreader.model.Chapter;
 import application.pgnreader.model.Exercise;
