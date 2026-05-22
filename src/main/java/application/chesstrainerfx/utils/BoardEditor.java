@@ -1,18 +1,13 @@
-package application.chesstrainerfx.test;
+package application.chesstrainerfx.utils;
 
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
-import application.chesstrainerfx.utils.PieceSelectorPane;
-import application.chesstrainerfx.utils.Position;
 import application.chesstrainerfx.view.BoardChangeListener;
 import application.chesstrainerfx.view.SquareView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 

@@ -1,4 +1,4 @@
-package application.chesstrainerfx.test;
+package application.chesstrainerfx.utils;
 
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
