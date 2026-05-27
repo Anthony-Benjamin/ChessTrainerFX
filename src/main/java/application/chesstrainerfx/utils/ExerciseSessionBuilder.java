@@ -57,7 +57,7 @@ public class ExerciseSessionBuilder {
             toMove = (toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
         }
 
-        System.out.println("buildsession mainline: " + mainLine);
+//        System.out.println("buildsession mainline: " + mainLine);
         return new ExerciseSession(mainLine, sanLine);
     }
 

@@ -79,10 +79,10 @@ public class ChapterPresenter {
         List<String> items = new ArrayList<>();
         if (moveString == null) return items;
 
-        System.out.println("RAW moveString: [" + moveString + "]");
+//        System.out.println("RAW moveString: [" + moveString + "]");
 
         String clean = PgnUtils.cleanMoveString(moveString);
-        System.out.println("CLEAN: [" + clean + "]");
+//        System.out.println("CLEAN: [" + clean + "]");
 
         if (clean.isBlank()) {
             return items;
@@ -102,8 +102,8 @@ public class ChapterPresenter {
             }
         }
 
-        System.out.println("Size of parts " + added);
-        System.out.println("Parts: " + items);
+//        System.out.println("Size of parts " + added);
+//        System.out.println("Parts: " + items);
 
         if (added == 0) {
             items.add(clean);
@@ -137,13 +137,5 @@ public class ChapterPresenter {
             currentController.incrementMoveCounter();
             System.out.println(currentController.getMoveCounter());
         }
-    }
-
-    public Controller getCurrentController() {
-        return currentController;
-    }
-
-    public BoardModel getCurrentBoard() {
-        return currentBoard;
     }
 }

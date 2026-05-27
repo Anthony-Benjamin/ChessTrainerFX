@@ -86,7 +86,7 @@ public class Main extends Application {
         scene.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
         // cache:
         matingRoot = buildMatingPatterns();
-//        stage.initStyle(StageStyle.UNDECORATED);
+
         stage.setTitle(title);
         stage.setResizable(false);
         stage.setScene(scene);
@@ -162,7 +162,7 @@ public class Main extends Application {
                     .filter(c -> c.getTitle().equals(name))
                     .findFirst().orElse(null);
             if (chapter != null) {
-                System.out.println(chapter.getExercises());
+//                System.out.println(chapter.getExercises());
                 scene.setRoot(new ChapterWindow(
                         chapter.getTitle(),
                         chapter.getExercises(),

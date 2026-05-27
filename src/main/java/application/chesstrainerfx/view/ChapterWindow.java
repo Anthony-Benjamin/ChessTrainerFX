@@ -32,9 +32,7 @@ import java.util.regex.Pattern;
 
 public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
-
-    //    private Controller controller;
-    //private Controller controller = new Controller();
+    //TODO: layout buttons en text colour
     private String[] parts;
 
     private enum Mode {LIST, BOARD}
@@ -349,7 +347,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     private void switchMode(Mode m) {
         mode = m;
         boolean list = (m == Mode.LIST);
-        System.out.println(list);
+//        System.out.println(list);
 
         tilesScroll.setVisible(list);
         tilesScroll.setManaged(list);
