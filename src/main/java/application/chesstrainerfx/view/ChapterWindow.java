@@ -125,7 +125,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         backBtn = new Button("← Back");
         backBtn.setStyle("""
                         -fx-background-color: rgba(20,20,20,0.65);
-                        -fx-text-fill: white;
+                        -fx-text-fill: #e8cea4;
                         -fx-font-weight: bold;
                         -fx-background-radius: 8;
                         -fx-padding: 6 12 6 12;
@@ -160,6 +160,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
                     -fx-text-fill: #f5deb3;
                     -fx-font-size: 15px;
                 """);
+
         int widthLabel = 900;
 
         theoryLabel.setMaxWidth(widthLabel);
@@ -295,9 +296,12 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         }
         movesList.setVisible(false);
 
-        // Buttons en hint-label
+        // Buttons
+        int width = 120;
+        int height = 30;
         Button showHideMovesBtn = new Button("Show moves!");
-        showHideMovesBtn.setPrefHeight(30);
+        showHideMovesBtn.setPrefHeight(height);
+        showHideMovesBtn.setPrefWidth(width);
         showHideMovesBtn.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
 
         showHideMovesBtn.textProperty().bind(
@@ -307,9 +311,13 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         );
 
         Button btnHint = new Button("Hint");
+        btnHint.setPrefWidth(width);
+        btnHint.setPrefHeight(height);
+        btnHint.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
         btnHint.setVisible(true);
 
         Label lblHint = new Label();
+        lblHint.setPadding(new Insets(0, 0, 0, 10));
         lblHint.setTextFill(Color.WHEAT);
 
         btnHint.setOnAction(e -> lblHint.setText(presenter.getHintText()));
@@ -319,8 +327,16 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
             movesList.setVisible(!movesList.isVisible());
             btnHint.setVisible(!movesList.isVisible());
         });
+
         Button btnUndo = new Button("Undo");
+        btnUndo.setPrefWidth(width);
+        btnUndo.setPrefHeight(height);
+        btnUndo.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
+
         Button btnRedo = new Button("Redo");
+        btnRedo.setPrefWidth(width);
+        btnRedo.setPrefHeight(height);
+        btnRedo.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
 
         btnUndo.setOnAction(e -> controller.undoLastMove(boardModel));
         btnRedo.setOnAction(e -> controller.redoMove(boardModel));

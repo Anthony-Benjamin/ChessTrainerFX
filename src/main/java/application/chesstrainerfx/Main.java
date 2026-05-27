@@ -177,7 +177,7 @@ public class Main extends Application {
         back.setOnAction(e -> scene.setRoot(homeRoot));
         back.setStyle("""
         -fx-background-color: rgba(20,20,20,0.65);
-        -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
+        -fx-text-fill: #e8cea4; -fx-font-weight: bold; -fx-background-radius: 8;
         -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
     """);
 
