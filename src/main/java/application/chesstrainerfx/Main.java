@@ -17,11 +17,14 @@ import javafx.scene.control.*;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +127,19 @@ public class Main extends Application {
                 chapters.stream().map(Chapter::getTitle).toList(),
                 name -> openChapter(chapters, name, () -> scene.setRoot(moduleRoots.get(module))));
 
-        return withBackButton(view, () -> scene.setRoot(homeRoot));
+        StackPane wrapper = withBackButton(view, () -> scene.setRoot(homeRoot));
+
+        MenuItem importItem = new MenuItem("Import PGN…");
+        importItem.setOnAction(e -> importPgnFiles(pgnDir, () -> refreshModule(module)));
+        wrapper.getChildren().add(overlayMenu(importItem));
+
+        return wrapper;
+    }
+
+    /** Module opnieuw opbouwen (na import) en tonen. */
+    private void refreshModule(String module) {
+        moduleRoots.put(module, buildModuleRoot(module));
+        scene.setRoot(moduleRoots.get(module));
     }
 
     /** Puzzles-module: tegels per sub-categorie (sub-map), daarna hoofdstukken per sub-categorie. */
@@ -136,15 +151,7 @@ public class Main extends Application {
 
         MenuItem editorItem = new MenuItem("Position Editor");
         editorItem.setOnAction(e -> openPositionEditor());
-        MenuButton menu = new MenuButton("☰", null, editorItem);
-        menu.setStyle("""
-        -fx-background-color: rgba(20,20,20,0.65);
-        -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
-        -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
-    """);
-        StackPane.setAlignment(menu, Pos.TOP_RIGHT);
-        StackPane.setMargin(menu, new Insets(10));
-        wrapper.getChildren().add(menu);
+        wrapper.getChildren().add(overlayMenu(editorItem));
 
         return wrapper;
     }
@@ -178,7 +185,70 @@ public class Main extends Application {
                 chapters.stream().map(Chapter::getTitle).toList(),
                 name -> openChapter(chapters, name, backToPuzzles));
 
-        scene.setRoot(withBackButton(view, backToPuzzles));
+        StackPane wrapper = withBackButton(view, backToPuzzles);
+
+        MenuItem importItem = new MenuItem("Import PGN…");
+        importItem.setOnAction(e -> importPgnFiles(dir, () -> openPuzzleSubCategory(subCategory)));
+        wrapper.getChildren().add(overlayMenu(importItem));
+
+        scene.setRoot(wrapper);
+    }
+
+    /**
+     * Importeert PGN-bestanden via een FileChooser naar {@code targetDir}.
+     * Bestaande bestanden worden niet overschreven. Na een geslaagde import
+     * wordt {@code afterImport} uitgevoerd om de weergave te verversen.
+     */
+    private void importPgnFiles(Path targetDir, Runnable afterImport) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Importeer PGN-bestanden");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PGN-bestanden (*.pgn)", "*.pgn"));
+
+        List<File> files = chooser.showOpenMultipleDialog(stage);
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+
+        int copied = 0;
+        List<String> skipped = new ArrayList<>();
+        for (File file : files) {
+            Path target = targetDir.resolve(file.getName());
+            if (Files.exists(target)) {
+                skipped.add(file.getName() + " (bestaat al)");
+                continue;
+            }
+            try {
+                Files.createDirectories(targetDir);
+                Files.copy(file.toPath(), target);
+                copied++;
+            } catch (IOException e) {
+                skipped.add(file.getName() + " (" + e.getMessage() + ")");
+            }
+        }
+
+        StringBuilder msg = new StringBuilder(copied + " bestand(en) geïmporteerd.");
+        if (!skipped.isEmpty()) {
+            msg.append("\nOvergeslagen:\n").append(String.join("\n", skipped));
+        }
+        showInfo("PGN-import", msg.toString());
+
+        if (copied > 0) {
+            afterImport.run();
+        }
+    }
+
+    /** Gestylede ☰-menuknop rechtsboven voor module-acties. */
+    private MenuButton overlayMenu(MenuItem... items) {
+        MenuButton menu = new MenuButton("☰", null, items);
+        menu.setStyle("""
+        -fx-background-color: rgba(20,20,20,0.65);
+        -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
+        -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
+    """);
+        StackPane.setAlignment(menu, Pos.TOP_RIGHT);
+        StackPane.setMargin(menu, new Insets(10));
+        return menu;
     }
 
     private void openChapter(List<Chapter> chapters, String name, Runnable onBack) {
@@ -224,6 +294,14 @@ public class Main extends Application {
         StackPane.setMargin(back, new Insets(10));
 
         return wrapper;
+    }
+
+    private static void showInfo(String header, String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Info");
+        a.setHeaderText(header);
+        a.setContentText(msg);
+        a.show();
     }
 
     public static void main(String[] args) { launch(args); }
