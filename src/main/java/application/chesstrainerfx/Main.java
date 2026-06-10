@@ -2,6 +2,7 @@ package application.chesstrainerfx;
 
 import application.chesstrainerfx.config.AppConfig;
 import application.chesstrainerfx.config.ResourceSeeder;
+import application.chesstrainerfx.config.SubCategoryStore;
 import application.chesstrainerfx.controller.PositionEditorController;
 import application.chesstrainerfx.view.ChapterOverviewView;
 import application.chesstrainerfx.view.ChapterWindow;
@@ -22,13 +23,13 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 public class Main extends Application {
     public String title = "ChessTrainer — Home";
@@ -42,6 +43,7 @@ public class Main extends Application {
     private Parent homeRoot;
     private final Map<String, Parent> moduleRoots = new HashMap<>();
     private AppConfig config;
+    private SubCategoryStore subCategoryStore;
 
     public Stage getStage() {
         return stage;
@@ -53,6 +55,7 @@ public class Main extends Application {
     public void start(Stage stage) {
         this.stage = stage;
         this.config = AppConfig.load();
+        this.subCategoryStore = new SubCategoryStore(config.puzzlesDir());
 
         // Eerste start: meegeleverde PGN's naar de geconfigureerde mappen kopiëren
         ResourceSeeder.seedIfEmpty(config.matingPatternsDir(), "/pgn/mating/chapters");
@@ -144,16 +147,125 @@ public class Main extends Application {
 
     /** Puzzles-module: tegels per sub-categorie (sub-map), daarna hoofdstukken per sub-categorie. */
     private Parent buildPuzzlesModule() {
-        List<String> subCategories = listSubCategories(config.puzzlesDir());
+        List<String> subCategories = subCategoryStore.load();
 
         ChapterOverviewView view = new ChapterOverviewView(subCategories, this::openPuzzleSubCategory);
         StackPane wrapper = withBackButton(view, () -> scene.setRoot(homeRoot));
 
         MenuItem editorItem = new MenuItem("Position Editor");
         editorItem.setOnAction(e -> openPositionEditor());
-        wrapper.getChildren().add(overlayMenu(editorItem));
+
+        MenuItem newItem = new MenuItem("New Sub-category…");
+        newItem.setOnAction(e -> createSubCategory());
+
+        MenuItem renameItem = new MenuItem("Rename Sub-category…");
+        renameItem.setOnAction(e -> renameSubCategory());
+
+        MenuItem deleteItem = new MenuItem("Delete Sub-category…");
+        deleteItem.setOnAction(e -> deleteSubCategory());
+
+        wrapper.getChildren().add(overlayMenu(editorItem, newItem, renameItem, deleteItem));
 
         return wrapper;
+    }
+
+    // ---------------- Sub-categoriebeheer (Puzzles) ---------------- //
+
+    private void createSubCategory() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("New Sub-category");
+        dialog.setHeaderText("Naam van de nieuwe sub-categorie:");
+        Optional<String> name = dialog.showAndWait();
+        if (name.isEmpty()) {
+            return;
+        }
+
+        String trimmed = name.get().trim();
+        String error = SubCategoryStore.validateName(trimmed, subCategoryStore.load());
+        if (error != null) {
+            showInfo("Ongeldige naam", error);
+            return;
+        }
+
+        try {
+            subCategoryStore.create(trimmed);
+            refreshModule(PUZZLES);
+        } catch (IOException e) {
+            showInfo("Aanmaken mislukt", e.getMessage());
+        }
+    }
+
+    private void renameSubCategory() {
+        List<String> subCategories = subCategoryStore.load();
+        if (subCategories.isEmpty()) {
+            showInfo("Geen sub-categorieën", "Er zijn nog geen sub-categorieën om te hernoemen.");
+            return;
+        }
+
+        ChoiceDialog<String> choice = new ChoiceDialog<>(subCategories.get(0), subCategories);
+        choice.setTitle("Rename Sub-category");
+        choice.setHeaderText("Welke sub-categorie wil je hernoemen?");
+        Optional<String> selected = choice.showAndWait();
+        if (selected.isEmpty()) {
+            return;
+        }
+
+        TextInputDialog dialog = new TextInputDialog(selected.get());
+        dialog.setTitle("Rename Sub-category");
+        dialog.setHeaderText("Nieuwe naam voor \"" + selected.get() + "\":");
+        Optional<String> newName = dialog.showAndWait();
+        if (newName.isEmpty()) {
+            return;
+        }
+
+        String trimmed = newName.get().trim();
+        if (trimmed.equals(selected.get())) {
+            return;
+        }
+        String error = SubCategoryStore.validateName(trimmed, subCategories);
+        if (error != null) {
+            showInfo("Ongeldige naam", error);
+            return;
+        }
+
+        try {
+            subCategoryStore.rename(selected.get(), trimmed);
+            refreshModule(PUZZLES);
+        } catch (IOException e) {
+            showInfo("Hernoemen mislukt", e.getMessage());
+        }
+    }
+
+    private void deleteSubCategory() {
+        List<String> subCategories = subCategoryStore.load();
+        if (subCategories.isEmpty()) {
+            showInfo("Geen sub-categorieën", "Er zijn nog geen sub-categorieën om te verwijderen.");
+            return;
+        }
+
+        ChoiceDialog<String> choice = new ChoiceDialog<>(subCategories.get(0), subCategories);
+        choice.setTitle("Delete Sub-category");
+        choice.setHeaderText("Welke sub-categorie wil je verwijderen?");
+        Optional<String> selected = choice.showAndWait();
+        if (selected.isEmpty()) {
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Sub-category");
+        confirm.setHeaderText("\"" + selected.get() + "\" verwijderen?");
+        confirm.setContentText("Alle PGN-bestanden in deze sub-categorie worden ook verwijderd.");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            subCategoryStore.delete(selected.get());
+            refreshModule(PUZZLES);
+        } catch (IOException e) {
+            showInfo("Verwijderen mislukt", e.getMessage());
+        }
     }
 
     /** Laadt de Position Editor (position-editor.fxml) als scherm binnen de Puzzles-module. */
@@ -262,20 +374,6 @@ public class Main extends Application {
                     v -> onBack.run(), this.stage
             ));
             stage.setTitle(chapter.getExercises().getFirst().toString());
-        }
-    }
-
-    private static List<String> listSubCategories(Path puzzlesDir) {
-        if (!Files.isDirectory(puzzlesDir)) {
-            return List.of();
-        }
-        try (Stream<Path> dirs = Files.list(puzzlesDir)) {
-            return dirs.filter(Files::isDirectory)
-                    .map(d -> d.getFileName().toString())
-                    .sorted(String.CASE_INSENSITIVE_ORDER)
-                    .toList();
-        } catch (IOException e) {
-            return List.of();
         }
     }
 
