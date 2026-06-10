@@ -1,4 +1,3 @@
-// File: PGNReader.java
 package application.pgnreader.io;
 
 import application.pgnreader.model.Exercise;
@@ -14,16 +13,16 @@ public class PGNReader {
 
     /**
      * Leest een PGN hoofdstuk (meerdere partijen/oefeningen) uit resources en splitst in Exercise-objecten.
+     * Geeft een lege lijst terug als het bestand ontbreekt of niet leesbaar is.
      */
     public static List<Exercise> readChapter(String path) {
         try (InputStream in = PGNReader.class.getResourceAsStream(path)) {
             if (in == null) {
-                throw new IllegalArgumentException("Bestand niet gevonden: " + path);
+                return List.of();
             }
             String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             return splitExercises(content);
         } catch (Exception e) {
-            e.printStackTrace();
             return List.of();
         }
     }

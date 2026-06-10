@@ -54,12 +54,7 @@ public class BoardEditorDemo extends Application {
     }
 
     public VBox createBoardEditor(boolean isWhite){
-        PieceSelectorPane blackPieces = new PieceSelectorPane(new PieceSelectorPane.PieceSelectionListener() {
-            @Override
-            public void onPieceSelected(PieceModel piece) {
-                System.out.println(piece.getType() + "" + piece.getColor());
-            }
-        });
+        PieceSelectorPane blackPieces = new PieceSelectorPane(piece -> {});
 
         boardEditorPanel = new VBox(10);
         boardEditorPanel.setPadding(new Insets(0, 0, 0, 50));
@@ -85,12 +80,7 @@ public class BoardEditorDemo extends Application {
         board.setAlignment(Pos.CENTER);
 
         whitePiecesBox = new HBox();
-        PieceSelectorPane whitePieces = new PieceSelectorPane(new PieceSelectorPane.PieceSelectionListener() {
-            @Override
-            public void onPieceSelected(PieceModel piece) {
-
-            }
-        });
+        PieceSelectorPane whitePieces = new PieceSelectorPane(piece -> {});
         whitePiecesBox.getChildren().add(whitePieces.whitePieces());
         whitePiecesBox.setAlignment(Pos.CENTER);
 
@@ -118,17 +108,12 @@ public class BoardEditorDemo extends Application {
         startAndClearBox.setPadding(new Insets(153, 0, 0, 0));
         startAndClearBox.setAlignment(Pos.CENTER);
         startBtn = new Button("Start Position");
-        startBtn.setOnAction(e ->{
-            model.initializeFromFEN("");
-        });
+        startBtn.setOnAction(e -> model.initializeFromFEN(""));
         clearBoardBtn = new Button("Clear Board");
-        clearBoardBtn.setOnAction(e -> {
-            model.clearBoard();
-        });
+        clearBoardBtn.setOnAction(e -> model.clearBoard());
         startBtn.setMinWidth(widthButtonSize);
         clearBoardBtn.setMinWidth(widthButtonSize);
         startAndClearBox.setSpacing(10);
-//        startAndClearBox.setPadding(new Insets(5));
         startAndClearBox.getChildren().addAll(startBtn, clearBoardBtn);
 
         HBox flipBoardBox = new HBox();
@@ -155,15 +140,6 @@ public class BoardEditorDemo extends Application {
         flipBoardBtn.setMinWidth(widthButtonSize);
         exportFENBtn.setMinWidth(widthButtonSize);
         exportFENBtn.setOnAction(e -> {
-            System.out.println(whoseTurnSelector.getValue());
-//            if(whoseTurnSelector.getValue().equals("White to move")){
-//                fenTextField.setText(model.exportToFEN(true));;
-//            }else {
-//                fenTextField.setText(model.exportToFEN(false));;
-//            }
-////            fenTextField.setText(model.exportToFEN(false));
-////            fenTextField.setText(model.exportToFEN(false));
-
             boolean whiteToMove = "White to move".equals(whoseTurnSelector.getValue());
             fenTextField.setText(model.exportToFEN(whiteToMove, buildCastlingString()));
         });
@@ -179,10 +155,6 @@ public class BoardEditorDemo extends Application {
         movesWindow.setMaxHeight(150);
         movesWindowLayout.setAlignment(Pos.CENTER);
         movesWindowLayout.getChildren().addAll(movesTitlelbl, movesWindow);
-        // end Move window
-
-
-
 
         VBox castlingBox = new VBox();
         HBox castlingBoxTitle = new HBox();
@@ -218,7 +190,7 @@ public class BoardEditorDemo extends Application {
 
         saveExerciseBtn.setOnAction(e -> {
             if(mainDirectory == null){
-                System.out.println("Please select directory to save file!");
+                showInfo("Geen map geselecteerd", "Selecteer eerst een map om het bestand op te slaan.");
                 return;
             }
 
@@ -228,13 +200,11 @@ public class BoardEditorDemo extends Application {
             Optional<String> fileName = dialog.showAndWait();
 
             if (fileName.isEmpty() || fileName.get().isBlank()) {
-                System.out.println("Save cancelled: no file name entered.");
                 return;
             }
             String name = fileName.get().trim();
 
-            File file = new File(mainDirectory.getPath() + "/"+ name + ".pgn");
-            System.out.println("file: " + file);
+            File file = new File(mainDirectory.getPath() + "/" + name + ".pgn");
 
             boolean whoseTurn = whoseTurnSelector.getValue().equals("White to move");
             String fen = model.exportToFEN(whoseTurn, buildCastlingString());
@@ -243,7 +213,6 @@ public class BoardEditorDemo extends Application {
         });
 
         saveButtonLayout.getChildren().add(saveExerciseBtn);
-//        saveButtonLayout.setAlignment(Pos.CENTER_LEFT);
 
         //====================================================
         // Category section
@@ -254,9 +223,6 @@ public class BoardEditorDemo extends Application {
         Label setCategoryStatusLbl = new Label("☒");
         setCategoryStatusLbl.setStyle("-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 20px");
         categoryHBox.getChildren().addAll(categoriesBtn, setCategoryStatusLbl);
-//        String path = "/home/ebenjamin/IdeaProjects/ChessTrainerFX/src/main/resources/pgn";
-
-//        System.out.println(path);
 
         categoriesBtn.setOnMouseClicked(e -> {
             String home = System.getProperty("user.home");
@@ -275,14 +241,11 @@ public class BoardEditorDemo extends Application {
             if (mainDirectory != null) {
                 setCategoryStatusLbl.setText("☑");
                 setCategoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
-                System.out.println("New main directory: " + mainDirectory);
             }
         });
 
         VBox root = new VBox();
         root.setSpacing(10);
-//        root.setAlignment(Pos.CENTER);
-//        root.setPadding(new Insets(165, 0, 0, 75));
         root.setPadding(new Insets(10, 0, 0, 75));
         root.getChildren().addAll(
                 categoryHBox,
@@ -316,68 +279,33 @@ public class BoardEditorDemo extends Application {
                 writer.write(pgn);
 
             } catch (IOException ex) {
-                ex.printStackTrace();
+                showInfo("Opslaan mislukt", "Kon het bestand niet opslaan: " + ex.getMessage());
             }
         }
     }
 
-//    String generatePGN(String title){
-////        [Event "F"]
-////        [Site "S"]
-////        [Date "YYYY.MM.DD"]
-////        [Round "R"]
-////        [White "W"]
-////        [Black "B"]
-////        [Result "1-0"]
-//
-////[Event "?"]
-////[Site "?"]
-////[Date "????.??.??"]
-////[Round "?"]
-////[White "31. Boden's Mate"]
-////[Black "?"]
-////[Result "*"]
-////[Annotator ""]
-////[SetUp "1"]
-////[FEN "2kr4/3p4/8/8/8/6B1/8/5BK1 w - - 0 1"]
-////[PlyCount "1"]
-////[EventDate "2023.02.03"]
-////[SourceVersionDate "2025.08.18"]
-//
-//        StringBuilder pgn = new StringBuilder();
-//        pgn.append("[Event \"" + "F\"]\n");
-//        pgn.append("[Site \"" + "S\"]\n");
-//        pgn.append("[Date " + "\"YYYY.MM.DD\"]\n");
-//        pgn.append("[Round " + "\"R\"]\n");
-//        pgn.append("[White \"" + title + "\"]\n");
-//        pgn.append("[Black " + "\"B\"]\n");
-//        pgn.append("[Result " + "\"1-0\"]\n");
-//
-//        return pgn.toString();
-//    }
 
-public static String generatePGN(String title, String fen, String moves) {
-    StringBuilder pgn = new StringBuilder();
+    public static String generatePGN(String title, String fen, String moves) {
+        StringBuilder pgn = new StringBuilder();
 
-    appendTag(pgn, "Event", "?");
-    appendTag(pgn, "Site", "?");
-    appendTag(pgn, "Date", "????.??.??");
-    appendTag(pgn, "Round", "?");
-    appendTag(pgn, "White", title);
-    appendTag(pgn, "Black", "?");
-    appendTag(pgn, "Result", "*");
+        appendTag(pgn, "Event", "?");
+        appendTag(pgn, "Site", "?");
+        appendTag(pgn, "Date", "????.??.??");
+        appendTag(pgn, "Round", "?");
+        appendTag(pgn, "White", title);
+        appendTag(pgn, "Black", "?");
+        appendTag(pgn, "Result", "*");
 
+        appendTag(pgn, "FEN", fen);
 
-    appendTag(pgn, "FEN", fen);
+        pgn.append("\n");
+        if(moves.startsWith("1 -")){
+            moves = moves.replace("1 -", "1.");
+        }
+        pgn.append(moves);
 
-    pgn.append("\n");
-    if(moves.startsWith("1 -")){
-        moves = moves.replace("1 -", "1.");
+        return pgn.toString();
     }
-    pgn.append(moves);
-
-    return pgn.toString();
-}
 
     private static void appendTag(StringBuilder sb, String key, String value) {
         sb.append("[")

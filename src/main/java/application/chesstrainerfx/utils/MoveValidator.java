@@ -1,33 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package application.chesstrainerfx.utils;
-
 
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
 
-/**
- *
- * @author ebenjamin
- */
-
-
-
 public class MoveValidator {
 
     public static boolean isValidMove(BoardModel board, PieceModel piece, Position from, Position to){
-       // System.out.println(piece.getType());
         return switch(piece.getType()){
             case BISHOP -> isValidBishopMove(board, piece, from, to);
             case ROOK -> isValidRookMove(board, piece, from, to);
-            case QUEEN -> isValidQueenMove(board, piece, from, to);    
+            case QUEEN -> isValidQueenMove(board, piece, from, to);
             case KNIGHT -> isValidKnightMove(board, piece, from, to);
             case KING -> isValidKingMove(board, piece, from, to);
             case PAWN -> isValidPawnMove(board, piece, from, to);
-
-
         };
     }
     
@@ -36,10 +21,7 @@ public class MoveValidator {
     }
     
     public static boolean isValidBishopMove(BoardModel board, PieceModel bishop, Position from, Position to){
-
-
         if(!isOnBoard(from) || !isOnBoard(to) || from.equals(to)){
-            
             return false;
         }
         int dy = Math.abs(to.getRow() - from.getRow());
@@ -209,11 +191,8 @@ public class MoveValidator {
             if (epPawn != null && epPawn.getType() == PieceType.PAWN &&
                     !epPawn.getColor().equals(pawn.getColor()) &&
                     capturedPawnPos.equals(lastDouble)) {
-                     return true;
+                return true;
             }
-            System.out.println("En passant poging:");
-            System.out.println("lastDoubleStep = " + lastDouble);
-            System.out.println("captured pos = " + capturedPawnPos);
         }
 
         return false;
@@ -321,10 +300,4 @@ public class MoveValidator {
         }
         return false;
     }
-
-    /** Staat de koning van {@code color} schaakmat? */
-    public static boolean isCheckmate(BoardModel board, PieceColor color) {
-        return isKingInCheck(board, color) && !hasAnyLegalMove(board, color);
-    }
-
 }

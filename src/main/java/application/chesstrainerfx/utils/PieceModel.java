@@ -1,10 +1,5 @@
 package application.chesstrainerfx.utils;
 
-
-/**
- *
- * @author ebenjamin
- */
 public class PieceModel {
     private PieceType pieceType;
     private PieceColor pieceColor;
@@ -35,35 +30,14 @@ public class PieceModel {
     }
 
     public char letterPiece(){
-        switch(pieceType){
-            case PieceType.ROOK -> {
-                return 'R';
-            }
-            case PieceType.BISHOP ->
-            {
-                return 'B';
-            }
-            case PieceType.KING ->
-            {
-                return 'K';
-            }
-            case  PieceType.KNIGHT ->
-            {
-                return 'N';
-            }
-            case PieceType.PAWN ->
-            {
-                return 'P';
-            }
-            case PieceType.QUEEN ->
-            {
-                return 'Q';
-            }
-        }
-//        if (pieceType == PieceType.ROOK){
-//            return 'R';
-//        }
-        return ' ';
+        return switch (pieceType) {
+            case ROOK -> 'R';
+            case BISHOP -> 'B';
+            case KING -> 'K';
+            case KNIGHT -> 'N';
+            case PAWN -> 'P';
+            case QUEEN -> 'Q';
+        };
     }
 
     public char getFENChar() {

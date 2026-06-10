@@ -1,4 +1,3 @@
-// File: MatingPatternsView.java
 package application.chesstrainerfx.view;
 
 import javafx.geometry.Insets;
@@ -6,7 +5,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -30,7 +28,6 @@ public final class MatePatternsView extends BorderPane {
         bg.setPreserveRatio(true);
         bg.fitWidthProperty().bind(bgLayer.widthProperty());
         bg.fitHeightProperty().bind(bgLayer.heightProperty());
-      // bg.setEffect(new GaussianBlur(10));
         bgLayer.getChildren().add(bg);
 
         // Grid
@@ -44,7 +41,6 @@ public final class MatePatternsView extends BorderPane {
 
         ScrollPane scroller = new ScrollPane(grid);
         scroller.setFitToWidth(true);
-        scroller.setStyle("-fx-background-color: transparent;");
         scroller.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scroller.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         StackPane stack = new StackPane(bgLayer, scroller);

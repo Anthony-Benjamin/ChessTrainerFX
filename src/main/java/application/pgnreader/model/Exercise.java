@@ -1,4 +1,3 @@
-// File: Exercise.java
 package application.pgnreader.model;
 
 public class Exercise {

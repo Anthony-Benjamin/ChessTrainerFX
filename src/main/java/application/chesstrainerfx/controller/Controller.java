@@ -17,12 +17,6 @@ public class Controller {
 
     private boolean setupMode = false;
     private PieceModel selectedSetupPiece;
-    // Aantal gespeelde halfzetten vanaf de start-FEN van de oefening.
-    // 0 = beginpositie, 1 = na eerste zet, 2 = na tweede zet, etc.
-    private int currentPly = 0;
-    // Verste punt dat de speler daadwerkelijk bereikt heeft.
-    //  Hiermee voorkom je straks dat je verder navigeert dan hij al gespeeld heeft.
-    private int maxReachedPly = 0;
 
     // ---------------- Move history voor navigatie ---------------- //
 
@@ -42,19 +36,8 @@ public class Controller {
     private int historyIndex = -1; // index in history; -1 = nog geen snapshot
 
     public void setExerciseSession(ExerciseSession session) {
-
         this.exerciseSession = session;
-
-        // Ply-teller resetten bij start van nieuwe oefening
-        this.currentPly = 0;
-        this.maxReachedPly = 0;
     }
-
-    public String getExtractedLastMove() {
-        return extractedLastMove;
-    }
-
-    private String extractedLastMove;
 
     private enum SelectionStage {
         NONE,
@@ -66,8 +49,6 @@ public class Controller {
         COMPUTER_TO_MOVE,
         NONE
     }
-
-    ;
 
     private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SelectionStage stage = SelectionStage.NONE;
@@ -92,35 +73,9 @@ public class Controller {
     private SquareView sourceView;
     private Position sourcePos;
     private PieceModel selectedPiece;
-
-    public void setWhiteTurn(boolean whiteTurn) {
-        this.whiteTurn = whiteTurn;
-    }
-
     private boolean whiteTurn;
-
-
-    public SquareView getLastViewMove() {
-        return lastViewMove;
-    }
-
     private SquareView lastViewMove;
 
-
-    // telt het aantal zetten op het bord
-    private int moveCounter = 0;
-
-    public int getMoveCounter() {
-        return moveCounter;
-    }
-
-    public void resetMoveCounter() {
-        this.moveCounter = 0;
-    }
-
-    public void incrementMoveCounter() {
-        this.moveCounter++;
-    }
     // ---------------- Public API ---------------- //
 
     public boolean isWhiteTurn() {
@@ -242,8 +197,6 @@ public class Controller {
     }
 
     private void switchSourceSelection(SquareModel model, SquareView view) {
-        System.out.println("Switching selected source...");
-
         if (sourceView != null) {
             sourceView.removeSelection();
         }
@@ -253,14 +206,10 @@ public class Controller {
         sourcePos = model.getPosition();
         selectedPiece = model.getPiece();
         stage = SelectionStage.SOURCE_SELECTED;
-        System.out.println("New source: " + model.getPiece() + " at " + model.getPosition());
     }
 
     private void executeMove(BoardModel board, SquareView targetView, Position targetPos) {
-
         handlePawnSpecials(board, sourcePos, targetPos);
-        extractedLastMove = extractLastMove(board, targetPos);
-
         board.movePiece(sourcePos, targetPos);
         handlePromotion(board, targetView, targetPos);
         //Beurt wisselen
@@ -275,18 +224,7 @@ public class Controller {
 
     }
 
-    private String extractLastMove(BoardModel board, Position targetPos) {
-        String s;
-        if (board.getSquare(targetPos).getPiece() == null) {
-            s = board.getSquare(sourcePos).getPiece().letterPiece() + CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
-        } else {
-            s = board.getSquare(sourcePos).getPiece().letterPiece() + "x" + CoordinateSystem.indexToCoordinate(new int[]{targetPos.row, targetPos.column});
-        }
-        return s;
-    }
-
     private void resetInvalidSelection(SquareView targetView) {
-        System.out.println("Move invalid. Resetting selection.");
         if (sourceView != null) sourceView.removeSelection();
         targetView.removeSelection();
         resetSelection();
@@ -353,11 +291,7 @@ public class Controller {
 
     public void toggleTurn() {
         whiteTurn = !whiteTurn;
-        System.out.println("Whose turn is it? " + (whiteTurn ? "White" : "Black"));
-
     }
-
-
 
     public void syncTurnFromFEN(String fen) {
         try {
@@ -385,7 +319,7 @@ public class Controller {
         if (piece.getColor() != currentTurnColor()) return;
 
         // kleine vertraging voordat de tegenzet wordt uitgevoerd
-        PauseTransition pause = new PauseTransition(Duration.millis(1000)); // 300ms = 0.3s
+        PauseTransition pause = new PauseTransition(Duration.millis(1000));
         pause.setOnFinished(evt -> {
             // voer tegenzet uit
             board.movePiece(from, to);
@@ -459,9 +393,6 @@ public class Controller {
     }
 
 
-    public int getCurrentPly() {
-        return currentPly;
-    }
     // Sla de huidige bordstand + beurt op als snapshot
     private void saveSnapshot(BoardModel board) {
         // Als we eerder een undo/redo-achtig iets doen: snij "toekomst" af
@@ -469,7 +400,7 @@ public class Controller {
             history.remove(history.size() - 1);
         }
 
-        String fen = board.exportToFEN(whiteTurn); // alleen de stukken; metadata komt later wel
+        String fen = board.exportToFEN(whiteTurn);
         Position lastDouble = board.getLastDoubleStepPawnPosition();
 
         BoardSnapshot snap = new BoardSnapshot(fen, whiteTurn, lastDouble);
@@ -485,7 +416,6 @@ public class Controller {
     public void undoLastMove(BoardModel board) {
         // We willen 1 "volledige zet" terug: max 2 plies
         if (historyIndex <= 0) {
-            System.out.println("Geen zet om terug te draaien.");
             return;
         }
 
@@ -495,9 +425,6 @@ public class Controller {
         // Geschiedenis-index terugzetten
         historyIndex -= delta;
         BoardSnapshot snap = history.get(historyIndex);
-
-        System.out.println("Undo full move -> to index " + historyIndex +
-                " / size " + history.size() + " (delta=" + delta + ")");
 
         // 1) Bord + turn terugzetten
         board.initializeFromFEN(snap.fen);
@@ -509,13 +436,10 @@ public class Controller {
             for (int i = 0; i < delta; i++) {
                 exerciseSession.rewindPly();
             }
-            System.out.println("Exercise index after undo = " + exerciseSession.getIndex());
         }
     }
     public void redoMove(BoardModel board) {
         if (historyIndex >= history.size() - 1) {
-            System.out.println("Geen zet om vooruit te zetten. size=" +
-                    history.size() + ", index=" + historyIndex);
             return;
         }
 
@@ -525,9 +449,6 @@ public class Controller {
 
         historyIndex += delta;
         BoardSnapshot snap = history.get(historyIndex);
-
-        System.out.println("Redo full move -> to index " + historyIndex +
-                " / size " + history.size() + " (delta=" + delta + ")");
 
         // 1) Bord + turn herstellen
         board.initializeFromFEN(snap.fen);
@@ -539,7 +460,6 @@ public class Controller {
             for (int i = 0; i < delta; i++) {
                 exerciseSession.advancePly();
             }
-            System.out.println("Exercise index after redo = " + exerciseSession.getIndex());
         }
     }
 }

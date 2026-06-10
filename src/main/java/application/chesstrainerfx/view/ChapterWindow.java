@@ -3,15 +3,12 @@ package application.chesstrainerfx.view;
 import application.chesstrainerfx.controller.ChapterPresenter;
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
-import application.chesstrainerfx.model.SquareModel;
-import application.chesstrainerfx.utils.*;
 import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.pgnreader.model.Exercise;
 import javafx.beans.binding.Bindings;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 
 import javafx.scene.image.Image;
@@ -23,19 +20,10 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ChapterWindow extends BorderPane implements BoardChangeListener {
-
-
-    //    private Controller controller;
-    //private Controller controller = new Controller();
-    private String[] parts;
+public class ChapterWindow extends BorderPane {
 
     private enum Mode {LIST, BOARD}
 
@@ -58,8 +46,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     private BoardView boardView;
     private ListView<String> movesList;
 
-    private Stage stage;
-
+    private final Stage stage;
 
     public ChapterWindow(String chapterTitle, List<Exercise> exercises, Consumer<Void> onBack, Stage stage) {
         this.exercises = exercises;
@@ -75,9 +62,7 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
 
         buildLayout();
         switchMode(Mode.LIST);
-
     }
-
 
     private void buildLayout() {
         // === Achtergrondfoto (onderlaag) ===
@@ -237,7 +222,6 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
     private void buildBoardCenter() {
         boardPane = new VBox(12);
         boardPane.setAlignment(Pos.TOP_CENTER);
-//        boardPane.setPadding(new Insets(10, 24, 24, 24));
         boardPane.setPadding(new Insets(10, 24, 24, 24));
         boardPane.setStyle("-fx-background-color: transparent;");
         boardPane.setVisible(false);  // start onzichtbaar
@@ -340,27 +324,16 @@ public class ChapterWindow extends BorderPane implements BoardChangeListener {
         switchMode(Mode.BOARD);
     }
 
-
-    @Override
-    public void onBoardUpdated() {
-        presenter.onBoardUpdated();
-    }
-
     private void switchMode(Mode m) {
         mode = m;
         boolean list = (m == Mode.LIST);
-        System.out.println(list);
 
         tilesScroll.setVisible(list);
         tilesScroll.setManaged(list);
 
         boardPane.setVisible(!list);
         boardPane.setManaged(!list);
-
-        // Back-knop label (optioneel: je kunt ook tekst wisselen)
-        // backBtn.setText(list ? "← Back" : "← Exercises");
     }
-
 
     public void showExerciseList() {
         switchMode(Mode.LIST);

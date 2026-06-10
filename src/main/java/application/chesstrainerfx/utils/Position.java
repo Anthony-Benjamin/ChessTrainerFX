@@ -1,14 +1,7 @@
-package application.chesstrainerfx.utils;/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+package application.chesstrainerfx.utils;
 
 import java.util.Objects;
 
-/**
- *
- * @author ebenjamin
- */
 public class Position {
     public int row;
     public int column;

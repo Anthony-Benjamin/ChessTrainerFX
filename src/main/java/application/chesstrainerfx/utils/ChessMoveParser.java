@@ -1,18 +1,9 @@
 package application.chesstrainerfx.utils;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChessMoveParser {
-
-    public static void main(String[] args) {
-        String input = "1. Rxe6+ fxe6 2. Bg6+ Rf7 3. Qxf7+ Kd8 4... Qxd7";
-
-        ParsedMoves result = parseMoves(input);
-
-        System.out.println("Wit: " + result.whiteMoves);
-        System.out.println("Zwart: " + result.blackMoves);
-    }
 
     public static ParsedMoves parseMoves(String input) {
         List<String> white = new ArrayList<>();
@@ -38,14 +29,4 @@ public class ChessMoveParser {
 
         return new ParsedMoves(white, black);
     }
-
-//    static class ParsedMoves {
-//        List<String> whiteMoves;
-//        List<String> blackMoves;
-//
-//        ParsedMoves(List<String> w, List<String> b) {
-//            this.whiteMoves = w;
-//            this.blackMoves = b;
-//        }
-//    }
 }

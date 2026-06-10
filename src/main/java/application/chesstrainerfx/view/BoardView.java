@@ -7,7 +7,6 @@ import application.chesstrainerfx.utils.Position;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
@@ -18,18 +17,13 @@ public class BoardView extends HBox implements BoardChangeListener {
     private final boolean isWhitePerspective;
     private final Controller controller;
     private final int boardSize;          // totale breedte/hoogte van het speelvlak (8×8)
-    private final double squareSize;      // grootte van één veld
-    private final double frameThickness;  // dikte van de rand = 1/3 van square
-    private Label turnLabel;
+    private final Label turnLabel;
 
     public BoardView(BoardModel boardModel, Controller controller, boolean isWhitePerspective, int boardSize) {
         this.boardModel = boardModel;
         this.controller = controller;
         this.isWhitePerspective = isWhitePerspective;
         this.boardSize = boardSize;
-
-        this.squareSize = boardSize / 8.0;
-        this.frameThickness = squareSize / 3.0;
 
         setSpacing(20);
         setAlignment(Pos.CENTER_LEFT);
@@ -45,9 +39,8 @@ public class BoardView extends HBox implements BoardChangeListener {
                     -fx-font-weight: bold;
                 """);
         updateTurnLabel(controller.isWhiteTurn());
-        System.out.println(" BoardView constructor who's turn is it? : " + controller.isWhiteTurn());
 
-// Label onder of boven het bord zetten:
+        // Label boven het bord zetten
         VBox boardBox = new VBox(10, turnLabel, boardWithFrame);
         boardBox.setAlignment(Pos.CENTER);
         this.getChildren().setAll(boardBox);
@@ -112,7 +105,6 @@ public class BoardView extends HBox implements BoardChangeListener {
             lbl.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setAlignment(Pos.CENTER);
-            // lbl.setPadding(new Insets(frame , 0, 0, 0));
             rankBox.getChildren().add(lbl);
         }
         StackPane.setAlignment(rankBox, Pos.TOP_LEFT);
@@ -134,7 +126,6 @@ public class BoardView extends HBox implements BoardChangeListener {
             lbl.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setAlignment(Pos.BOTTOM_CENTER);
-            // lbl.setPadding(new Insets(0, 0, 6, 0));
             fileBox.getChildren().add(lbl);
         }
         StackPane.setAlignment(fileBox, Pos.BOTTOM_CENTER);
@@ -160,10 +151,8 @@ public class BoardView extends HBox implements BoardChangeListener {
             for (int col = 0; col < 8; col++) {
                 squareViews[row][col].update();
             }
-            updateTurnLabel(controller.isWhiteTurn());
-            //controller.setWhiteTurn();
-            //System.out.println("In onboarupdated: " + controller.isWhiteTurn());
         }
+        updateTurnLabel(controller.isWhiteTurn());
     }
 
     @Override

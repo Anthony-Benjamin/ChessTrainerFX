@@ -16,7 +16,6 @@ import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +24,6 @@ import java.util.List;
 public class Main extends Application {
     public String title = "ChessTrainer — Home";
 
-
-// TODO: Hint van een zet
     /** Alle beschikbare hoofdstukken (PGN-bestanden in resources) */
     private final List<String> chapterPaths = Arrays.asList(
             "/pgn/mating/chapters/1_epaulette_mate.pgn",
@@ -84,14 +81,11 @@ public class Main extends Application {
         homeRoot = buildHome();
         scene = new Scene(homeRoot, 1500, 1000);
         scene.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
-        // cache:
         matingRoot = buildMatingPatterns();
-//        stage.initStyle(StageStyle.UNDECORATED);
         stage.setTitle(title);
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
-        //TODO check chaptercache
     }
 
     /** === Splash / Home scherm === */
@@ -145,7 +139,7 @@ public class Main extends Application {
         for (String path : paths) {
             List<Exercise> exercises = PGNReader.readChapter(path);
             if (!exercises.isEmpty()) {
-                chapters.add(new Chapter(exercises.get(0).getTitle(), exercises, path));
+                chapters.add(new Chapter(exercises.get(0).getTitle(), exercises));
             }
         }
         return chapters;
@@ -162,17 +156,16 @@ public class Main extends Application {
                     .filter(c -> c.getTitle().equals(name))
                     .findFirst().orElse(null);
             if (chapter != null) {
-                System.out.println(chapter.getExercises());
                 scene.setRoot(new ChapterWindow(
                         chapter.getTitle(),
                         chapter.getExercises(),
-                        v -> scene.setRoot(matingRoot) ,this.stage// ⬅️ terug naar overzicht
+                        v -> scene.setRoot(matingRoot), this.stage
                 ));
                 stage.setTitle(chapter.getExercises().getFirst().toString());
             }
         });
 
-        // Back-knop naar home (buiten de lambda!)
+        // Back-knop naar home
         Button back = new Button("← Back");
         back.setOnAction(e -> scene.setRoot(homeRoot));
         back.setStyle("""
@@ -187,8 +180,6 @@ public class Main extends Application {
 
         return wrapper;
     }
-
-
 
     private static void showInfo(String header, String msg) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);

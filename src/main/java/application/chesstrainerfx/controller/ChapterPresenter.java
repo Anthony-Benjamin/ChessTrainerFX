@@ -21,10 +21,7 @@ public class ChapterPresenter {
     private final Consumer<Void> onBack;
     private final Stage stage;
 
-    private Exercise currentExercise;
     private Controller currentController;
-    private BoardModel currentBoard;
-
 
     public ChapterPresenter(
             ChapterWindow view,
@@ -41,9 +38,8 @@ public class ChapterPresenter {
 
     /** Wordt aangeroepen als de gebruiker op een exercise-tegel klikt. */
     public void onExerciseSelected(Exercise ex) {
-        this.currentExercise = ex;
         stage.setTitle(stage.getTitle() + "-" + ex.getTitle());
-        // --- 1) Model + controller opbouwen (was voorheen in ChapterWindow.showExercise) ---
+        // --- 1) Model + controller opbouwen ---
         String fen = (ex.getFen() == null) ? "" : ex.getFen().trim();
 
         BoardModel boardModel = new BoardModel();
@@ -53,18 +49,12 @@ public class ChapterPresenter {
         controller.syncTurnFromFEN(fen);
         controller.startNewHistory(boardModel);
         controller.setExerciseStage(Controller.ExerciseStage.PLAYER_TO_MOVE);
-        controller.resetMoveCounter();
-
-        // listener: ChapterWindow luistert op bordveranderingen
-        boardModel.addListener(view);
-        // history starten op beginpositie
 
         // ExerciseSession opbouwen
         controller.setExerciseSession(
                 sessionBuilder.buildSessionFromExercise(ex)
         );
 
-        this.currentBoard = boardModel;
         this.currentController = controller;
 
         // --- 2) Moves voor de ListView voorbereiden ---
@@ -79,11 +69,7 @@ public class ChapterPresenter {
         List<String> items = new ArrayList<>();
         if (moveString == null) return items;
 
-        System.out.println("RAW moveString: [" + moveString + "]");
-
         String clean = PgnUtils.cleanMoveString(moveString);
-        System.out.println("CLEAN: [" + clean + "]");
-
         if (clean.isBlank()) {
             return items;
         }
@@ -101,9 +87,6 @@ public class ChapterPresenter {
                 added++;
             }
         }
-
-        System.out.println("Size of parts " + added);
-        System.out.println("Parts: " + items);
 
         if (added == 0) {
             items.add(clean);
@@ -131,19 +114,4 @@ public class ChapterPresenter {
         }
     }
 
-    /** Door ChapterWindow aangeroepen als BoardModel.onBoardUpdated fired. */
-    public void onBoardUpdated() {
-        if (currentController != null) {
-            currentController.incrementMoveCounter();
-            System.out.println(currentController.getMoveCounter());
-        }
-    }
-
-    public Controller getCurrentController() {
-        return currentController;
-    }
-
-    public BoardModel getCurrentBoard() {
-        return currentBoard;
-    }
 }

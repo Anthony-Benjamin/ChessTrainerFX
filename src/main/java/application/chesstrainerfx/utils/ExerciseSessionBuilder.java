@@ -57,7 +57,6 @@ public class ExerciseSessionBuilder {
             toMove = (toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
         }
 
-        System.out.println("buildsession mainline: " + mainLine);
         return new ExerciseSession(mainLine, sanLine);
     }
 
@@ -155,7 +154,6 @@ public class ExerciseSessionBuilder {
         }
 
         if (candidates.size() != 1) {
-            System.out.println("SAN resolve ambiguity: " + sanRaw + " candidates=" + candidates);
             return null;
         }
 

@@ -17,19 +17,6 @@ public class BoardModel {
     // en-passant tracking
     private Position lastDoubleStepPawnPosition = null;
 
-    // --------------------------------------------------------------------
-    // Snapshot helper (voor Undo/Redo)
-    // --------------------------------------------------------------------
-    public static class BoardSnapshot {
-        private final PieceModel[][] pieces; // 8x8
-        private final Position lastDoubleStepPawnPosition;
-
-        private BoardSnapshot(PieceModel[][] pieces, Position lastDoubleStepPawnPosition) {
-            this.pieces = pieces;
-            this.lastDoubleStepPawnPosition = lastDoubleStepPawnPosition;
-        }
-    }
-
     public BoardModel() {
         initializeBoard();
     }
@@ -92,7 +79,6 @@ public class BoardModel {
         }
     }
 
-    // blijft dezelfde naam/signature houden om niks te breken
     public PieceModel pieceModelformFENChar(char c) {
         PieceColor color;
         if (Character.isLowerCase(c)) {
@@ -100,7 +86,6 @@ public class BoardModel {
         } else if (Character.isUpperCase(c)) {
             color = PieceColor.WHITE;
         } else {
-            System.out.println("geen geldige letter");
             return null;
         }
 
@@ -113,7 +98,6 @@ public class BoardModel {
             case 'n' -> type = PieceType.KNIGHT;
             case 'p' -> type = PieceType.PAWN;
             default -> {
-                System.out.println("geen geldige letter");
                 return null;
             }
         }
@@ -133,18 +117,6 @@ public class BoardModel {
             return null;
         }
         return squares[row][col];
-    }
-
-    // Optioneel/legacy: als je ooit nog een flat list nodig hebt.
-    // In jouw huidige codebase lijkt dit niet gebruikt te worden.
-    public List<SquareModel> getSquares() {
-        List<SquareModel> flat = new ArrayList<>(64);
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                flat.add(squares[r][c]);
-            }
-        }
-        return flat;
     }
 
     // --------------------------------------------------------------------
@@ -208,12 +180,6 @@ public class BoardModel {
     // --------------------------------------------------------------------
     // FEN export
     // --------------------------------------------------------------------
-    public String exportToFEN() {
-        // jij gebruikte altijd " w - - 0 1" als basis metadata
-        return exportToFEN(true);
-    }
-
-    // extra overload (handig voor jou/Controller)
     public String exportToFEN(boolean whiteToMove) {
         return exportToFEN(whiteToMove, "-");
     }
@@ -246,39 +212,5 @@ public class BoardModel {
         fen.append(' ').append(castling == null || castling.isBlank() ? "-" : castling);
         fen.append(" - 0 1"); // en-passant, halfmove, fullmove (later uitbreiden)
         return fen.toString();
-    }
-
-    // --------------------------------------------------------------------
-    // Snapshots (Undo/Redo)
-    // --------------------------------------------------------------------
-    public BoardSnapshot createSnapshot() {
-        PieceModel[][] copy = new PieceModel[8][8];
-
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                PieceModel p = squares[r][c].getPiece();
-                if (p == null) {
-                    copy[r][c] = null;
-                } else {
-                    PieceModel p2 = new PieceModel(p.getType(), p.getColor());
-                    p2.setHasMoved(p.hasMoved());
-                    copy[r][c] = p2;
-                }
-            }
-        }
-
-        return new BoardSnapshot(copy, lastDoubleStepPawnPosition);
-    }
-
-    public void restoreSnapshot(BoardSnapshot snap) {
-        if (snap == null) return;
-
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                squares[r][c].setPiece(snap.pieces[r][c]);
-            }
-        }
-        this.lastDoubleStepPawnPosition = snap.lastDoubleStepPawnPosition;
-        notifyListeners();
     }
 }

@@ -14,34 +14,23 @@ import javafx.scene.paint.Color;
 public class BoardEditor extends HBox implements BoardChangeListener {
 
     private final int boardSize;
-    private final float backgroundsize;
     private final BoardModel boardModel;
     private final Controller controller;
     private boolean isWhitePerspective;
     private final SquareView[][] squareViews = new SquareView[8][8];
     private GridPane boardGrid;
 
-
     public BoardEditor(BoardModel boardModel, Controller controller, boolean isWhitePerspective, int boardSize) {
         this.boardSize = boardSize;
-        backgroundsize = boardSize+(boardSize * 0.07f);
         this.boardModel = boardModel;
         boardModel.addListener(this);
         this.controller = controller;
         this.isWhitePerspective = isWhitePerspective;
         this.setSpacing(20);
         this.setAlignment(Pos.CENTER_LEFT);
-//        boardModel.addListener(this);
-        //this.setBorder(new Border(new BorderStroke(Color.BLUEVIOLET, BorderStrokeStyle.SOLID, null , null)));
         StackPane boardWithBackground = createBoardStack(boardModel, controller, isWhitePerspective);
 
         this.getChildren().add(boardWithBackground);
-    }
-
-    public boolean isPointInsideBoard(double sceneX, double sceneY){
-
-        return boardGrid.localToScene(boardGrid.getBoundsInLocal())
-                .contains(sceneX, sceneY);
     }
 
     private StackPane createBoardStack(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
@@ -103,7 +92,6 @@ public class BoardEditor extends HBox implements BoardChangeListener {
             lbl.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setAlignment(Pos.CENTER);
-            // lbl.setPadding(new Insets(frame , 0, 0, 0));
             rankBox.getChildren().add(lbl);
         }
         StackPane.setAlignment(rankBox, Pos.TOP_LEFT);
@@ -125,7 +113,6 @@ public class BoardEditor extends HBox implements BoardChangeListener {
             lbl.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             lbl.setAlignment(Pos.BOTTOM_CENTER);
-            // lbl.setPadding(new Insets(0, 0, 6, 0));
             fileBox.getChildren().add(lbl);
         }
         StackPane.setAlignment(fileBox, Pos.BOTTOM_CENTER);
@@ -144,9 +131,6 @@ public class BoardEditor extends HBox implements BoardChangeListener {
 
         return boardStack;
     }
-    public void initializeBoard(){
-//        boardModel = initializeBoard();
-    }
 
     /** Draait het bordperspectief om zonder het model aan te raken. */
     public void flip() {
@@ -156,7 +140,6 @@ public class BoardEditor extends HBox implements BoardChangeListener {
 
     @Override
     public void onBoardUpdated() {
-//        System.out.println("onBoardUpdated()");
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 squareViews[row][col].update();
