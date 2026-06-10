@@ -2,11 +2,13 @@ package application.chesstrainerfx;
 
 import application.chesstrainerfx.config.AppConfig;
 import application.chesstrainerfx.config.ResourceSeeder;
+import application.chesstrainerfx.controller.PositionEditorController;
 import application.chesstrainerfx.view.ChapterOverviewView;
 import application.chesstrainerfx.view.ChapterWindow;
 import application.pgnreader.io.ChapterLoader;
 import application.pgnreader.model.Chapter;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -130,7 +132,41 @@ public class Main extends Application {
         List<String> subCategories = listSubCategories(config.puzzlesDir());
 
         ChapterOverviewView view = new ChapterOverviewView(subCategories, this::openPuzzleSubCategory);
-        return withBackButton(view, () -> scene.setRoot(homeRoot));
+        StackPane wrapper = withBackButton(view, () -> scene.setRoot(homeRoot));
+
+        MenuItem editorItem = new MenuItem("Position Editor");
+        editorItem.setOnAction(e -> openPositionEditor());
+        MenuButton menu = new MenuButton("☰", null, editorItem);
+        menu.setStyle("""
+        -fx-background-color: rgba(20,20,20,0.65);
+        -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
+        -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
+    """);
+        StackPane.setAlignment(menu, Pos.TOP_RIGHT);
+        StackPane.setMargin(menu, new Insets(10));
+        wrapper.getChildren().add(menu);
+
+        return wrapper;
+    }
+
+    /** Laadt de Position Editor (position-editor.fxml) als scherm binnen de Puzzles-module. */
+    private void openPositionEditor() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/position-editor.fxml"));
+            Parent editorRoot = loader.load();
+            PositionEditorController controller = loader.getController();
+            controller.init(stage, config.puzzlesDir());
+
+            StackPane wrapper = withBackButton(editorRoot, () -> scene.setRoot(moduleRoots.get(PUZZLES)));
+            wrapper.setStyle("-fx-background-color: white;");
+            scene.setRoot(wrapper);
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Position Editor");
+            alert.setHeaderText("Kon de Position Editor niet openen");
+            alert.setContentText(e.getMessage());
+            alert.show();
+        }
     }
 
     private void openPuzzleSubCategory(String subCategory) {
@@ -174,7 +210,7 @@ public class Main extends Application {
     }
 
     /** Legt een gestylede terug-knop over de gegeven view heen. */
-    private Parent withBackButton(Parent content, Runnable onBack) {
+    private StackPane withBackButton(Parent content, Runnable onBack) {
         Button back = new Button("← Back");
         back.setOnAction(e -> onBack.run());
         back.setStyle("""

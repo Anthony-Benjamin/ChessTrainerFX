@@ -63,4 +63,38 @@ public class PgnUtils {
 
         return clean;
     }
+
+    /**
+     * Bouwt een minimale PGN-oefening: standaard tags, de FEN van de
+     * opgezette positie en de (optionele) zettenreeks.
+     */
+    public static String buildExercisePgn(String title, String fen, String moves) {
+        StringBuilder pgn = new StringBuilder();
+
+        appendTag(pgn, "Event", "?");
+        appendTag(pgn, "Site", "?");
+        appendTag(pgn, "Date", "????.??.??");
+        appendTag(pgn, "Round", "?");
+        appendTag(pgn, "White", title);
+        appendTag(pgn, "Black", "?");
+        appendTag(pgn, "Result", "*");
+
+        appendTag(pgn, "FEN", fen);
+
+        pgn.append("\n");
+        if (moves.startsWith("1 -")) {
+            moves = moves.replace("1 -", "1.");
+        }
+        pgn.append(moves);
+
+        return pgn.toString();
+    }
+
+    private static void appendTag(StringBuilder sb, String key, String value) {
+        sb.append("[")
+                .append(key)
+                .append(" \"")
+                .append(value)
+                .append("\"]\n");
+    }
 }

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="application.chesstrainerfx.controller.PositionEditorController"
+      alignment="CENTER" spacing="10">
+
+    <!-- Bordkolom: titel, zwarte stukken, bord, witte stukken, FEN (gevuld in de controller) -->
+    <VBox fx:id="boardColumn" spacing="10">
+        <padding><Insets left="50"/></padding>
+    </VBox>
+
+    <!-- Zijpaneel -->
+    <VBox spacing="10">
+        <padding><Insets top="10" left="75"/></padding>
+
+        <HBox spacing="5" alignment="TOP_RIGHT">
+            <Button text="Set category" onAction="#onSetCategory"/>
+            <Label fx:id="categoryStatusLbl" text="☒"
+                   style="-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 20px"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER">
+            <padding><Insets top="153"/></padding>
+            <Button text="Start Position" minWidth="150" onAction="#onStartPosition"/>
+            <Button text="Clear Board" minWidth="150" onAction="#onClearBoard"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER">
+            <Button text="Flip Board" minWidth="150" onAction="#onFlipBoard"/>
+            <Button text="Export FEN" minWidth="150" onAction="#onExportFen"/>
+        </HBox>
+
+        <VBox alignment="CENTER">
+            <Label text="Moves" style="-fx-font-weight: bold;"/>
+            <TextArea fx:id="movesWindow" maxWidth="150" maxHeight="150"/>
+        </VBox>
+
+        <HBox alignment="CENTER">
+            <ComboBox fx:id="whoseTurnSelector"/>
+        </HBox>
+
+        <HBox alignment="CENTER">
+            <Label text="Castling" style="-fx-font-weight: bold;"/>
+        </HBox>
+
+        <HBox spacing="4" alignment="CENTER">
+            <Label text="White"/>
+            <CheckBox fx:id="whiteKingSideCastling"/>
+            <Label text="O-O"/>
+            <CheckBox fx:id="whiteQueenSideCastling"/>
+            <Label text="O-O-O"/>
+        </HBox>
+
+        <HBox spacing="4" alignment="CENTER">
+            <Label text="Black"/>
+            <CheckBox fx:id="blackKingSideCastling"/>
+            <Label text="O-O"/>
+            <CheckBox fx:id="blackQueenSideCastling"/>
+            <Label text="O-O-O"/>
+        </HBox>
+
+        <HBox>
+            <padding><Insets top="10"/></padding>
+            <Button text="Save exercise" onAction="#onSaveExercise"/>
+        </HBox>
+    </VBox>
+</HBox>
