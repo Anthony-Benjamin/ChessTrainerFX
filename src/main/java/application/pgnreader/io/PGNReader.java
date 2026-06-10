@@ -2,8 +2,9 @@ package application.pgnreader.io;
 
 import application.pgnreader.model.Exercise;
 
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -12,15 +13,12 @@ import java.util.regex.Pattern;
 public class PGNReader {
 
     /**
-     * Leest een PGN hoofdstuk (meerdere partijen/oefeningen) uit resources en splitst in Exercise-objecten.
+     * Leest een PGN-hoofdstuk (meerdere partijen/oefeningen) van schijf en splitst in Exercise-objecten.
      * Geeft een lege lijst terug als het bestand ontbreekt of niet leesbaar is.
      */
-    public static List<Exercise> readChapter(String path) {
-        try (InputStream in = PGNReader.class.getResourceAsStream(path)) {
-            if (in == null) {
-                return List.of();
-            }
-            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+    public static List<Exercise> readChapter(Path file) {
+        try {
+            String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
             return splitExercises(content);
         } catch (Exception e) {
             return List.of();

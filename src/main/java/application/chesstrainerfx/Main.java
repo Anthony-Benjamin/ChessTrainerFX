@@ -1,11 +1,11 @@
-// File: Main.java
 package application.chesstrainerfx;
 
+import application.chesstrainerfx.config.AppConfig;
+import application.chesstrainerfx.config.ResourceSeeder;
+import application.chesstrainerfx.view.ChapterOverviewView;
 import application.chesstrainerfx.view.ChapterWindow;
-import application.chesstrainerfx.view.MatePatternsView;
-import application.pgnreader.io.PGNReader;
+import application.pgnreader.io.ChapterLoader;
 import application.pgnreader.model.Chapter;
-import application.pgnreader.model.Exercise;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,56 +17,26 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 public class Main extends Application {
     public String title = "ChessTrainer — Home";
 
-    /** Alle beschikbare hoofdstukken (PGN-bestanden in resources) */
-    private final List<String> chapterPaths = Arrays.asList(
-            "/pgn/mating/chapters/1_epaulette_mate.pgn",
-            "/pgn/mating/chapters/2_swallowstail_mate.pgn",
-            "/pgn/mating/chapters/3_cozio_mate.pgn",
-            "/pgn/mating/chapters/4_killerbox_mate.pgn",
-            "/pgn/mating/chapters/5_triangle_mate.pgn",
-            "/pgn/mating/chapters/6_railroad_mate.pgn",
-            "/pgn/mating/chapters/7_maxlange_mate.pgn",
-            "/pgn/mating/chapters/8_balestra_mate.pgn",
-            "/pgn/mating/chapters/9_buckingbranco_mate.pgn",
-            "/pgn/mating/chapters/10_sneakingstallion_mate.pgn",
-            "/pgn/mating/chapters/11_damiano_mate.pgn",
-            "/pgn/mating/chapters/12_loli_mate.pgn",
-            "/pgn/mating/chapters/13_backrank_mate.pgn",
-            "/pgn/mating/chapters/14_blindswine_mate.pgn",
-            "/pgn/mating/chapters/15_lawnmower_mate.pgn",
-            "/pgn/mating/chapters/16_hfile_mate.pgn",
-            "/pgn/mating/chapters/17_opera_mate.pgn",
-            "/pgn/mating/chapters/18_mayet_mate.pgn",
-            "/pgn/mating/chapters/19_reti_mate.pgn",
-            "/pgn/mating/chapters/20_pillsbury_mate.pgn",
-            "/pgn/mating/chapters/21_morphy_mate.pgn",
-            "/pgn/mating/chapters/22_creco_mate.pgn",
-            "/pgn/mating/chapters/23_corner_mate.pgn",
-            "/pgn/mating/chapters/24_anastasia_mate.pgn",
-            "/pgn/mating/chapters/25_arabian_mate.pgn",
-            "/pgn/mating/chapters/26_vukovic_mate.pgn",
-            "/pgn/mating/chapters/27_hook_mate.pgn",
-            "/pgn/mating/chapters/28_andersen_mate.pgn",
-            "/pgn/mating/chapters/29_diagondal_corridor_mate.pgn",
-            "/pgn/mating/chapters/30_bombardier_mate.pgn",
-            "/pgn/mating/chapters/31_boden_mate.pgn",
-            "/pgn/mating/chapters/32_smothered_mate.pgn",
-            "/pgn/mating/chapters/33_two_night_mate.pgn",
-            "/pgn/mating/chapters/34_suffocation_mate.pgn",
-            "/pgn/mating/chapters/35_collabration_mate.pgn",
-            "/pgn/mating/chapters/36_blackburne_mate.pgn"
-    );
+    /** Module-sleutels voor navigatie en caching. */
+    private static final String MATING_PATTERNS = "MATING_PATTERNS";
+    private static final String TACTICS = "TACTICS";
+    private static final String PUZZLES = "PUZZLES";
 
     private Scene scene;
     private Parent homeRoot;
-    private Parent matingRoot;
+    private final Map<String, Parent> moduleRoots = new HashMap<>();
+    private AppConfig config;
 
     public Stage getStage() {
         return stage;
@@ -76,12 +46,16 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-
         this.stage = stage;
+        this.config = AppConfig.load();
+
+        // Eerste start: meegeleverde PGN's naar de geconfigureerde mappen kopiëren
+        ResourceSeeder.seedIfEmpty(config.matingPatternsDir(), "/pgn/mating/chapters");
+        ResourceSeeder.seedIfEmpty(config.tacticsDir(), "/pgn/tactics");
+
         homeRoot = buildHome();
         scene = new Scene(homeRoot, 1500, 1000);
         scene.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
-        matingRoot = buildMatingPatterns();
         stage.setTitle(title);
         stage.setResizable(false);
         stage.setScene(scene);
@@ -109,9 +83,9 @@ public class Main extends Application {
         buttons.getChildren().addAll(btnMate, btnTactics, btnPuzzles);
         StackPane.setAlignment(buttons, Pos.BOTTOM_RIGHT);
 
-        btnMate.setOnAction(e -> startTraining("MATE_PATTERNS"));
-        btnTactics.setOnAction(e -> startTraining("TACTICS"));
-        btnPuzzles.setOnAction(e -> startTraining("PUZZLES"));
+        btnMate.setOnAction(e -> openModule(MATING_PATTERNS));
+        btnTactics.setOnAction(e -> openModule(TACTICS));
+        btnPuzzles.setOnAction(e -> openModule(PUZZLES));
 
         root.getChildren().addAll(overlay, buttons);
         return root;
@@ -125,68 +99,95 @@ public class Main extends Application {
         return b;
     }
 
-    /** Router: bepaalt welk scherm geladen wordt */
-    private void startTraining(String mode) {
-        switch (mode) {
-            case "MATE_PATTERNS" -> scene.setRoot(matingRoot);
-            default -> showInfo("Nog niet beschikbaar", "Deze trainingscategorie is nog niet actief.");
+    /** Router: bepaalt welk module-scherm geladen wordt (lazy, daarna gecachet). */
+    private void openModule(String module) {
+        Parent root = moduleRoots.computeIfAbsent(module, this::buildModuleRoot);
+        scene.setRoot(root);
+    }
+
+    private Parent buildModuleRoot(String module) {
+        return switch (module) {
+            case MATING_PATTERNS -> buildChapterModule(module, config.matingPatternsDir());
+            case TACTICS -> buildChapterModule(module, config.tacticsDir());
+            case PUZZLES -> buildPuzzlesModule();
+            default -> homeRoot;
+        };
+    }
+
+    /** Hoofdstuk-module (Mating Patterns / Tactics): tegels per PGN-bestand in de modulemap. */
+    private Parent buildChapterModule(String module, Path pgnDir) {
+        List<Chapter> chapters = ChapterLoader.loadChapters(pgnDir);
+
+        ChapterOverviewView view = new ChapterOverviewView(
+                chapters.stream().map(Chapter::getTitle).toList(),
+                name -> openChapter(chapters, name, () -> scene.setRoot(moduleRoots.get(module))));
+
+        return withBackButton(view, () -> scene.setRoot(homeRoot));
+    }
+
+    /** Puzzles-module: tegels per sub-categorie (sub-map), daarna hoofdstukken per sub-categorie. */
+    private Parent buildPuzzlesModule() {
+        List<String> subCategories = listSubCategories(config.puzzlesDir());
+
+        ChapterOverviewView view = new ChapterOverviewView(subCategories, this::openPuzzleSubCategory);
+        return withBackButton(view, () -> scene.setRoot(homeRoot));
+    }
+
+    private void openPuzzleSubCategory(String subCategory) {
+        Path dir = config.puzzlesDir().resolve(subCategory);
+        List<Chapter> chapters = ChapterLoader.loadChapters(dir);
+
+        Runnable backToPuzzles = () -> scene.setRoot(moduleRoots.get(PUZZLES));
+        ChapterOverviewView view = new ChapterOverviewView(
+                chapters.stream().map(Chapter::getTitle).toList(),
+                name -> openChapter(chapters, name, backToPuzzles));
+
+        scene.setRoot(withBackButton(view, backToPuzzles));
+    }
+
+    private void openChapter(List<Chapter> chapters, String name, Runnable onBack) {
+        Chapter chapter = chapters.stream()
+                .filter(c -> c.getTitle().equals(name))
+                .findFirst().orElse(null);
+        if (chapter != null) {
+            scene.setRoot(new ChapterWindow(
+                    chapter.getTitle(),
+                    chapter.getExercises(),
+                    v -> onBack.run(), this.stage
+            ));
+            stage.setTitle(chapter.getExercises().getFirst().toString());
         }
     }
 
-    /** Bouwt alle hoofdstukken (PGN-bestanden -> Chapter objecten) */
-    private List<Chapter> buildChapters(List<String> paths) {
-        List<Chapter> chapters = new ArrayList<>();
-        for (String path : paths) {
-            List<Exercise> exercises = PGNReader.readChapter(path);
-            if (!exercises.isEmpty()) {
-                chapters.add(new Chapter(exercises.get(0).getTitle(), exercises));
-            }
+    private static List<String> listSubCategories(Path puzzlesDir) {
+        if (!Files.isDirectory(puzzlesDir)) {
+            return List.of();
         }
-        return chapters;
+        try (Stream<Path> dirs = Files.list(puzzlesDir)) {
+            return dirs.filter(Files::isDirectory)
+                    .map(d -> d.getFileName().toString())
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .toList();
+        } catch (IOException e) {
+            return List.of();
+        }
     }
 
-
-    private Parent buildMatingPatterns() {
-
-        List<Chapter> chapters = buildChapters(chapterPaths);
-        List<String> titles = chapters.stream().map(Chapter::getTitle).toList();
-
-        var view = new MatePatternsView(titles, name -> {
-            Chapter chapter = chapters.stream()
-                    .filter(c -> c.getTitle().equals(name))
-                    .findFirst().orElse(null);
-            if (chapter != null) {
-                scene.setRoot(new ChapterWindow(
-                        chapter.getTitle(),
-                        chapter.getExercises(),
-                        v -> scene.setRoot(matingRoot), this.stage
-                ));
-                stage.setTitle(chapter.getExercises().getFirst().toString());
-            }
-        });
-
-        // Back-knop naar home
+    /** Legt een gestylede terug-knop over de gegeven view heen. */
+    private Parent withBackButton(Parent content, Runnable onBack) {
         Button back = new Button("← Back");
-        back.setOnAction(e -> scene.setRoot(homeRoot));
+        back.setOnAction(e -> onBack.run());
         back.setStyle("""
         -fx-background-color: rgba(20,20,20,0.65);
         -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
         -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
     """);
 
-        StackPane wrapper = new StackPane(view, back);
+        StackPane wrapper = new StackPane(content, back);
         StackPane.setAlignment(back, Pos.TOP_LEFT);
         StackPane.setMargin(back, new Insets(10));
 
         return wrapper;
-    }
-
-    private static void showInfo(String header, String msg) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Info");
-        a.setHeaderText(header);
-        a.setContentText(msg);
-        a.show();
     }
 
     public static void main(String[] args) { launch(args); }

@@ -12,12 +12,13 @@ import javafx.scene.layout.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-public final class MatePatternsView extends BorderPane {
+/** Tegel-overzicht met titels (hoofdstukken of sub-categorieën); klik geeft de titel door. */
+public final class ChapterOverviewView extends BorderPane {
 
     private final TilePane grid = new TilePane(16, 16);
     private Consumer<String> onSelect = t -> {};
 
-    public MatePatternsView(List<String> titles, Consumer<String> onSelect) {
+    public ChapterOverviewView(List<String> titles, Consumer<String> onSelect) {
         if (onSelect != null) this.onSelect = onSelect;
         getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
 
