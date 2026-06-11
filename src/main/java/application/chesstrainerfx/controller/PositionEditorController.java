@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.prefs.Preferences;
 
 /**
  * Controller voor de Position Editor (position-editor.fxml) in de Puzzles-module:
@@ -39,6 +40,9 @@ public class PositionEditorController {
 
     private static final String WHITE_TO_MOVE = "White to move";
     private static final String BLACK_TO_MOVE = "Black to move";
+
+    private static final Preferences PREFS = Preferences.userNodeForPackage(PositionEditorController.class);
+    private static final String PREF_LAST_DIR = "lastSaveDirectory";
 
     @FXML private VBox boardColumn;
     @FXML private Label categoryStatusLbl;
@@ -82,6 +86,16 @@ public class PositionEditorController {
     public void init(Stage stage, Path puzzlesDir) {
         this.stage = stage;
         this.puzzlesDir = puzzlesDir;
+
+        String saved = PREFS.get(PREF_LAST_DIR, null);
+        if (saved != null) {
+            File dir = new File(saved);
+            if (dir.isDirectory()) {
+                saveDirectory = dir;
+                categoryStatusLbl.setText("☑");
+                categoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
+            }
+        }
     }
 
     private void buildBoardColumn() {
@@ -169,8 +183,8 @@ public class PositionEditorController {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Kies een puzzles-sub-categorie");
 
-        File initialDir = (puzzlesDir != null && Files.isDirectory(puzzlesDir))
-                ? puzzlesDir.toFile()
+        File initialDir = saveDirectory != null ? saveDirectory
+                : (puzzlesDir != null && Files.isDirectory(puzzlesDir)) ? puzzlesDir.toFile()
                 : new File(System.getProperty("user.home"));
         directoryChooser.setInitialDirectory(initialDir);
 
@@ -220,6 +234,7 @@ public class PositionEditorController {
     private void saveToFile(File file, String pgn) {
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
             writer.write(pgn);
+            PREFS.put(PREF_LAST_DIR, file.getParent());
         } catch (IOException ex) {
             showInfo("Opslaan mislukt", "Kon het bestand niet opslaan: " + ex.getMessage());
         }
