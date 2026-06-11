@@ -324,12 +324,16 @@ public class Main extends Application {
         exercises.stream()
                 .filter(e -> e.getTitle().equals(title))
                 .findFirst()
-                .ifPresent(exercise -> scene.setRoot(new ChapterWindow(
-                        exercise.getTitle(),
-                        List.of(exercise),
-                        v -> onBack.run(),
-                        stage
-                )));
+                .ifPresent(exercise -> {
+                    ChapterWindow window = new ChapterWindow(
+                            exercise.getTitle(),
+                            List.of(exercise),
+                            v -> onBack.run(),
+                            stage
+                    );
+                    scene.setRoot(window);
+                    window.autoStart();
+                });
     }
 
     /**

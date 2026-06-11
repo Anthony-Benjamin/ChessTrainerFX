@@ -339,4 +339,11 @@ public class ChapterWindow extends BorderPane {
         switchMode(Mode.LIST);
     }
 
+    /** Slaat de tegelstap over en opent het bord meteen voor de eerste (of enige) exercise. */
+    public void autoStart() {
+        if (!exercises.isEmpty()) {
+            presenter.onExerciseSelected(exercises.get(0));
+        }
+    }
+
 }
