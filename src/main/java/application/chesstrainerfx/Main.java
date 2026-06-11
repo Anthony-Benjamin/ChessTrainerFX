@@ -9,6 +9,7 @@ import application.chesstrainerfx.view.ChapterOverviewView;
 import application.chesstrainerfx.view.ChapterWindow;
 import application.pgnreader.io.ChapterLoader;
 import application.pgnreader.model.Chapter;
+import application.pgnreader.model.Exercise;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -301,12 +302,14 @@ public class Main extends Application {
 
     private void openPuzzleSubCategory(String subCategory) {
         Path dir = config.puzzlesDir().resolve(subCategory);
-        List<Chapter> chapters = ChapterLoader.loadChapters(dir);
+        List<Exercise> exercises = ChapterLoader.loadChapters(dir).stream()
+                .flatMap(c -> c.getExercises().stream())
+                .toList();
 
         Runnable backToPuzzles = () -> scene.setRoot(moduleRoots.get(PUZZLES));
         ChapterOverviewView view = new ChapterOverviewView(
-                chapters.stream().map(Chapter::getTitle).toList(),
-                name -> openChapter(chapters, name, backToPuzzles));
+                exercises.stream().map(Exercise::getTitle).toList(),
+                name -> openExerciseDetail(exercises, name, () -> openPuzzleSubCategory(subCategory)));
 
         StackPane wrapper = withBackButton(view, backToPuzzles);
 
@@ -315,6 +318,18 @@ public class Main extends Application {
         wrapper.getChildren().add(overlayMenu(importItem));
 
         scene.setRoot(wrapper);
+    }
+
+    private void openExerciseDetail(List<Exercise> exercises, String title, Runnable onBack) {
+        exercises.stream()
+                .filter(e -> e.getTitle().equals(title))
+                .findFirst()
+                .ifPresent(exercise -> scene.setRoot(new ChapterWindow(
+                        exercise.getTitle(),
+                        List.of(exercise),
+                        v -> onBack.run(),
+                        stage
+                )));
     }
 
     /**
