@@ -33,6 +33,8 @@ public class SquareView extends StackPane {
     private static final Color SELECTION_SOURCE = Color.web("#8a5216");
     private static final Color SELECTION_TARGET = Color.color(0.95, 0.55, 0.25, 0.55); // warm oranje
     private static final Color SELECTION_NONE   = Color.TRANSPARENT;
+    // Onzeker-veld markering (image-scanner): fel oranje, onderscheidbaar van SELECTION_TARGET
+    private static final Color MARK_UNCERTAIN   = Color.color(1.0, 0.55, 0.0, 0.45);
 
     public SquareView(BoardModel boardModel, SquareModel model, Controller controller, int size) {
         this.model = model;
@@ -95,6 +97,7 @@ public class SquareView extends StackPane {
                 if (db.hasImage()) {
                     model.setPiece(DragContext.draggedPiece);
                     update();
+                    clearMark(); // gecorrigeerd veld is niet langer onzeker
                 }
                 event.setDropCompleted(true);
             } else {
@@ -173,6 +176,16 @@ public class SquareView extends StackPane {
 
     /** Reset selectie/hover. */
     public void removeSelection() {
+        highlight.setFill(SELECTION_NONE);
+    }
+
+    /** Markeert dit veld als onzeker (lage scanner-confidence). */
+    public void markUncertain() {
+        highlight.setFill(MARK_UNCERTAIN);
+    }
+
+    /** Wist een onzeker-markering. */
+    public void clearMark() {
         highlight.setFill(SELECTION_NONE);
     }
 }

@@ -1,12 +1,16 @@
 package application.chesstrainerfx.controller;
 
+import application.chesstrainerfx.imagescanner.ImageScannerView;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.BoardEditor;
 import application.chesstrainerfx.utils.PgnUtils;
 import application.chesstrainerfx.utils.PieceSelectorPane;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -16,6 +20,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.BufferedWriter;
@@ -95,8 +100,12 @@ public class PositionEditorController {
 
         Label fenLabel = new Label("FEN: ");
         fenTextField = new TextField();
-        fenTextField.setMinWidth(560);
-        fenBox = new HBox(fenLabel, fenTextField);
+        fenTextField.setMinWidth(490);
+        fenTextField.setEditable(true);
+        fenTextField.setPromptText("Plak of typ een FEN-string…");
+        Button loadFenBtn = new Button("Load FEN");
+        loadFenBtn.setOnAction(e -> onLoadFen());
+        fenBox = new HBox(5, fenLabel, fenTextField, loadFenBtn);
         fenBox.setMinHeight(50);
         fenBox.setAlignment(Pos.CENTER);
     }
@@ -124,6 +133,29 @@ public class PositionEditorController {
         isWhite = !isWhite;
         board.flip();
         layoutBoardColumn();
+    }
+
+    @FXML
+    private void onImportFromImage() {
+        Stage scannerStage = new Stage();
+        scannerStage.initOwner(stage);
+        scannerStage.initModality(Modality.WINDOW_MODAL);
+        scannerStage.setTitle("Import from Image");
+
+        ImageScannerView scannerView = new ImageScannerView();
+        Parent content = scannerView.createView(scannerStage, fen -> {
+            model.initializeFromFEN(fen);
+            fenTextField.setText(fen);
+            scannerStage.close();
+        });
+
+        scannerStage.setScene(new Scene(content));
+        scannerStage.show();
+    }
+
+    private void onLoadFen() {
+        String fen = fenTextField.getText().trim();
+        if (!fen.isBlank()) model.initializeFromFEN(fen);
     }
 
     @FXML

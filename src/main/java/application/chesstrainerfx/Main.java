@@ -4,6 +4,7 @@ import application.chesstrainerfx.config.AppConfig;
 import application.chesstrainerfx.config.ResourceSeeder;
 import application.chesstrainerfx.config.SubCategoryStore;
 import application.chesstrainerfx.controller.PositionEditorController;
+import application.chesstrainerfx.imagescanner.ImageScannerView;
 import application.chesstrainerfx.view.ChapterOverviewView;
 import application.chesstrainerfx.view.ChapterWindow;
 import application.pgnreader.io.ChapterLoader;
@@ -155,6 +156,9 @@ public class Main extends Application {
         MenuItem editorItem = new MenuItem("Position Editor");
         editorItem.setOnAction(e -> openPositionEditor());
 
+        MenuItem scannerItem = new MenuItem("Image Scanner");
+        scannerItem.setOnAction(e -> openImageScanner());
+
         MenuItem newItem = new MenuItem("New Sub-category…");
         newItem.setOnAction(e -> createSubCategory());
 
@@ -164,7 +168,7 @@ public class Main extends Application {
         MenuItem deleteItem = new MenuItem("Delete Sub-category…");
         deleteItem.setOnAction(e -> deleteSubCategory());
 
-        wrapper.getChildren().add(overlayMenu(editorItem, newItem, renameItem, deleteItem));
+        wrapper.getChildren().add(overlayMenu(editorItem, scannerItem, newItem, renameItem, deleteItem));
 
         return wrapper;
     }
@@ -286,6 +290,13 @@ public class Main extends Application {
             alert.setContentText(e.getMessage());
             alert.show();
         }
+    }
+
+    /** Opent de Image Scanner (afbeelding → FEN) als scherm binnen de Puzzles-module. */
+    private void openImageScanner() {
+        Parent scannerRoot = new ImageScannerView().createView(stage);
+        StackPane wrapper = withBackButton(scannerRoot, () -> scene.setRoot(moduleRoots.get(PUZZLES)));
+        scene.setRoot(wrapper);
     }
 
     private void openPuzzleSubCategory(String subCategory) {

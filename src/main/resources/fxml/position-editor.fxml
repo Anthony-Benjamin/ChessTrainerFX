@@ -39,6 +39,10 @@
             <Button text="Export FEN" minWidth="150" onAction="#onExportFen"/>
         </HBox>
 
+        <HBox spacing="10" alignment="CENTER">
+            <Button text="Import from Image" minWidth="310" onAction="#onImportFromImage"/>
+        </HBox>
+
         <VBox alignment="CENTER">
             <Label text="Moves" style="-fx-font-weight: bold;"/>
             <TextArea fx:id="movesWindow" maxWidth="150" maxHeight="150"/>

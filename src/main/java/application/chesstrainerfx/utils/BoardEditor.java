@@ -132,6 +132,23 @@ public class BoardEditor extends HBox implements BoardChangeListener {
         return boardStack;
     }
 
+    /** Markeert de opgegeven [row, col]-velden als onzeker (eerst alle bestaande marks wissen). */
+    public void markLowConfidenceSquares(java.util.List<int[]> squares) {
+        clearAllMarks();
+        for (int[] sq : squares) {
+            squareViews[sq[0]][sq[1]].markUncertain();
+        }
+    }
+
+    /** Wist alle onzeker-markeringen op het bord. */
+    public void clearAllMarks() {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                squareViews[row][col].clearMark();
+            }
+        }
+    }
+
     /** Draait het bordperspectief om zonder het model aan te raken. */
     public void flip() {
         isWhitePerspective = !isWhitePerspective;

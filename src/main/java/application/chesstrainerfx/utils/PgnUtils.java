@@ -79,6 +79,7 @@ public class PgnUtils {
         appendTag(pgn, "Black", "?");
         appendTag(pgn, "Result", "*");
 
+        appendTag(pgn, "SetUp", "1");
         appendTag(pgn, "FEN", fen);
 
         pgn.append("\n");
@@ -86,6 +87,8 @@ public class PgnUtils {
             moves = moves.replace("1 -", "1.");
         }
         pgn.append(moves);
+        if (!moves.isBlank()) pgn.append(" ");
+        pgn.append("*\n");
 
         return pgn.toString();
     }
