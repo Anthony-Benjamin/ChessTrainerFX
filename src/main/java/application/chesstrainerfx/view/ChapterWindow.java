@@ -32,6 +32,7 @@ public class ChapterWindow extends BorderPane {
     private final Consumer<Void> onBack;
     private final ExerciseSessionBuilder exerciseSessionBuilder = new ExerciseSessionBuilder();
     private Mode mode = Mode.LIST;
+    private boolean skipListOnBack = false;
     private ChapterPresenter presenter;
 
     // UI onderdelen
@@ -120,7 +121,7 @@ public class ChapterWindow extends BorderPane {
                         -fx-border-radius: 8;
                 """);
         backBtn.setOnAction(e -> {
-            presenter.onBackPressed(mode == Mode.BOARD);
+            presenter.onBackPressed(mode == Mode.BOARD && !skipListOnBack);
         });
 
         titleLabel = new Label(chapterTitle);
@@ -341,6 +342,7 @@ public class ChapterWindow extends BorderPane {
 
     /** Slaat de tegelstap over en opent het bord meteen voor de eerste (of enige) exercise. */
     public void autoStart() {
+        skipListOnBack = true;
         if (!exercises.isEmpty()) {
             presenter.onExerciseSelected(exercises.get(0));
         }
