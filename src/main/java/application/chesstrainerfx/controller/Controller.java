@@ -15,8 +15,7 @@ import java.util.List;
 
 public class Controller {
 
-    private boolean setupMode = false;
-    private PieceModel selectedSetupPiece;
+    private boolean editorMode = false;
 
     // ---------------- Move history voor navigatie ---------------- //
 
@@ -82,45 +81,21 @@ public class Controller {
         return whiteTurn;
     }
 
-    public boolean isSetupMode() {
-        return setupMode;
+    /** In editor-mode verloopt slepen via vrije plaatsing i.p.v. de zet-/selectie-flow. */
+    public boolean isEditorMode() {
+        return editorMode;
     }
 
-    public void toggleSetupMode() {
-        this.setupMode = !setupMode;
-    }
-
-    public void setSelectedPieceForSetup(PieceModel piece) {
-        this.selectedSetupPiece = piece;
+    public void setEditorMode(boolean editorMode) {
+        this.editorMode = editorMode;
     }
 
     public void handleSquareClick(BoardModel board, SquareView view, SquareModel model) {
-
-
-        if (setupMode) {
-            handleSetupPlacement(model, view);
-            return;
-        }
-
         if (stage == SelectionStage.NONE) {
             handleSourceSelection(model, view);
         } else {
             handleMove(board, view, model);
         }
-    }
-
-    // ---------------- Setup Logic ---------------- //
-
-    private void handleSetupPlacement(SquareModel model, SquareView view) {
-        if (selectedSetupPiece == null) {
-            model.setPiece(null);
-        } else {
-            model.setPiece(new PieceModel(
-                    selectedSetupPiece.getType(),
-                    selectedSetupPiece.getColor()
-            ));
-        }
-        view.update();
     }
 
     // ---------------- Selection Logic ---------------- //

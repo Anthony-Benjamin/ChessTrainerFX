@@ -64,7 +64,9 @@ public class PositionEditorController {
 
         model = new BoardModel();
         model.initializeFromFEN("");
-        board = new BoardEditor(model, new Controller(), isWhite, 600);
+        Controller editorController = new Controller();
+        editorController.setEditorMode(true);
+        board = new BoardEditor(model, editorController, isWhite, 600);
         board.setAlignment(Pos.CENTER);
 
         buildBoardColumn();

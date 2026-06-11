@@ -5,6 +5,7 @@ import application.chesstrainerfx.utils.PieceModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.chesstrainerfx.controller.Controller;
 import application.chesstrainerfx.model.BoardModel;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
@@ -16,6 +17,9 @@ import javafx.scene.shape.Rectangle;
 
 public class SquareView extends StackPane {
     private final SquareModel model;
+    private final BoardModel boardModel;
+    private final Controller controller;
+    private final int size;
     private final Rectangle background;
     private final Rectangle highlight;   // semi-transparante overlay voor selectie
     private final ImageView pieceImageView;
@@ -32,6 +36,9 @@ public class SquareView extends StackPane {
 
     public SquareView(BoardModel boardModel, SquareModel model, Controller controller, int size) {
         this.model = model;
+        this.boardModel = boardModel;
+        this.controller = controller;
+        this.size = size;
 
         background = new Rectangle(size, size);
         background.setStroke(BORDER_COLOR);
@@ -57,27 +64,51 @@ public class SquareView extends StackPane {
             event.consume();
         });
 
-        this.setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            if (db.hasImage()) {
-                model.setPiece(DragContext.draggedPiece);
-                update();
-            }
-            event.setDropCompleted(true);
-            event.consume();
-        });
-
         this.setOnDragDetected(event -> {
+            if (model.getPiece() == null) {
+                event.consume();
+                return;
+            }
             Dragboard db = pieceImageView.startDragAndDrop(TransferMode.MOVE);
             ClipboardContent content = new ClipboardContent();
             content.putImage(pieceImageView.getImage());
-            DragContext.draggedPiece = model.getPiece();
             db.setContent(content);
+
+            Image dragView = scaledDragImage();
+            if (dragView != null) {
+                db.setDragView(dragView, dragView.getWidth() / 2, dragView.getHeight() / 2);
+            }
+
+            if (controller.isEditorMode()) {
+                // Vrije plaatsing: onthoud het gesleepte stuk voor de drop.
+                DragContext.draggedPiece = model.getPiece();
+            } else {
+                // Speelbord: selecteer het bronveld via de Controller (zoals klik-klik).
+                controller.handleSquareClick(boardModel, this, model);
+            }
+            event.consume();
+        });
+
+        this.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            if (controller.isEditorMode()) {
+                if (db.hasImage()) {
+                    model.setPiece(DragContext.draggedPiece);
+                    update();
+                }
+                event.setDropCompleted(true);
+            } else {
+                // Speelbord: voer de zet uit via de Controller (validatie, tegenzet, history).
+                controller.handleSquareClick(boardModel, this, model);
+                // false → dragDone wist het bronveld NIET; de Controller heeft het stuk al verplaatst.
+                event.setDropCompleted(false);
+            }
             event.consume();
         });
 
         this.setOnDragDone(event -> {
-            if (event.getTransferMode() == TransferMode.MOVE) {
+            // Alleen in editor-mode het bronstuk weghalen na een geslaagde MOVE.
+            if (controller.isEditorMode() && event.getTransferMode() == TransferMode.MOVE) {
                 this.model.removePiece();
                 update();
             }
@@ -113,6 +144,21 @@ public class SquareView extends StackPane {
         } else {
             pieceImageView.setImage(null);
         }
+    }
+
+    /** Geschaalde, transparante drag-afbeelding ter grootte van een vak (i.p.v. de rauwe PNG). */
+    private Image scaledDragImage() {
+        Image image = pieceImageView.getImage();
+        if (image == null) return null;
+
+        ImageView iv = new ImageView(image);
+        iv.setFitWidth(size * 0.92);
+        iv.setFitHeight(size * 0.92);
+        iv.setPreserveRatio(true);
+
+        SnapshotParameters params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+        return iv.snapshot(params, null);
     }
 
     /** Bronveld (bijv. aangeklikte eigen stuk). */
