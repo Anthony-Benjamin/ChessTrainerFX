@@ -155,6 +155,11 @@ public class BoardEditor extends HBox implements BoardChangeListener {
         getChildren().setAll(createBoardStack(boardModel, controller, isWhitePerspective));
     }
 
+    /** Zet het perspectief op een vaste waarde (draait alleen wanneer nodig). */
+    public void setWhitePerspective(boolean white) {
+        if (white != isWhitePerspective) flip();
+    }
+
     @Override
     public void onBoardUpdated() {
         for (int row = 0; row < 8; row++) {

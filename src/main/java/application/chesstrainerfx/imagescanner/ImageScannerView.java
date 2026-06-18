@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.function.Consumer;
+import java.util.prefs.Preferences;
 
 /**
  * UI voor het omzetten van een schaakbord-afbeelding naar FEN.
@@ -41,6 +42,15 @@ public class ImageScannerView {
 
     private static final int PREVIEW_SIZE = 400;
     private static final int BOARD_SIZE   = 480;
+
+    // onthoudt de map van de laatst gekozen afbeelding tussen sessies
+    private static final Preferences PREFS = Preferences.userNodeForPackage(ImageScannerView.class);
+    private static final String PREF_LAST_IMAGE_DIR = "lastImageDir";
+
+    private static final String WHITE_BOTTOM = "Wit onder";
+    private static final String BLACK_BOTTOM = "Zwart onder";
+    private static final String WHITE_TO_MOVE = "Wit aan zet";
+    private static final String BLACK_TO_MOVE = "Zwart aan zet";
 
     // ---- linker panel ----
     private Image loadedImage;
@@ -65,6 +75,9 @@ public class ImageScannerView {
 
     // null = standalone modus (geen "Accept position"-knop)
     private Consumer<String> onAccept;
+
+    // onderdrukt listener-reacties tijdens programmatische updates (voorkomt re-scan loops)
+    private boolean suppressControls = false;
 
     /** Bouwt het scanner-scherm; Stage is nodig voor de FileChooser. */
     public Parent createView(Stage stage) {
@@ -139,9 +152,14 @@ public class ImageScannerView {
         Label cropHint = styledLabel("Sleep over het bord om bij te snijden (optioneel)", 11, false);
         cropHint.setTextFill(Color.GRAY);
 
-        perspectiveBox.getItems().addAll("Wit onder", "Zwart onder");
-        perspectiveBox.setValue("Wit onder");
+        perspectiveBox.getItems().addAll(WHITE_BOTTOM, BLACK_BOTTOM);
+        perspectiveBox.setValue(WHITE_BOTTOM);
         perspectiveBox.setStyle("-fx-background-color: #444; -fx-text-fill: white;");
+        // Een ander perspectief vereist een nieuwe cel→FEN mapping → opnieuw scannen.
+        perspectiveBox.valueProperty().addListener((obs, oldV, newV) -> {
+            if (suppressControls || loadedImage == null) return;
+            onScan();
+        });
         Label perspLabel = styledLabel("Perspectief:", 12, false);
         HBox perspRow = new HBox(10, perspLabel, perspectiveBox);
         perspRow.setAlignment(Pos.CENTER_LEFT);
@@ -196,9 +214,14 @@ public class ImageScannerView {
     private VBox buildRightPanel() {
         Label title = styledLabel("Gecorrigeerde positie", 16, true);
 
-        turnBox.getItems().addAll("Wit aan zet", "Zwart aan zet");
-        turnBox.setValue("Wit aan zet");
+        turnBox.getItems().addAll(WHITE_TO_MOVE, BLACK_TO_MOVE);
+        turnBox.setValue(WHITE_TO_MOVE);
         turnBox.setStyle("-fx-background-color: #444; -fx-text-fill: white;");
+        // Verzoek 5: FEN moet meteen meebewegen met de gekozen zijde-aan-zet.
+        turnBox.valueProperty().addListener((obs, oldV, newV) -> {
+            if (suppressControls || presenter.getLastResult() == null) return;
+            fenField.setText(presenter.exportFEN(isWhiteToMove()));
+        });
 
         Button copyBtn = new Button("FEN kopiëren");
         styleButton(copyBtn, false);
@@ -247,8 +270,14 @@ public class ImageScannerView {
         fc.getExtensionFilters().add(
             new FileChooser.ExtensionFilter("Afbeeldingen", "*.png", "*.jpg", "*.jpeg", "*.bmp")
         );
+        File lastDir = new File(PREFS.get(PREF_LAST_IMAGE_DIR, ""));
+        if (lastDir.isDirectory()) fc.setInitialDirectory(lastDir);
+
         File file = fc.showOpenDialog(stage);
         if (file == null) return;
+
+        File parent = file.getParentFile();
+        if (parent != null) PREFS.put(PREF_LAST_IMAGE_DIR, parent.getAbsolutePath());
 
         loadedImage = new Image(file.toURI().toString());
         previewImageView.setImage(loadedImage);
@@ -269,8 +298,17 @@ public class ImageScannerView {
         scanBtn.setDisable(true);
         statusLabel.setText("Scannen…");
 
-        presenter.setBlackPerspective("Zwart onder".equals(perspectiveBox.getValue()));
+        boolean black = BLACK_BOTTOM.equals(perspectiveBox.getValue());
+        presenter.setBlackPerspective(black);
+
         ScanResult result = presenter.scan(toScan);
+
+        // Verzoeken 3/4: bord meedraaien zodat het de afbeelding volgt, en de zijde-aan-zet
+        // afleiden uit het perspectief (de partij onderaan is aan zet).
+        suppressControls = true;
+        turnBox.setValue(black ? BLACK_TO_MOVE : WHITE_TO_MOVE);
+        suppressControls = false;
+        boardEditor.setWhitePerspective(!black);
 
         boardEditor.markLowConfidenceSquares(result.getLowConfidenceSquares());
 
@@ -323,7 +361,7 @@ public class ImageScannerView {
     }
 
     private boolean isWhiteToMove() {
-        return "Wit aan zet".equals(turnBox.getValue());
+        return WHITE_TO_MOVE.equals(turnBox.getValue());
     }
 
     private Label styledLabel(String text, int size, boolean bold) {
