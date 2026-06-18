@@ -46,6 +46,7 @@ public class ChapterWindow extends BorderPane {
     private VBox boardPane;        // BOARD (bord + moves)
     private BoardView boardView;
     private ListView<String> movesList;
+    private Label statusLabel;   // "Mat! 🎉" recht naast het bord
 
     private final Stage stage;
 
@@ -281,11 +282,21 @@ public class ChapterWindow extends BorderPane {
             movesList.getSelectionModel().select(0);
         }
         movesList.setVisible(false);
+        movesList.managedProperty().bind(movesList.visibleProperty()); // verborgen = geen ruimte reserveren
+
+        String navStyle = "-fx-background-color: #d7b77e; -fx-background-radius: 8;";
+
+        // Mat-melding recht naast het bord (geen apart venster meer).
+        // Ruimte wordt vooraf gereserveerd zodat de knoppen niet verspringen bij mat.
+        statusLabel = new Label();
+        statusLabel.setStyle("-fx-text-fill: gold; -fx-font-size: 22px; -fx-font-weight: bold;");
+        statusLabel.setMinHeight(34);
+        statusLabel.setPrefHeight(34);
 
         // Buttons en hint-label
         Button showHideMovesBtn = new Button("Show moves!");
-        showHideMovesBtn.setPrefHeight(30);
-        showHideMovesBtn.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
+        showHideMovesBtn.setStyle(navStyle);
+        showHideMovesBtn.setMaxWidth(Double.MAX_VALUE);
 
         showHideMovesBtn.textProperty().bind(
                 Bindings.when(movesList.visibleProperty())
@@ -294,6 +305,8 @@ public class ChapterWindow extends BorderPane {
         );
 
         Button btnHint = new Button("Hint");
+        btnHint.setStyle(navStyle);
+        btnHint.setMaxWidth(Double.MAX_VALUE);
         btnHint.setVisible(true);
 
         Label lblHint = new Label();
@@ -306,23 +319,61 @@ public class ChapterWindow extends BorderPane {
             movesList.setVisible(!movesList.isVisible());
             btnHint.setVisible(!movesList.isVisible());
         });
+
         Button btnUndo = new Button("Undo");
         Button btnRedo = new Button("Redo");
-
+        btnUndo.setStyle(navStyle);
+        btnRedo.setStyle(navStyle);
         btnUndo.setOnAction(e -> controller.undoLastMove(boardModel));
         btnRedo.setOnAction(e -> controller.redoMove(boardModel));
+        HBox undoRedoRow = equalButtonRow(btnUndo, btnRedo);
+
+        // Navigatie tussen de exercises (bv. naar de volgende puzzel zonder terug te gaan).
+        Button btnPrev = new Button("◀ Prev");
+        Button btnNext = new Button("Next ▶");
+        btnPrev.setStyle(navStyle);
+        btnNext.setStyle(navStyle);
+        btnPrev.setDisable(!presenter.hasPrevious());
+        btnNext.setDisable(!presenter.hasNext());
+        btnPrev.setOnAction(e -> presenter.onPreviousExercise());
+        btnNext.setOnAction(e -> presenter.onNextExercise());
+        HBox navRow = equalButtonRow(btnPrev, btnNext);
+
+        // Rekbare tussenruimte duwt de Prev/Next-rij naar de onderkant van het bord.
+        Region bottomSpacer = new Region();
+        VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
 
         VBox moveBox = new VBox(22);
-        moveBox.setPadding(new Insets(32, 0, 0, 0));
-        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint,btnUndo, btnRedo);
+        moveBox.getChildren().setAll(statusLabel, showHideMovesBtn, movesList, btnHint, lblHint, undoRedoRow, bottomSpacer, navRow);
         moveBox.setPrefWidth(250);
         moveBox.setMinWidth(250);
+        // Kolom even hoog als het bord: "Mat" lijnt boven, Prev/Next onder.
+        moveBox.prefHeightProperty().bind(boardView.heightProperty());
+        moveBox.maxHeightProperty().bind(boardView.heightProperty());
 
         HBox row = new HBox(30, boardView, moveBox);
-        row.setAlignment(Pos.CENTER_LEFT);
+        row.setAlignment(Pos.TOP_LEFT);
 
         boardPane.getChildren().setAll(row);
         switchMode(Mode.BOARD);
+    }
+
+    /** Twee gelijk-brede knoppen naast elkaar (zelfde stramien als Prev/Next). */
+    private HBox equalButtonRow(Button... buttons) {
+        HBox box = new HBox(10, buttons);
+        box.setAlignment(Pos.CENTER_LEFT);
+        for (Button b : buttons) {
+            b.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(b, Priority.ALWAYS);
+        }
+        return box;
+    }
+
+    /** Toont de mat-melding recht naast het bord (aangeroepen door de Controller). */
+    public void showSolved() {
+        if (statusLabel != null) {
+            statusLabel.setText("Mat! 🎉");
+        }
     }
 
     private void switchMode(Mode m) {
@@ -337,7 +388,13 @@ public class ChapterWindow extends BorderPane {
     }
 
     public void showExerciseList() {
+        if (titleLabel != null) titleLabel.setText(chapterTitle);
         switchMode(Mode.LIST);
+    }
+
+    /** Zet de koptitel op de naam van de actieve exercise (door de presenter aangeroepen). */
+    public void setHeaderTitle(String title) {
+        if (titleLabel != null && title != null) titleLabel.setText(title);
     }
 
     /** Slaat de tegelstap over en opent het bord meteen voor de eerste (of enige) exercise. */
@@ -345,6 +402,14 @@ public class ChapterWindow extends BorderPane {
         skipListOnBack = true;
         if (!exercises.isEmpty()) {
             presenter.onExerciseSelected(exercises.get(0));
+        }
+    }
+
+    /** Slaat de tegelstap over en opent het bord meteen voor een specifieke exercise. */
+    public void autoStart(Exercise startExercise) {
+        skipListOnBack = true;
+        if (startExercise != null) {
+            presenter.onExerciseSelected(startExercise);
         }
     }
 

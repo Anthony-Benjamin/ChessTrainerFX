@@ -22,6 +22,7 @@ public class ChapterPresenter {
     private final Stage stage;
 
     private Controller currentController;
+    private int currentIndex = -1;
 
     public ChapterPresenter(
             ChapterWindow view,
@@ -38,7 +39,11 @@ public class ChapterPresenter {
 
     /** Wordt aangeroepen als de gebruiker op een exercise-tegel klikt. */
     public void onExerciseSelected(Exercise ex) {
-        stage.setTitle(stage.getTitle() + "-" + ex.getTitle());
+        currentIndex = exercises.indexOf(ex);
+        if (stage != null) {
+            stage.setTitle(ex.getTitle());
+        }
+        view.setHeaderTitle(ex.getTitle());
         // --- 1) Model + controller opbouwen ---
         String fen = (ex.getFen() == null) ? "" : ex.getFen().trim();
 
@@ -49,6 +54,7 @@ public class ChapterPresenter {
         controller.syncTurnFromFEN(fen);
         controller.startNewHistory(boardModel);
         controller.setExerciseStage(Controller.ExerciseStage.PLAYER_TO_MOVE);
+        controller.setOnExerciseSolved(view::showSolved);
 
         // ExerciseSession opbouwen
         controller.setExerciseSession(
@@ -103,6 +109,24 @@ public class ChapterPresenter {
             return "Next: " + san;
         }
         return "Exercise finished.";
+    }
+
+    public boolean hasNext() {
+        return currentIndex >= 0 && currentIndex < exercises.size() - 1;
+    }
+
+    public boolean hasPrevious() {
+        return currentIndex > 0;
+    }
+
+    /** Opent de volgende exercise in de lijst (no-op als er geen volgende is). */
+    public void onNextExercise() {
+        if (hasNext()) onExerciseSelected(exercises.get(currentIndex + 1));
+    }
+
+    /** Opent de vorige exercise in de lijst (no-op als er geen vorige is). */
+    public void onPreviousExercise() {
+        if (hasPrevious()) onExerciseSelected(exercises.get(currentIndex - 1));
     }
 
     /** Flow voor back-knop: in board-mode terug naar lijst, anders hoofdstuk sluiten. */

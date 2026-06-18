@@ -327,12 +327,12 @@ public class Main extends Application {
                 .ifPresent(exercise -> {
                     ChapterWindow window = new ChapterWindow(
                             exercise.getTitle(),
-                            List.of(exercise),
+                            exercises,
                             v -> onBack.run(),
                             stage
                     );
                     scene.setRoot(window);
-                    window.autoStart();
+                    window.autoStart(exercise);
                 });
     }
 

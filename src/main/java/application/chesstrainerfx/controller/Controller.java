@@ -52,9 +52,15 @@ public class Controller {
     private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SelectionStage stage = SelectionStage.NONE;
     private ExerciseSession exerciseSession;
+    private Runnable onExerciseSolved;
 
     public void setExerciseStage(ExerciseStage exerciseStage) {
         this.exerciseStage = exerciseStage;
+    }
+
+    /** Handler die de mat-melding inline naast het bord toont i.p.v. in een dialoog. */
+    public void setOnExerciseSolved(Runnable onExerciseSolved) {
+        this.onExerciseSolved = onExerciseSolved;
     }
 
     public String getExpectedSan() {
@@ -335,6 +341,11 @@ public class Controller {
     }
 
     private void showMateMessage() {
+        // Bij voorkeur inline naast het bord; val terug op een dialoog als er geen handler is.
+        if (onExerciseSolved != null) {
+            onExerciseSolved.run();
+            return;
+        }
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Oefening klaar");
         alert.setHeaderText(null);
