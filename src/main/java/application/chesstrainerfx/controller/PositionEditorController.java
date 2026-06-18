@@ -80,6 +80,10 @@ public class PositionEditorController {
 
         buildBoardColumn();
         layoutBoardColumn();
+
+        // FEN-veld direct mee laten bewegen met de gekozen zijde-aan-zet.
+        whoseTurnSelector.valueProperty().addListener((obs, oldV, newV) ->
+                fenTextField.setText(model.exportToFEN(WHITE_TO_MOVE.equals(newV), buildCastlingString())));
     }
 
     /** Stage en puzzles-map (startmap voor "Set category") aanreiken na het laden van de FXML. */
@@ -159,6 +163,7 @@ public class PositionEditorController {
         ImageScannerView scannerView = new ImageScannerView();
         Parent content = scannerView.createView(scannerStage, fen -> {
             model.initializeFromFEN(fen);
+            setTurnSelectorFromFen(fen);
             fenTextField.setText(fen);
             scannerStage.close();
         });
@@ -169,7 +174,17 @@ public class PositionEditorController {
 
     private void onLoadFen() {
         String fen = fenTextField.getText().trim();
-        if (!fen.isBlank()) model.initializeFromFEN(fen);
+        if (!fen.isBlank()) {
+            model.initializeFromFEN(fen);
+            setTurnSelectorFromFen(fen);
+        }
+    }
+
+    /** Zet de zijde-aan-zet selector op basis van het actieve-kleur veld in een FEN. */
+    private void setTurnSelectorFromFen(String fen) {
+        String[] parts = fen.trim().split("\\s+");
+        boolean whiteToMove = parts.length < 2 || !parts[1].equals("b");
+        whoseTurnSelector.setValue(whiteToMove ? WHITE_TO_MOVE : BLACK_TO_MOVE);
     }
 
     @FXML
