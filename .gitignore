@@ -52,6 +52,10 @@ src/main/resources/pgn/
 .env.local
 *.tmp
 
+# Scanner output and scratch docs
+src/main/java/application/chesstrainerfx/imagescanner/images/
+Fable5_Opstartinstructies.md
+
 
 # Per-gebruiker runtime-configuratie
 config.properties
