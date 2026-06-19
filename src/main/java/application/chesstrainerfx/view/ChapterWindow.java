@@ -286,12 +286,9 @@ public class ChapterWindow extends BorderPane {
 
         String navStyle = "-fx-background-color: #d7b77e; -fx-background-radius: 8;";
 
-        // Mat-melding recht naast het bord (geen apart venster meer).
-        // Ruimte wordt vooraf gereserveerd zodat de knoppen niet verspringen bij mat.
+        // Mat-melding in de open ruimte rechts van de knoppen (geen apart venster meer).
         statusLabel = new Label();
-        statusLabel.setStyle("-fx-text-fill: gold; -fx-font-size: 22px; -fx-font-weight: bold;");
-        statusLabel.setMinHeight(34);
-        statusLabel.setPrefHeight(34);
+        statusLabel.setStyle("-fx-text-fill: gold; -fx-font-size: 40px; -fx-font-weight: bold;");
 
         // Buttons en hint-label
         Button showHideMovesBtn = new Button("Show moves!");
@@ -344,14 +341,24 @@ public class ChapterWindow extends BorderPane {
         VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
 
         VBox moveBox = new VBox(22);
-        moveBox.getChildren().setAll(statusLabel, showHideMovesBtn, movesList, btnHint, lblHint, undoRedoRow, bottomSpacer, navRow);
+        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint, undoRedoRow, bottomSpacer, navRow);
         moveBox.setPrefWidth(250);
         moveBox.setMinWidth(250);
-        // Kolom even hoog als het bord: "Mat" lijnt boven, Prev/Next onder.
+        // Kolom even hoog als het bord: Show moves lijnt met de bovenkant, Prev/Next met de onderkant.
         moveBox.prefHeightProperty().bind(boardView.heightProperty());
         moveBox.maxHeightProperty().bind(boardView.heightProperty());
+        // Top-inzet = hoogte beurt-label + de 10px ruimte erboven, zodat de eerste knop
+        // gelijk loopt met de bovenkant van het bord (niet met het label erboven).
+        moveBox.setPadding(new Insets(34, 0, 0, 0));
+        boardView.turnLabelHeightProperty().addListener((o, ov, nv) ->
+                moveBox.setPadding(new Insets(nv.doubleValue() + 10, 0, 0, 0)));
 
-        HBox row = new HBox(30, boardView, moveBox);
+        // Mat-melding centreert in de open ruimte rechts van de knoppenkolom.
+        StackPane statusArea = new StackPane(statusLabel);
+        statusArea.setAlignment(Pos.CENTER);
+        HBox.setHgrow(statusArea, Priority.ALWAYS);
+
+        HBox row = new HBox(30, boardView, moveBox, statusArea);
         row.setAlignment(Pos.TOP_LEFT);
 
         boardPane.getChildren().setAll(row);

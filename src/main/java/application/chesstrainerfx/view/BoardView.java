@@ -46,6 +46,11 @@ public class BoardView extends HBox implements BoardChangeListener {
         this.getChildren().setAll(boardBox);
     }
 
+    /** Hoogte van het beurt-label boven het bord; nodig om ernaast uit te lijnen. */
+    public javafx.beans.property.ReadOnlyDoubleProperty turnLabelHeightProperty() {
+        return turnLabel.heightProperty();
+    }
+
     private StackPane createBoardStack(BoardModel boardModel, Controller controller, boolean isWhitePerspective) {
 
         // --- bordraster ---
