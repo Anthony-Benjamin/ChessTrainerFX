@@ -41,7 +41,12 @@ public class DiagramBoardScanner implements BoardScanner {
 
     private static final double EMPTY_AREA = 0.05;     // silhouet-oppervlak onder deze fractie = leeg
     private static final double CELL_MARGIN = 0.06;    // celrand afsnijden om buurstukken te mijden
-    private static final double FRAME_LINE = 0.85;     // kolom met deze ink-fractie = kaderlijn
+    // Kolom met deze ink-fractie = kaderlijn. Gemeten over de bronnen: kaderlijnen halen
+    // 0.84–1.00 (anti-aliasing en labelgaten drukken de fractie), drukste niet-kaderkolommen ≤0.49.
+    private static final double FRAME_LINE = 0.75;
+    // Marge waarbinnen de koning-IoU van een randstuk zijn eigen (foute) match moet
+    // benaderen om als de ontbrekende koning te gelden — zie enforceSingleKing().
+    private static final double KING_AMBIGUITY_MARGIN = 0.1;
 
     private record Template(PieceType type, boolean[][] mask) {}
 
@@ -127,13 +132,18 @@ public class DiagramBoardScanner implements BoardScanner {
         // dure deel — dit hoeft maar één keer, hoeveel template-sets er ook zijn).
         boolean[][][][] silhouettes = new boolean[8][8][][];   // genormaliseerd; null = leeg veld
         PieceColor[][] colors = new PieceColor[8][8];
+        boolean[][][][] altSilhouettes = new boolean[8][8][][];
+        PieceColor[][] altColors = new PieceColor[8][8];
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
-                int cy0 = (int) Math.round(by + r * ch);
-                int cx0 = (int) Math.round(bx + c * cw);
-                int cellH = (int) Math.round(ch), cellW = (int) Math.round(cw);
                 int m = (int) (CELL_MARGIN * ch);
-                boolean[][] cell = sub(ink, cx0 + m, cy0 + m, cellW - 2 * m, cellH - 2 * m, w, h);
+                // Geen marge aan de bordrand-zijde: daar staat geen buurstuk, en glyphs
+                // op randvelden lopen soms tot tegen het kader (afknippen vervormt ze).
+                int x0 = (int) Math.round(bx + c * cw) + (c == 0 ? 0 : m);
+                int x1 = (int) Math.round(bx + (c + 1) * cw) - (c == 7 ? 0 : m);
+                int y0 = (int) Math.round(by + r * ch) + (r == 0 ? 0 : m);
+                int y1 = (int) Math.round(by + (r + 1) * ch) - (r == 7 ? 0 : m);
+                boolean[][] cell = sub(ink, x0, y0, x1 - x0, y1 - y0, w, h);
 
                 int tr = blackView ? 7 - r : r;
                 int tc = blackView ? 7 - c : c;
@@ -141,6 +151,18 @@ public class DiagramBoardScanner implements BoardScanner {
                 if (SilhouetteUtils.fraction(filled) < EMPTY_AREA) continue;
                 colors[tr][tc] = pieceColor(cell, filled);
                 silhouettes[tr][tc] = SilhouetteUtils.normalize(filled);
+
+                // Alternatief silhouet: dezelfde extractie maar met gesloten contouren
+                // (dilate → vul → erodeer terug). Repareert glyphs met een contourgat
+                // waardoor de flood het stuk-inwendige leegzoog — die missen een deel
+                // van hun silhouet zonder dat de voorgrond dat verraadt. Wordt alleen
+                // geraadpleegd als het primaire silhouet matig matcht (fase 3) en wint
+                // alleen bij een strikt betere match binnen dezelfde template-set.
+                boolean[][] alt = pieceMaskClosed(cell);
+                if (SilhouetteUtils.fraction(alt) >= EMPTY_AREA && SilhouetteUtils.fraction(alt) <= 0.6) {
+                    altSilhouettes[tr][tc] = SilhouetteUtils.normalize(alt);
+                    altColors[tr][tc] = pieceColor(cell, alt);
+                }
             }
         }
 
@@ -148,6 +170,7 @@ public class DiagramBoardScanner implements BoardScanner {
         // met de hoogste gemiddelde IoU over de bezette velden.
         Template[][] matches = null;
         double[][] matchIou = null;
+        TemplateSet bestSet = null;
         double bestScore = -1;
         for (TemplateSet set : sets) {
             Template[][] m = new Template[8][8];
@@ -165,7 +188,7 @@ public class DiagramBoardScanner implements BoardScanner {
                     n++;
                 }
             double score = n == 0 ? 0 : sum / n;
-            if (score > bestScore) { bestScore = score; matches = m; matchIou = v; }
+            if (score > bestScore) { bestScore = score; matches = m; matchIou = v; bestSet = set; }
         }
 
         PieceModel[][] pieces = new PieceModel[8][8];
@@ -176,10 +199,74 @@ public class DiagramBoardScanner implements BoardScanner {
                     confidence[r][c] = silhouettes[r][c] == null ? 1.0 : 0.0;
                     continue;
                 }
-                pieces[r][c] = new PieceModel(matches[r][c].type(), colors[r][c]);
-                confidence[r][c] = matchIou[r][c];   // lage IoU → UI markeert het veld als onzeker
+                Template match = matches[r][c];
+                double iou = matchIou[r][c];
+                PieceColor color = colors[r][c];
+                // Randcel met matig matchend primair silhouet: als het alternatieve
+                // (niet-afgeknipte) silhouet binnen dezelfde set beter matcht, wint dat.
+                if (iou < 0.8 && altSilhouettes[r][c] != null && bestSet != null) {
+                    for (Template t : bestSet.templates()) {
+                        double v = SilhouetteUtils.iou(altSilhouettes[r][c], t.mask());
+                        if (v > iou) { iou = v; match = t; color = altColors[r][c]; }
+                    }
+                }
+                pieces[r][c] = new PieceModel(match.type(), color);
+                confidence[r][c] = iou;   // lage IoU → UI markeert het veld als onzeker
             }
+        enforceSingleKing(pieces, confidence, silhouettes, altSilhouettes, bestSet);
         return new ScanResult(pieces, confidence);
+    }
+
+    /**
+     * Precies één koning per kleur is in elk diagram uit deze bronnen een harde
+     * schaakregel-invariant (geverifieerd over alle testseries: nooit anders). Een
+     * ontbrekende koning is dus altijd een fout van een ander stuk op hetzelfde veld.
+     * De enige waargenomen oorzaak is een koning-glyph die in het brondiagram tegen het
+     * bordkader aan gedrukt staat (dus alleen mogelijk op een randveld) en daardoor als
+     * paard matcht, met een koning-IoU die nog net in de buurt komt van zijn eigen
+     * (foute) match. Een schoon, zelfverzekerd stuk elders (bv. een echte toren met
+     * IoU 0.87 tegen zijn eigen template) matcht een koningstemplate soms toevallig
+     * ook redelijk (~0.67) puur door vorm-overlap in de 56×56-normalisatie — daarom
+     * telt alleen de kandidaat waarvan de koning-IoU zijn eigen matchscore benadert
+     * (marge KING_AMBIGUITY_MARGIN): dat is het randveld dat werkelijk tussen twee
+     * types zweeft, niet het veld dat toevallig het hoogste absolute koning-IoU haalt.
+     */
+    private void enforceSingleKing(PieceModel[][] pieces, double[][] confidence,
+            boolean[][][][] silhouettes, boolean[][][][] altSilhouettes, TemplateSet bestSet) {
+        if (bestSet == null) return;
+        List<Template> kingTemplates = new ArrayList<>();
+        for (Template t : bestSet.templates()) if (t.type() == PieceType.KING) kingTemplates.add(t);
+        if (kingTemplates.isEmpty()) return;
+        for (PieceColor color : PieceColor.values()) {
+            boolean hasKing = false;
+            for (int r = 0; r < 8 && !hasKing; r++)
+                for (int c = 0; c < 8; c++)
+                    if (pieces[r][c] != null && pieces[r][c].getType() == PieceType.KING && pieces[r][c].getColor() == color) {
+                        hasKing = true;
+                        break;
+                    }
+            if (hasKing) continue;
+            int bestR = -1, bestC = -1;
+            double bestIou = -1;
+            for (int r = 0; r < 8; r++)
+                for (int c = 0; c < 8; c++) {
+                    if (pieces[r][c] == null || pieces[r][c].getColor() != color) continue;
+                    if (r != 0 && r != 7 && c != 0 && c != 7) continue;
+                    double kingIou = 0;
+                    for (Template t : kingTemplates) {
+                        kingIou = Math.max(kingIou, SilhouetteUtils.iou(silhouettes[r][c], t.mask()));
+                        if (altSilhouettes[r][c] != null) {
+                            kingIou = Math.max(kingIou, SilhouetteUtils.iou(altSilhouettes[r][c], t.mask()));
+                        }
+                    }
+                    if (kingIou < confidence[r][c] - KING_AMBIGUITY_MARGIN) continue;
+                    if (kingIou > bestIou) { bestIou = kingIou; bestR = r; bestC = c; }
+                }
+            if (bestR >= 0) {
+                pieces[bestR][bestC] = new PieceModel(PieceType.KING, color);
+                confidence[bestR][bestC] = bestIou;
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -204,14 +291,45 @@ public class DiagramBoardScanner implements BoardScanner {
         while (innerLeft < w - 1 && colFraction(ink, innerLeft) > 0.5) innerLeft++;
         while (innerRight > 0 && colFraction(ink, innerRight) > 0.5) innerRight--;
 
+        // Dubbele rand: sla eventuele extra lijnen binnen een halve cel van het kader over.
+        int gap = (right - left) / 16;
+        for (int x = innerLeft; x < innerLeft + gap && x < w; x++)
+            if (colFraction(ink, x) > 0.5) {
+                while (x < w - 1 && colFraction(ink, x) > 0.5) x++;
+                innerLeft = x;
+            }
+        for (int x = innerRight; x > innerRight - gap && x > 0; x--)
+            if (colFraction(ink, x) > 0.5) {
+                while (x > 0 && colFraction(ink, x) > 0.5) x--;
+                innerRight = x;
+            }
+
         int top = 0, bottom = h - 1;
         while (top < h - 1 && !ink[top][left]) top++;
         while (bottom > 0 && !ink[bottom][left]) bottom--;
         int thickness = innerLeft - left;
         int innerTop = top + thickness, innerBottom = bottom - thickness;
 
+        // Zelfde dubbele-rand-correctie verticaal (rijfractie over het binnengebied).
+        for (int y = innerTop; y < innerTop + gap && y < h; y++)
+            if (rowFraction(ink, y, innerLeft, innerRight) > 0.5) {
+                while (y < h - 1 && rowFraction(ink, y, innerLeft, innerRight) > 0.5) y++;
+                innerTop = y;
+            }
+        for (int y = innerBottom; y > innerBottom - gap && y > 0; y--)
+            if (rowFraction(ink, y, innerLeft, innerRight) > 0.5) {
+                while (y > 0 && rowFraction(ink, y, innerLeft, innerRight) > 0.5) y--;
+                innerBottom = y;
+            }
+
         if (innerRight <= innerLeft || innerBottom <= innerTop) return new int[]{0, 0, w, h};
         return new int[]{innerLeft, innerTop, innerRight - innerLeft + 1, innerBottom - innerTop + 1};
+    }
+
+    private double rowFraction(boolean[][] ink, int y, int x0, int x1) {
+        int n = 0;
+        for (int x = x0; x <= x1; x++) if (ink[y][x]) n++;
+        return (double) n / (x1 - x0 + 1);
     }
 
     private double colFraction(boolean[][] ink, int x) {
@@ -310,6 +428,53 @@ public class DiagramBoardScanner implements BoardScanner {
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
                 fg[y][x] = !reached[y][x];
+        boolean[][] filled = extractPiece(fg);
+        // Wit stuk met open contour op kleine scans: de flood lekt het stuk binnen en de
+        // erosie versplintert de rest, zodat maar een fractie van de voorgrond overblijft.
+        // De poorten sluiten normale cellen uit: een compleet stuk vult ≥75% van zijn
+        // voorgrond; en de grootste kern die de erosie overleeft moet massief zijn (een
+        // stukdeel vult zijn bounding box grotendeels, gemeten ~0.66) — een overlevende
+        // arceringslijn van een leeg donker veld is een diagonale sliver (~0.02). Sluit
+        // dan de contourgaten en extraheer opnieuw.
+        boolean[][] fgCore = SilhouetteUtils.erode(fg, 1);
+        boolean[][] core = SilhouetteUtils.largestComponent(fgCore);
+        int coreArea = SilhouetteUtils.count(core);
+        int coreBox = bboxArea(core);
+        if (SilhouetteUtils.fraction(filled) < 0.2
+                && SilhouetteUtils.count(filled) * 4 < SilhouetteUtils.count(fg) * 3
+                && SilhouetteUtils.count(fgCore) >= 25
+                && coreBox > 0 && coreArea * 10 >= coreBox * 3) {
+            // Kleinste sluitradius die het gat dicht wint: een grotere radius dan nodig
+            // smeert fijn stukdetail (torenkantelen) dicht. Een geslaagde reparatie
+            // levert substantieel meer silhouet op maar nooit een plak over de hele cel.
+            for (int radius = 1; radius <= 2; radius++) {
+                boolean[][] closed = SilhouetteUtils.erode(
+                        SilhouetteUtils.fillHoles(SilhouetteUtils.dilate(fg, radius)), radius);
+                boolean[][] retry = extractPiece(closed);
+                if (SilhouetteUtils.count(retry) * 2 > SilhouetteUtils.count(filled) * 3
+                        && SilhouetteUtils.fraction(retry) <= 0.6) {
+                    filled = retry;
+                    break;
+                }
+            }
+        }
+        return filled;
+    }
+
+    private int bboxArea(boolean[][] m) {
+        int h = m.length, w = m[0].length;
+        int minY = h, maxY = -1, minX = w, maxX = -1;
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                if (m[y][x]) {
+                    if (y < minY) minY = y; if (y > maxY) maxY = y;
+                    if (x < minX) minX = x; if (x > maxX) maxX = x;
+                }
+        return maxY < 0 ? 0 : (maxY - minY + 1) * (maxX - minX + 1);
+    }
+
+    private boolean[][] extractPiece(boolean[][] fg) {
+        int h = fg.length, w = fg[0].length;
         boolean[][] eroded = SilhouetteUtils.erode(fg, 1);
         boolean[][] cc = mergeNearbyComponents(eroded);
         boolean[][] back = SilhouetteUtils.dilate(cc, 1);
@@ -366,7 +531,7 @@ public class DiagramBoardScanner implements BoardScanner {
         boolean[][] union = comps.get(largest);
         boolean[] used = new boolean[comps.size()];
         used[largest] = true;
-        int minSize = Math.max(25, sizes.get(largest) / 20);
+        int minSize = Math.max(8, sizes.get(largest) / 20);
         boolean grown = true;
         while (grown) {
             grown = false;
@@ -390,6 +555,21 @@ public class DiagramBoardScanner implements BoardScanner {
             for (int x = 0; x < a[0].length; x++)
                 if (a[y][x] && b[y][x]) return true;
         return false;
+    }
+
+    /** Span-gevulde variant van pieceMask: benadert het massieve silhouet ook wanneer de
+     *  contour wijd openstaat (bv. een glyph die tegen het bordkader is afgeknipt),
+     *  waar sluiting per dilatatie tekortschiet. */
+    private boolean[][] pieceMaskClosed(boolean[][] cell) {
+        boolean[][] reached = floodWhite(cell);
+        int h = cell.length, w = cell[0].length;
+        boolean[][] fg = new boolean[h][w];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                fg[y][x] = !reached[y][x];
+        // Direct op de voorgrond (niet op de geërodeerde kern): juist de dunne stroken
+        // van de open contour bepalen de omtrek die de span-vulling moet overspannen.
+        return SilhouetteUtils.spanFill(fg);
     }
 
     /** reached = witte achtergrond bereikbaar vanaf de celrand (4-connectief over ink==false). */
