@@ -15,17 +15,21 @@ import java.util.List;
 /**
  * Scanner voor zwart-wit figurine-diagrammen (zoals geëxporteerd uit schaakboeken,
  * o.a. 500ChessExercises.pdf): witte stukken = contour, zwarte stukken = massief,
- * donkere velden = diagonale arcering, met een massieve zwarte coördinaat-labelbalk
- * links en onder.
+ * donkere velden = diagonale arcering, coördinaat-labels los gedrukt buiten een
+ * zwart kader dat het 8×8-bord omsluit.
  *
  * Algoritme (arcering-onafhankelijk):
  *  1. Binariseer (luminantie &lt; 128 = ink).
- *  2. Detecteer de labelbalken (vrijwel volledig zwarte rand-kolommen/rijen) en isoleer het 8×8-bord.
+ *  2. Detecteer de verticale kaderlijnen (vrijwel volledig zwarte kolommen) en leid
+ *     daaruit het binnengebied van het bord af; zonder kader valt de detectie terug
+ *     op de volledige afbeelding.
  *  3. Per cel: white-flood-fill vanaf de celrand → het niet-bereikbare deel (na een lichte
  *     erosie die dunne arcering-bruggen knipt) is het stuk-silhouet; gaten vullen.
  *     - oppervlak ~0 → leeg veld.
  *     - kleur: ink-fractie in de geërodeerde kern (massief = zwart, contour = wit).
- *     - type: genormaliseerd silhouet (56×56) vergeleken met de stuk-templates via IoU.
+ *     - type: silhouet aspect-behoudend genormaliseerd (56×56) en vergeleken met de
+ *       stuk-templates via IoU, gewogen met de silhouet-hoogte t.o.v. de cel
+ *       (onderscheidt kleine stukken zoals pionnen van grote zoals lopers).
  *  4. Oriëntatie (wit of zwart onder) wordt extern gezet en bepaalt de veld-mapping naar FEN.
  *
  * Thread-safe: scan() gebruikt geen gedeelde mutable state buiten de (vooraf geladen) templates.
@@ -35,6 +39,7 @@ public class DiagramBoardScanner implements BoardScanner {
     private static final int TPL = 56;                 // genormaliseerde template-grootte
     private static final double EMPTY_AREA = 0.05;     // silhouet-oppervlak onder deze fractie = leeg
     private static final double CELL_MARGIN = 0.06;    // celrand afsnijden om buurstukken te mijden
+    private static final double FRAME_LINE = 0.85;     // kolom met deze ink-fractie = kaderlijn
 
     private record Template(PieceType type, boolean[][] mask) {}
 
@@ -94,17 +99,17 @@ public class DiagramBoardScanner implements BoardScanner {
     public ScanResult scan(Image boardImage) {
         boolean[][] ink = binarize(boardImage);
         int h = ink.length, w = ink[0].length;
-        int left = leftBar(ink), bottom = bottomBar(ink);
-        double bw = w - left, bh = h - bottom;
-        double cw = bw / 8.0, ch = bh / 8.0;
+        int[] board = detectBoard(ink);
+        int bx = board[0], by = board[1];
+        double cw = board[2] / 8.0, ch = board[3] / 8.0;
 
         PieceModel[][] pieces = new PieceModel[8][8];
         double[][] confidence = new double[8][8];
 
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
-                int cy0 = (int) Math.round(r * ch);
-                int cx0 = (int) Math.round(left + c * cw);
+                int cy0 = (int) Math.round(by + r * ch);
+                int cx0 = (int) Math.round(bx + c * cw);
                 int cellH = (int) Math.round(ch), cellW = (int) Math.round(cw);
                 int m = (int) (CELL_MARGIN * ch);
                 boolean[][] cell = sub(ink, cx0 + m, cy0 + m, cellW - 2 * m, cellH - 2 * m, w, h);
@@ -144,28 +149,38 @@ public class DiagramBoardScanner implements BoardScanner {
     // Bord-detectie
     // -------------------------------------------------------------------------
 
-    private int leftBar(boolean[][] ink) {
-        int h = ink.length, L = 0;
-        while (L < 60 && colFraction(ink, L) > 0.9) L++;
-        return L;
-    }
+    /**
+     * Zoekt het binnengebied van het bordkader: {x, y, breedte, hoogte}.
+     * De verticale kaderlijnen zijn de enige vrijwel volledig zwarte kolommen;
+     * de coördinaat-labels (losse glyphs) en arcering blijven daar ruim onder.
+     * De verticale omvang volgt uit de ink-uitloop van de linkerkaderlijn zelf,
+     * omdat de boven-/onderlijn in gescande diagrammen niet altijd volledig is.
+     */
+    private int[] detectBoard(boolean[][] ink) {
+        int h = ink.length, w = ink[0].length;
+        int left = -1, right = -1;
+        for (int x = 0; x < w; x++) if (colFraction(ink, x) > FRAME_LINE) { left = x; break; }
+        for (int x = w - 1; x > left; x--) if (colFraction(ink, x) > FRAME_LINE) { right = x; break; }
+        if (left < 0 || right - left < w / 2) return new int[]{0, 0, w, h};
 
-    private int bottomBar(boolean[][] ink) {
-        int h = ink.length, B = 0;
-        while (B < 60 && rowFraction(ink, h - 1 - B) > 0.9) B++;
-        return B;
+        int innerLeft = left, innerRight = right;
+        while (innerLeft < w - 1 && colFraction(ink, innerLeft) > 0.5) innerLeft++;
+        while (innerRight > 0 && colFraction(ink, innerRight) > 0.5) innerRight--;
+
+        int top = 0, bottom = h - 1;
+        while (top < h - 1 && !ink[top][left]) top++;
+        while (bottom > 0 && !ink[bottom][left]) bottom--;
+        int thickness = innerLeft - left;
+        int innerTop = top + thickness, innerBottom = bottom - thickness;
+
+        if (innerRight <= innerLeft || innerBottom <= innerTop) return new int[]{0, 0, w, h};
+        return new int[]{innerLeft, innerTop, innerRight - innerLeft + 1, innerBottom - innerTop + 1};
     }
 
     private double colFraction(boolean[][] ink, int x) {
         int h = ink.length, n = 0;
         for (int y = 0; y < h; y++) if (ink[y][x]) n++;
         return (double) n / h;
-    }
-
-    private double rowFraction(boolean[][] ink, int y) {
-        int w = ink[0].length, n = 0;
-        for (int x = 0; x < w; x++) if (ink[y][x]) n++;
-        return (double) n / w;
     }
 
     // -------------------------------------------------------------------------
@@ -187,7 +202,35 @@ public class DiagramBoardScanner implements BoardScanner {
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
                 back[y][x] = back[y][x] && fg[y][x];
-        return fillHoles(back);
+        boolean[][] filled = fillHoles(back);
+        // Contourstuk met een gat in de omtrek (bv. ontbrekende basislijn in de druk):
+        // de flood lekt het stuk binnen en alleen de contourstreek blijft over, zodat
+        // fillHoles niets kan vullen. Herkenbaar doordat een erosie vrijwel niets
+        // overlaat; benader dan het massieve silhouet via span-vulling.
+        int area = count(filled);
+        if (area > 0 && count(erode(filled, 2)) * 4 < area) {
+            filled = spanFill(filled);
+        }
+        return filled;
+    }
+
+    /** Vult per rij én per kolom tussen de eerste en laatste silhouetpixel en neemt de
+     *  doorsnede: een massieve benadering van een contour die ergens openstaat. */
+    private boolean[][] spanFill(boolean[][] m) {
+        int h = m.length, w = m[0].length;
+        boolean[][] rows = new boolean[h][w];
+        for (int y = 0; y < h; y++) {
+            int lo = -1, hi = -1;
+            for (int x = 0; x < w; x++) if (m[y][x]) { if (lo < 0) lo = x; hi = x; }
+            for (int x = lo; x >= 0 && x <= hi; x++) rows[y][x] = true;
+        }
+        boolean[][] out = new boolean[h][w];
+        for (int x = 0; x < w; x++) {
+            int lo = -1, hi = -1;
+            for (int y = 0; y < h; y++) if (m[y][x]) { if (lo < 0) lo = y; hi = y; }
+            for (int y = lo; y >= 0 && y <= hi; y++) out[y][x] = rows[y][x];
+        }
+        return out;
     }
 
     /** reached = witte achtergrond bereikbaar vanaf de celrand (4-connectief over ink==false). */
@@ -318,7 +361,11 @@ public class DiagramBoardScanner implements BoardScanner {
     // Normalisatie & vergelijking
     // -------------------------------------------------------------------------
 
-    /** Snijdt het silhouet op zijn bounding box en schaalt (nearest) naar TPL×TPL. */
+    /**
+     * Snijdt het silhouet op zijn bounding box en schaalt (nearest) uniform naar TPL×TPL,
+     * gecentreerd. Aspectratio blijft behouden: die onderscheidt bv. een brede lage pion
+     * van een hoge slanke loper — informatie die bij anisotroop oprekken verloren gaat.
+     */
     private boolean[][] normalize(boolean[][] mask) {
         int h = mask.length, w = mask[0].length;
         int minY = h, maxY = -1, minX = w, maxX = -1;
@@ -331,11 +378,13 @@ public class DiagramBoardScanner implements BoardScanner {
         boolean[][] out = new boolean[TPL][TPL];
         if (maxY < 0) return out;
         int bh = maxY - minY + 1, bw = maxX - minX + 1;
+        int side = Math.max(bh, bw);
+        int offY = (side - bh) / 2, offX = (side - bw) / 2;
         for (int ty = 0; ty < TPL; ty++)
             for (int tx = 0; tx < TPL; tx++) {
-                int sy = minY + ty * bh / TPL;
-                int sx = minX + tx * bw / TPL;
-                out[ty][tx] = mask[sy][sx];
+                int sy = minY + ty * side / TPL - offY;
+                int sx = minX + tx * side / TPL - offX;
+                out[ty][tx] = sy >= minY && sy <= maxY && sx >= minX && sx <= maxX && mask[sy][sx];
             }
         return out;
     }
