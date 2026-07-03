@@ -6,7 +6,10 @@ import application.chesstrainerfx.utils.PieceType;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -42,17 +45,27 @@ public class DiagramBoardScanner implements BoardScanner {
 
     private record Template(PieceType type, boolean[][] mask) {}
 
-    private final List<Template> templates = new ArrayList<>();
+    /** Eén figurine-font: elke bron (boek/uitgever) heeft zijn eigen set van 12 templates. */
+    private record TemplateSet(String name, List<Template> templates) {}
+
+    private final List<TemplateSet> sets = new ArrayList<>();
     private boolean blackPerspective = false;
 
     public DiagramBoardScanner() {
-        // 6 stuktypes × 2 kleuren (massief zwart / wit contour leveren verschillende silhouetten).
-        load("ROOK_W",   PieceType.ROOK);   load("ROOK_B",   PieceType.ROOK);
-        load("KNIGHT_W", PieceType.KNIGHT); load("KNIGHT_B", PieceType.KNIGHT);
-        load("BISHOP_W", PieceType.BISHOP); load("BISHOP_B", PieceType.BISHOP);
-        load("QUEEN_W",  PieceType.QUEEN);  load("QUEEN_B",  PieceType.QUEEN);
-        load("KING_W",   PieceType.KING);   load("KING_B",   PieceType.KING);
-        load("PAWN_W",   PieceType.PAWN);   load("PAWN_B",   PieceType.PAWN);
+        // Sets staan per font in /imagescanner/templates/<naam>/; de index vermijdt
+        // classpath-opsomming (onmogelijk vanuit een jar). Nieuw font = map + indexregel.
+        try (InputStream is = getClass().getResourceAsStream("/imagescanner/templates/diagram-sets.txt")) {
+            if (is != null) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String name = line.trim();
+                    if (!name.isEmpty()) loadSet(name);
+                }
+            }
+        } catch (Exception ignored) {
+            // Onleesbare index: geen sets beschikbaar, scanner levert dan lege borden op.
+        }
     }
 
     /** Stelt in of het bord vanuit zwart is weergegeven (rank 1 boven, h-lijn links). */
@@ -60,8 +73,20 @@ public class DiagramBoardScanner implements BoardScanner {
         this.blackPerspective = blackPerspective;
     }
 
-    private void load(String name, PieceType type) {
-        try (InputStream is = getClass().getResourceAsStream("/imagescanner/templates/book/" + name + ".png")) {
+    private void loadSet(String setName) {
+        List<Template> templates = new ArrayList<>();
+        // 6 stuktypes × 2 kleuren (massief zwart / wit contour leveren verschillende silhouetten).
+        load(templates, setName, "ROOK_W",   PieceType.ROOK);   load(templates, setName, "ROOK_B",   PieceType.ROOK);
+        load(templates, setName, "KNIGHT_W", PieceType.KNIGHT); load(templates, setName, "KNIGHT_B", PieceType.KNIGHT);
+        load(templates, setName, "BISHOP_W", PieceType.BISHOP); load(templates, setName, "BISHOP_B", PieceType.BISHOP);
+        load(templates, setName, "QUEEN_W",  PieceType.QUEEN);  load(templates, setName, "QUEEN_B",  PieceType.QUEEN);
+        load(templates, setName, "KING_W",   PieceType.KING);   load(templates, setName, "KING_B",   PieceType.KING);
+        load(templates, setName, "PAWN_W",   PieceType.PAWN);   load(templates, setName, "PAWN_B",   PieceType.PAWN);
+        if (!templates.isEmpty()) sets.add(new TemplateSet(setName, templates));
+    }
+
+    private void load(List<Template> templates, String setName, String name, PieceType type) {
+        try (InputStream is = getClass().getResourceAsStream("/imagescanner/templates/" + setName + "/" + name + ".png")) {
             if (is == null) return;
             Image img = new Image(is);
             int w = (int) img.getWidth(), h = (int) img.getHeight();
@@ -93,9 +118,10 @@ public class DiagramBoardScanner implements BoardScanner {
         int bx = board[0], by = board[1];
         double cw = board[2] / 8.0, ch = board[3] / 8.0;
 
-        PieceModel[][] pieces = new PieceModel[8][8];
-        double[][] confidence = new double[8][8];
-
+        // Fase 1: per cel het silhouet en de kleur bepalen (font-onafhankelijk, en het
+        // dure deel — dit hoeft maar één keer, hoeveel template-sets er ook zijn).
+        boolean[][][][] silhouettes = new boolean[8][8][][];   // genormaliseerd; null = leeg veld
+        PieceColor[][] colors = new PieceColor[8][8];
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
                 int cy0 = (int) Math.round(by + r * ch);
@@ -106,32 +132,49 @@ public class DiagramBoardScanner implements BoardScanner {
 
                 int tr = blackPerspective ? 7 - r : r;
                 int tc = blackPerspective ? 7 - c : c;
-                classifyInto(cell, pieces, confidence, tr, tc);
+                boolean[][] filled = pieceMask(cell);
+                if (SilhouetteUtils.fraction(filled) < EMPTY_AREA) continue;
+                colors[tr][tc] = pieceColor(cell, filled);
+                silhouettes[tr][tc] = SilhouetteUtils.normalize(filled);
             }
         }
+
+        // Fase 2: binnen één diagram komt alles uit één font, dus wint de template-set
+        // met de hoogste gemiddelde IoU over de bezette velden.
+        Template[][] matches = null;
+        double[][] matchIou = null;
+        double bestScore = -1;
+        for (TemplateSet set : sets) {
+            Template[][] m = new Template[8][8];
+            double[][] v = new double[8][8];
+            double sum = 0;
+            int n = 0;
+            for (int r = 0; r < 8; r++)
+                for (int c = 0; c < 8; c++) {
+                    if (silhouettes[r][c] == null) continue;
+                    for (Template t : set.templates()) {
+                        double iou = SilhouetteUtils.iou(silhouettes[r][c], t.mask());
+                        if (iou > v[r][c]) { v[r][c] = iou; m[r][c] = t; }
+                    }
+                    sum += v[r][c];
+                    n++;
+                }
+            double score = n == 0 ? 0 : sum / n;
+            if (score > bestScore) { bestScore = score; matches = m; matchIou = v; }
+        }
+
+        PieceModel[][] pieces = new PieceModel[8][8];
+        double[][] confidence = new double[8][8];
+        for (int r = 0; r < 8; r++)
+            for (int c = 0; c < 8; c++) {
+                if (silhouettes[r][c] == null || matches == null || matches[r][c] == null) {
+                    confidence[r][c] = silhouettes[r][c] == null ? 1.0 : 0.0;
+                    continue;
+                }
+                pieces[r][c] = new PieceModel(matches[r][c].type(), colors[r][c]);
+                confidence[r][c] = matchIou[r][c];   // lage IoU → UI markeert het veld als onzeker
+            }
         return new ScanResult(pieces, confidence);
-    }
-
-    private void classifyInto(boolean[][] cell, PieceModel[][] pieces, double[][] conf, int tr, int tc) {
-        boolean[][] filled = pieceMask(cell);
-        if (SilhouetteUtils.fraction(filled) < EMPTY_AREA) {
-            pieces[tr][tc] = null;
-            conf[tr][tc] = 1.0;
-            return;
-        }
-        boolean[][] interior = SilhouetteUtils.erode(filled, 4);
-        if (SilhouetteUtils.count(interior) == 0) interior = filled;
-        PieceColor color = inkFraction(cell, interior) > 0.5 ? PieceColor.BLACK : PieceColor.WHITE;
-
-        boolean[][] nm = SilhouetteUtils.normalize(filled);
-        double best = 0;
-        PieceType bestType = PieceType.PAWN;
-        for (Template t : templates) {
-            double v = SilhouetteUtils.iou(nm, t.mask());
-            if (v > best) { best = v; bestType = t.type(); }
-        }
-        pieces[tr][tc] = new PieceModel(bestType, color);
-        conf[tr][tc] = best;     // lage IoU → UI markeert het veld als onzeker
     }
 
     // -------------------------------------------------------------------------
@@ -257,11 +300,21 @@ public class DiagramBoardScanner implements BoardScanner {
         return out;
     }
 
-    private double inkFraction(boolean[][] cell, boolean[][] within) {
-        int n = 0, ink = 0;
-        for (int y = 0; y < within.length; y++)
-            for (int x = 0; x < within[0].length; x++)
-                if (within[y][x]) { n++; if (cell[y][x]) ink++; }
-        return n == 0 ? 0 : (double) ink / n;
+    /**
+     * Kleur via inkt-overleving: witte stukken bestaan uit dunne contour- en detaillijnen
+     * die een erosie niet overleven; zwarte stukken houden massieve inktvlakken over.
+     * Dit werkt ook voor fonts waarin zwarte stukken wit ornament dragen en witte stukken
+     * dicht gearceerd zijn — daar faalt een simpele ink-fractie in de kern.
+     */
+    private PieceColor pieceColor(boolean[][] cell, boolean[][] filled) {
+        int h = cell.length, w = cell[0].length;
+        boolean[][] pieceInk = new boolean[h][w];
+        int total = 0;
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                if (filled[y][x] && cell[y][x]) { pieceInk[y][x] = true; total++; }
+        if (total == 0) return PieceColor.WHITE;
+        double survival = (double) SilhouetteUtils.count(SilhouetteUtils.erode(pieceInk, 3)) / total;
+        return survival > 0.045 ? PieceColor.BLACK : PieceColor.WHITE;
     }
 }
