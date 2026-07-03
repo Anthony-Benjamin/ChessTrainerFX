@@ -440,21 +440,47 @@ public class DiagramBoardScanner implements BoardScanner {
         boolean[][] core = SilhouetteUtils.largestComponent(fgCore);
         int coreArea = SilhouetteUtils.count(core);
         int coreBox = bboxArea(core);
+        // Absolute drempel schaalt mee met de celgrootte: op zeer kleine scans (~25px cel)
+        // vreet zelfs één erosie een dunne holle contour (koning, paard) bijna helemaal weg
+        // (nog maar enkele pixels over), waardoor de reparatiepoort nooit opengaat en het
+        // silhouet drastisch te klein blijft.
+        int minCoreArea = h < 30 ? 4 : 25;
         if (SilhouetteUtils.fraction(filled) < 0.2
                 && SilhouetteUtils.count(filled) * 4 < SilhouetteUtils.count(fg) * 3
-                && SilhouetteUtils.count(fgCore) >= 25
+                && SilhouetteUtils.count(fgCore) >= minCoreArea
                 && coreBox > 0 && coreArea * 10 >= coreBox * 3) {
-            // Kleinste sluitradius die het gat dicht wint: een grotere radius dan nodig
-            // smeert fijn stukdetail (torenkantelen) dicht. Een geslaagde reparatie
-            // levert substantieel meer silhouet op maar nooit een plak over de hele cel.
-            for (int radius = 1; radius <= 2; radius++) {
-                boolean[][] closed = SilhouetteUtils.erode(
-                        SilhouetteUtils.fillHoles(SilhouetteUtils.dilate(fg, radius)), radius);
-                boolean[][] retry = extractPiece(closed);
-                if (SilhouetteUtils.count(retry) * 2 > SilhouetteUtils.count(filled) * 3
-                        && SilhouetteUtils.fraction(retry) <= 0.6) {
-                    filled = retry;
-                    break;
+            // Op fonts zonder arcering (donkere velden binariseren daar nooit als inkt,
+            // dus fg is al ruisvrij) is de voorgrond zelf al de juiste holle contour — de
+            // erosie in extractPiece vreet die op zeer kleine scans juist te veel weg.
+            // Probeer daarom eerst de voorgrond direct (alleen gaten vullen, geen erosie),
+            // met een eigen dichtheidspoort zodat een arceringskluwen (wél aanwezig bij de
+            // andere fonts) dit nooit haalt. Alleen als dat niet plausibel is, val terug
+            // op de sluitradius-lus (die arcering wél kan bevatten en dus erosie nodig
+            // heeft om te scheiden van het echte stuk).
+            boolean[][] direct = SilhouetteUtils.fillHoles(SilhouetteUtils.largestComponent(fg));
+            int directArea = SilhouetteUtils.count(direct);
+            int directBox = bboxArea(direct);
+            // Lagere dichtheidsdrempel dan de buitenste poort (0.3): een paardenprofiel
+            // (smal, met oren/kaaklijn) vult zijn eigen bbox van nature maar ~0.2, terwijl
+            // een arceringssliver van een leeg veld daar nog ruim onder blijft (~0.02).
+            if (directBox > 0 && directArea * 10 >= directBox * 1.5
+                    && SilhouetteUtils.fraction(direct) <= 0.6
+                    && directArea * 2 > SilhouetteUtils.count(filled) * 3) {
+                filled = direct;
+            } else {
+                // Kleinste sluitradius die het gat dicht wint: een grotere radius dan
+                // nodig smeert fijn stukdetail (torenkantelen) dicht. Een geslaagde
+                // reparatie levert substantieel meer silhouet op maar nooit een plak
+                // over de hele cel.
+                for (int radius = 1; radius <= 2; radius++) {
+                    boolean[][] closed = SilhouetteUtils.erode(
+                            SilhouetteUtils.fillHoles(SilhouetteUtils.dilate(fg, radius)), radius);
+                    boolean[][] retry = extractPiece(closed);
+                    if (SilhouetteUtils.count(retry) * 2 > SilhouetteUtils.count(filled) * 3
+                            && SilhouetteUtils.fraction(retry) <= 0.6) {
+                        filled = retry;
+                        break;
+                    }
                 }
             }
         }
@@ -640,7 +666,14 @@ public class DiagramBoardScanner implements BoardScanner {
             for (int x = 0; x < w; x++)
                 if (filled[y][x] && cell[y][x]) { pieceInk[y][x] = true; total++; }
         if (total == 0) return PieceColor.WHITE;
-        double survival = (double) SilhouetteUtils.count(SilhouetteUtils.erode(pieceInk, 3)) / total;
+        // Erosieradius schaalt mee met de celgrootte: op zeer kleine scans (~25px cel)
+        // erodeert een vaste radius van 3 ook een compacte massieve kroon (koning) tot
+        // niets, waardoor een zwarte koning ten onrechte als wit uitleest. Kleinere
+        // bronnen (kp/m2/cp/book, alle ≥34px) blijven op radius 3 — alleen ruim
+        // kleinere cellen gebruiken radius 1, nog altijd genoeg om een dunne witte
+        // contourlijn volledig weg te vreten terwijl een massieve vlek overleeft.
+        int radius = h < 30 ? 1 : 3;
+        double survival = (double) SilhouetteUtils.count(SilhouetteUtils.erode(pieceInk, radius)) / total;
         return survival > 0.045 ? PieceColor.BLACK : PieceColor.WHITE;
     }
 }
