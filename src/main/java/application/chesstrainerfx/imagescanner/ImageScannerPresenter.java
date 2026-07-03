@@ -10,7 +10,7 @@ import javafx.scene.image.Image;
  */
 public class ImageScannerPresenter {
 
-    private final DiagramBoardScanner scanner = new DiagramBoardScanner();
+    private final AutoBoardScanner scanner = new AutoBoardScanner();
     private final BoardModel resultModel = new BoardModel();
     private ScanResult lastResult;
 
