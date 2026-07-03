@@ -441,10 +441,14 @@ public class DiagramBoardScanner implements BoardScanner {
         int coreArea = SilhouetteUtils.count(core);
         int coreBox = bboxArea(core);
         // Absolute drempel schaalt mee met de celgrootte: op zeer kleine scans (~25px cel)
-        // vreet zelfs één erosie een dunne holle contour (koning, paard) bijna helemaal weg
-        // (nog maar enkele pixels over), waardoor de reparatiepoort nooit opengaat en het
-        // silhouet drastisch te klein blijft.
-        int minCoreArea = h < 30 ? 4 : 25;
+        // vreet zelfs één erosie een dunne holle contour (koning, paard) bijna helemaal weg —
+        // soms tot een enkele pixel, afhankelijk van precieze anti-aliasing/compressie van
+        // die scan (gemeten: dezelfde paardglyph varieerde tussen 1 en 4 overlevende pixels
+        // over verschillende bronbeelden). Op deze schaal is fgCore sowieso geen betrouwbare
+        // "is dit ruis"-toets meer (zie de aparte, zelfstandige dichtheidspoort van de
+        // "direct"-kandidaat verderop) — een lege cel wordt hier al uitgesloten doordat fg
+        // zelf bij dit arceringsloze font dan vrijwel leeg is (voorwaarde hierboven).
+        int minCoreArea = h < 30 ? 1 : 25;
         if (SilhouetteUtils.fraction(filled) < 0.2
                 && SilhouetteUtils.count(filled) * 4 < SilhouetteUtils.count(fg) * 3
                 && SilhouetteUtils.count(fgCore) >= minCoreArea
