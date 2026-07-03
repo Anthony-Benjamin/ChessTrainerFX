@@ -118,6 +118,11 @@ public class DiagramBoardScanner implements BoardScanner {
         int bx = board[0], by = board[1];
         double cw = board[2] / 8.0, ch = board[3] / 8.0;
 
+        // Rang-labels naast het bord zijn, indien aanwezig, betrouwbaarder dan de
+        // handmatige oriëntatie-instelling (boeken mixen witte en zwarte perspectieven).
+        Boolean labelView = detectOrientation(ink, board);
+        boolean blackView = labelView != null ? labelView : blackPerspective;
+
         // Fase 1: per cel het silhouet en de kleur bepalen (font-onafhankelijk, en het
         // dure deel — dit hoeft maar één keer, hoeveel template-sets er ook zijn).
         boolean[][][][] silhouettes = new boolean[8][8][][];   // genormaliseerd; null = leeg veld
@@ -130,8 +135,8 @@ public class DiagramBoardScanner implements BoardScanner {
                 int m = (int) (CELL_MARGIN * ch);
                 boolean[][] cell = sub(ink, cx0 + m, cy0 + m, cellW - 2 * m, cellH - 2 * m, w, h);
 
-                int tr = blackPerspective ? 7 - r : r;
-                int tc = blackPerspective ? 7 - c : c;
+                int tr = blackView ? 7 - r : r;
+                int tc = blackView ? 7 - c : c;
                 boolean[][] filled = pieceMask(cell);
                 if (SilhouetteUtils.fraction(filled) < EMPTY_AREA) continue;
                 colors[tr][tc] = pieceColor(cell, filled);
@@ -216,6 +221,83 @@ public class DiagramBoardScanner implements BoardScanner {
     }
 
     // -------------------------------------------------------------------------
+    // Oriëntatie-detectie
+    // -------------------------------------------------------------------------
+
+    /**
+     * Leest de bordoriëntatie af aan de rang-labels links van het bord, via het aantal
+     * ingesloten gaten in de cijferglyphs (font-onafhankelijk): '8' heeft er twee,
+     * '1' geen. Bovenste label '8' → wit onder (false); '1' boven én '8' onder →
+     * zwart onder (true). Geen of onduidelijke labels → null (val terug op de
+     * handmatige instelling).
+     */
+    private Boolean detectOrientation(boolean[][] ink, int[] board) {
+        double ch = board[3] / 8.0;
+        if (board[0] < ch / 3) return null;   // geen labelstrook links van het bord
+        int top = labelHoles(ink, board, 0);
+        int bottom = labelHoles(ink, board, 7);
+        if (top == 2 && bottom == 0) return false;
+        if (top == 0 && bottom == 2) return true;
+        return null;
+    }
+
+    /** Aantal gaten in de grootste glyph in de labelstrook naast rij {@code row},
+     *  of -1 als daar geen plausibele glyph staat. */
+    private int labelHoles(boolean[][] ink, int[] board, int row) {
+        double ch = board[3] / 8.0;
+        int y0 = (int) Math.round(board[1] + row * ch);
+        int bandH = (int) Math.round(ch);
+        boolean[][] strip = sub(ink, 0, y0, board[0], bandH, ink[0].length, ink.length);
+        // Verticale lijnen (beeldrand, kaderlijn) lopen door de strook en zouden anders
+        // als grootste component het cijfer verdringen.
+        for (int x = 0; x < strip[0].length; x++) {
+            int n = 0;
+            for (int y = 0; y < strip.length; y++) if (strip[y][x]) n++;
+            if (n > 0.9 * strip.length)
+                for (int y = 0; y < strip.length; y++) strip[y][x] = false;
+        }
+        boolean[][] glyph = SilhouetteUtils.largestComponent(strip);
+        int area = SilhouetteUtils.count(glyph);
+        // Plausibele cijfergrootte: niet slechts wat ruis, niet zo hoog als de band zelf
+        // (dat is de kaderlijn die door de strook loopt).
+        if (area < 20) return -1;
+        int minY = bandH, maxY = -1;
+        for (int y = 0; y < glyph.length; y++)
+            for (int x = 0; x < glyph[0].length; x++)
+                if (glyph[y][x]) { if (y < minY) minY = y; if (y > maxY) maxY = y; }
+        if (maxY - minY + 1 > 0.9 * bandH) return -1;
+        boolean[][] filled = SilhouetteUtils.fillHoles(glyph);
+        boolean[][] holes = new boolean[glyph.length][glyph[0].length];
+        for (int y = 0; y < glyph.length; y++)
+            for (int x = 0; x < glyph[0].length; x++)
+                holes[y][x] = filled[y][x] && !glyph[y][x];
+        return countComponents(holes);
+    }
+
+    private int countComponents(boolean[][] mask) {
+        int h = mask.length, w = mask[0].length, n = 0;
+        boolean[][] seen = new boolean[h][w];
+        Deque<int[]> dq = new ArrayDeque<>();
+        int[][] d4 = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int sy = 0; sy < h; sy++)
+            for (int sx = 0; sx < w; sx++)
+                if (mask[sy][sx] && !seen[sy][sx]) {
+                    n++;
+                    seen[sy][sx] = true; dq.add(new int[]{sy, sx});
+                    while (!dq.isEmpty()) {
+                        int[] p = dq.poll();
+                        for (int[] d : d4) {
+                            int ny = p[0] + d[0], nx = p[1] + d[1];
+                            if (ny >= 0 && ny < h && nx >= 0 && nx < w && mask[ny][nx] && !seen[ny][nx]) {
+                                seen[ny][nx] = true; dq.add(new int[]{ny, nx});
+                            }
+                        }
+                    }
+                }
+        return n;
+    }
+
+    // -------------------------------------------------------------------------
     // Silhouet-extractie
     // -------------------------------------------------------------------------
 
@@ -229,7 +311,7 @@ public class DiagramBoardScanner implements BoardScanner {
             for (int x = 0; x < w; x++)
                 fg[y][x] = !reached[y][x];
         boolean[][] eroded = SilhouetteUtils.erode(fg, 1);
-        boolean[][] cc = SilhouetteUtils.largestComponent(eroded);
+        boolean[][] cc = mergeNearbyComponents(eroded);
         boolean[][] back = SilhouetteUtils.dilate(cc, 1);
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
@@ -244,6 +326,70 @@ public class DiagramBoardScanner implements BoardScanner {
             filled = SilhouetteUtils.spanFill(filled);
         }
         return filled;
+    }
+
+    /**
+     * Grootste component plus omvangrijke fragmenten vlakbij (transitief, ≤3px):
+     * witte sierbanden in een glyph kunnen de romp bij de erosie in delen knippen
+     * (bv. de voet van een dame), en die delen horen bij het stuk. Arcering overleeft
+     * de erosie niet en blijft dus sowieso uitgesloten.
+     */
+    private boolean[][] mergeNearbyComponents(boolean[][] eroded) {
+        int h = eroded.length, w = eroded[0].length;
+        List<boolean[][]> comps = new ArrayList<>();
+        List<Integer> sizes = new ArrayList<>();
+        boolean[][] seen = new boolean[h][w];
+        Deque<int[]> dq = new ArrayDeque<>();
+        int[][] d8 = {{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
+        for (int sy = 0; sy < h; sy++)
+            for (int sx = 0; sx < w; sx++)
+                if (eroded[sy][sx] && !seen[sy][sx]) {
+                    boolean[][] comp = new boolean[h][w];
+                    int size = 0;
+                    seen[sy][sx] = true; dq.add(new int[]{sy, sx});
+                    while (!dq.isEmpty()) {
+                        int[] p = dq.poll();
+                        comp[p[0]][p[1]] = true; size++;
+                        for (int[] d : d8) {
+                            int ny = p[0]+d[0], nx = p[1]+d[1];
+                            if (ny>=0&&ny<h&&nx>=0&&nx<w&&eroded[ny][nx]&&!seen[ny][nx]) {
+                                seen[ny][nx]=true; dq.add(new int[]{ny,nx});
+                            }
+                        }
+                    }
+                    comps.add(comp); sizes.add(size);
+                }
+        if (comps.isEmpty()) return new boolean[h][w];
+        int largest = 0;
+        for (int i = 1; i < comps.size(); i++) if (sizes.get(i) > sizes.get(largest)) largest = i;
+
+        boolean[][] union = comps.get(largest);
+        boolean[] used = new boolean[comps.size()];
+        used[largest] = true;
+        int minSize = Math.max(25, sizes.get(largest) / 20);
+        boolean grown = true;
+        while (grown) {
+            grown = false;
+            boolean[][] reach = SilhouetteUtils.dilate(union, 3);
+            for (int i = 0; i < comps.size(); i++) {
+                if (used[i] || sizes.get(i) < minSize) continue;
+                if (overlaps(reach, comps.get(i))) {
+                    for (int y = 0; y < h; y++)
+                        for (int x = 0; x < w; x++)
+                            if (comps.get(i)[y][x]) union[y][x] = true;
+                    used[i] = true;
+                    grown = true;
+                }
+            }
+        }
+        return union;
+    }
+
+    private boolean overlaps(boolean[][] a, boolean[][] b) {
+        for (int y = 0; y < a.length; y++)
+            for (int x = 0; x < a[0].length; x++)
+                if (a[y][x] && b[y][x]) return true;
+        return false;
     }
 
     /** reached = witte achtergrond bereikbaar vanaf de celrand (4-connectief over ink==false). */

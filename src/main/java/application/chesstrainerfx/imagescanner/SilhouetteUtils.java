@@ -17,9 +17,13 @@ final class SilhouetteUtils {
     private SilhouetteUtils() {
     }
 
+    /** Luminantie gecomposit over een witte achtergrond: (deels) transparante pixels
+     *  zijn visueel (deels) wit, ook als hun eigen kleur donker is. */
     static int luminance(int argb) {
+        int a = (argb >>> 24) & 0xFF;
         int r = (argb >> 16) & 0xFF, g = (argb >> 8) & 0xFF, b = argb & 0xFF;
-        return (r * 299 + g * 587 + b * 114) / 1000;
+        int lum = (r * 299 + g * 587 + b * 114) / 1000;
+        return (lum * a + 255 * (255 - a)) / 255;
     }
 
     static boolean[][] mirror(boolean[][] m) {
