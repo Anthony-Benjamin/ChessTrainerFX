@@ -4,7 +4,6 @@ import application.chesstrainerfx.config.AppConfig;
 import application.chesstrainerfx.config.ResourceSeeder;
 import application.chesstrainerfx.config.SubCategoryStore;
 import application.chesstrainerfx.controller.PositionEditorController;
-import application.chesstrainerfx.imagescanner.ImageScannerView;
 import application.chesstrainerfx.view.ChapterOverviewView;
 import application.chesstrainerfx.view.ChapterWindow;
 import application.pgnreader.io.ChapterLoader;
@@ -14,6 +13,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -113,6 +113,9 @@ public class Main extends Application {
     private void openModule(String module) {
         Parent root = moduleRoots.computeIfAbsent(module, this::buildModuleRoot);
         scene.setRoot(root);
+        if (PUZZLES.equals(module)) {
+            stage.setTitle("ChessTrainer — Puzzles");
+        }
     }
 
     private Parent buildModuleRoot(String module) {
@@ -136,7 +139,7 @@ public class Main extends Application {
 
         MenuItem importItem = new MenuItem("Import PGN…");
         importItem.setOnAction(e -> importPgnFiles(pgnDir, () -> refreshModule(module)));
-        wrapper.getChildren().add(overlayMenu(importItem));
+        wrapper.getChildren().add(overlayMenu("☰", importItem));
 
         return wrapper;
     }
@@ -152,13 +155,14 @@ public class Main extends Application {
         List<String> subCategories = subCategoryStore.load();
 
         ChapterOverviewView view = new ChapterOverviewView(subCategories, this::openPuzzleSubCategory);
-        StackPane wrapper = withBackButton(view, () -> scene.setRoot(homeRoot));
+        view.setGridTopPadding(184);
+        StackPane wrapper = withBackButton(view, () -> {
+            stage.setTitle(title);
+            scene.setRoot(homeRoot);
+        });
 
         MenuItem editorItem = new MenuItem("Position Editor");
         editorItem.setOnAction(e -> openPositionEditor());
-
-        MenuItem scannerItem = new MenuItem("Image Scanner");
-        scannerItem.setOnAction(e -> openImageScanner());
 
         MenuItem newItem = new MenuItem("New Sub-category…");
         newItem.setOnAction(e -> createSubCategory());
@@ -169,7 +173,14 @@ public class Main extends Application {
         MenuItem deleteItem = new MenuItem("Delete Sub-category…");
         deleteItem.setOnAction(e -> deleteSubCategory());
 
-        wrapper.getChildren().add(overlayMenu(editorItem, scannerItem, newItem, renameItem, deleteItem));
+        Menu settingsMenu = new Menu("Sub-category Settings");
+        settingsMenu.getItems().addAll(newItem, renameItem, deleteItem);
+
+        MenuButton addMenu = overlayMenu("Add Puzzles", editorItem, settingsMenu);
+        addMenu.setPopupSide(Side.BOTTOM);
+        StackPane.setAlignment(addMenu, Pos.TOP_LEFT);
+        StackPane.setMargin(addMenu, new Insets(58, 10, 10, 10));
+        wrapper.getChildren().add(addMenu);
 
         return wrapper;
     }
@@ -293,13 +304,6 @@ public class Main extends Application {
         }
     }
 
-    /** Opent de Image Scanner (afbeelding → FEN) als scherm binnen de Puzzles-module. */
-    private void openImageScanner() {
-        Parent scannerRoot = new ImageScannerView().createView(stage);
-        StackPane wrapper = withBackButton(scannerRoot, () -> scene.setRoot(moduleRoots.get(PUZZLES)));
-        scene.setRoot(wrapper);
-    }
-
     private void openPuzzleSubCategory(String subCategory) {
         Path dir = config.puzzlesDir().resolve(subCategory);
         List<Exercise> exercises = ChapterLoader.loadChapters(dir).stream()
@@ -315,7 +319,7 @@ public class Main extends Application {
 
         MenuItem importItem = new MenuItem("Import PGN…");
         importItem.setOnAction(e -> importPgnFiles(dir, () -> openPuzzleSubCategory(subCategory)));
-        wrapper.getChildren().add(overlayMenu(importItem));
+        wrapper.getChildren().add(overlayMenu("☰", importItem));
 
         scene.setRoot(wrapper);
     }
@@ -380,9 +384,11 @@ public class Main extends Application {
         }
     }
 
-    /** Gestylede ☰-menuknop rechtsboven voor module-acties. */
-    private MenuButton overlayMenu(MenuItem... items) {
-        MenuButton menu = new MenuButton("☰", null, items);
+    /** Gestylede menuknop rechtsboven voor module-acties. */
+    private MenuButton overlayMenu(String label, MenuItem... items) {
+        MenuButton menu = new MenuButton(label, null, items);
+        menu.getStyleClass().add("overlay-menu");
+        menu.setPopupSide(Side.LEFT);
         menu.setStyle("""
         -fx-background-color: rgba(20,20,20,0.65);
         -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;

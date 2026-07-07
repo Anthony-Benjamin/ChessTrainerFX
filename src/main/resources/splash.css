@@ -33,6 +33,42 @@
 .tile:armed {
     -fx-background-color: rgba(60,60,60,0.75);
 }
+/* Dropdown van de overlay-menuknoppen (Add Puzzles / ☰) in dezelfde stijl als de tegels */
+.overlay-menu .context-menu {
+    -fx-background-color: rgba(20,20,20,0.92);
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255,255,255,0.35);
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.65), 10, 0.25, 0, 2);
+}
+
+.overlay-menu .menu-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-padding: 8 14 8 14;
+}
+
+.overlay-menu .menu-item .label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.overlay-menu .menu-item:focused,
+.overlay-menu .menu-item:hovered {
+    -fx-background-color: rgba(40,40,40,0.9);
+    -fx-border-color: rgba(255,215,64,0.8);
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+}
+
+.overlay-menu .menu-item > .right-container > .arrow {
+    -fx-background-color: white;
+}
+
 /* Transparante track */
 .scroll-bar:vertical .track,
 .scroll-bar:vertical .track-background {

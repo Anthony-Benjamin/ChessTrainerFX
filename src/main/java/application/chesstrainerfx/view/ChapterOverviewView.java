@@ -54,6 +54,11 @@ public final class ChapterOverviewView extends BorderPane {
         grid.getChildren().setAll(createTiles(titles));
     }
 
+    /** Extra ruimte boven het grid, zodat overlay-knoppen niet over de tegels vallen. */
+    public void setGridTopPadding(double top) {
+        grid.setPadding(new Insets(top, 24, 24, 24));
+    }
+
     private List<Node> createTiles(List<String> titles) {
         return titles.stream().map(title -> {
             Button b = new Button(title);
