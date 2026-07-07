@@ -46,7 +46,7 @@ public class ChapterWindow extends BorderPane {
     private VBox boardPane;        // BOARD (bord + moves)
     private BoardView boardView;
     private ListView<String> movesList;
-    private Label statusLabel;   // "Mat! 🎉" recht naast het bord
+    private Label statusLabel;   // "Mat!" / "Opgelost!" recht naast het bord
 
     private final Stage stage;
 
@@ -376,14 +376,17 @@ public class ChapterWindow extends BorderPane {
         return box;
     }
 
-    /** Toont de mat-melding recht naast het bord (aangeroepen door de Controller). */
-    public void showSolved() {
+    /**
+     * Toont de eindmelding recht naast het bord (aangeroepen door de Controller):
+     * "Mat!" bij schaakmat, anders "Opgelost!" bij een afgeronde oefening.
+     */
+    public void showSolved(boolean mate) {
         if (statusLabel != null) {
-            statusLabel.setText("Mat! 🎉");
+            statusLabel.setText(mate ? "Mat! 🎉" : "Opgelost! 🎉");
         }
     }
 
-    /** Wist de mat-melding wanneer undo/redo teruggaat naar een niet-opgeloste stand. */
+    /** Wist de eindmelding wanneer undo/redo teruggaat naar een niet-opgeloste stand. */
     public void hideSolved() {
         if (statusLabel != null) {
             statusLabel.setText("");

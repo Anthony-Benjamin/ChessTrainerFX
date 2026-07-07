@@ -11,6 +11,7 @@ import javafx.scene.control.DialogPane;
 import javafx.util.Duration;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 
 public class Controller {
@@ -54,15 +55,19 @@ public class Controller {
     private ExerciseStage exerciseStage = ExerciseStage.NONE;
     private SelectionStage stage = SelectionStage.NONE;
     private ExerciseSession exerciseSession;
-    private Runnable onExerciseSolved;
+    private Consumer<Boolean> onExerciseSolved;
     private Runnable onExerciseUnsolved;
 
     public void setExerciseStage(ExerciseStage exerciseStage) {
         this.exerciseStage = exerciseStage;
     }
 
-    /** Handler die de mat-melding inline naast het bord toont i.p.v. in een dialoog. */
-    public void setOnExerciseSolved(Runnable onExerciseSolved) {
+    /**
+     * Handler die de eindmelding inline naast het bord toont i.p.v. in een dialoog.
+     * Het argument geeft aan of de eindstand schaakmat is (true) of dat de
+     * oefening zonder mat is afgerond (false).
+     */
+    public void setOnExerciseSolved(Consumer<Boolean> onExerciseSolved) {
         this.onExerciseSolved = onExerciseSolved;
     }
 
@@ -174,7 +179,7 @@ public class Controller {
                 return;
             }
             if (isExerciseFinished()) {
-                showMateMessage();
+                showExerciseFinishedMessage(false);
                 return;
             }
 
@@ -331,7 +336,7 @@ public class Controller {
                 return;
             }
             if (isExerciseFinished()) {
-                showMateMessage();
+                showExerciseFinishedMessage(false);
             }
         });
         pause.play();
@@ -364,16 +369,16 @@ public class Controller {
         alert.showAndWait();
     }
 
-    private void showMateMessage() {
+    private void showExerciseFinishedMessage(boolean mate) {
         // Bij voorkeur inline naast het bord; val terug op een dialoog als er geen handler is.
         if (onExerciseSolved != null) {
-            onExerciseSolved.run();
+            onExerciseSolved.accept(mate);
             return;
         }
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Oefening klaar");
         alert.setHeaderText(null);
-        alert.setContentText("Mat! 🎉");
+        alert.setContentText(mate ? "Mat! 🎉" : "Opgelost! 🎉");
 
         alert.showAndWait();
     }
@@ -396,10 +401,17 @@ public class Controller {
         board.notifyCheck(inCheck && !mate);
 
         if (mate) {
-            showMateMessage();
+            showExerciseFinishedMessage(true);
             return true;
         }
         return false;
+    }
+
+    /** Is de partij die nu aan zet is schaakmat gezet? */
+    private boolean isMate(BoardModel board) {
+        PieceColor sideToMove = currentTurnColor();
+        return MoveValidator.isKingInCheck(board, sideToMove)
+                && !MoveValidator.hasAnyLegalMove(board, sideToMove);
     }
 
 
@@ -447,7 +459,7 @@ public class Controller {
             exerciseSession.setCurrentNodeId(snap.exerciseNodeId);
         }
 
-        updateSolvedStateAfterHistoryRestore();
+        updateSolvedStateAfterHistoryRestore(board);
     }
     public void redoMove(BoardModel board) {
         if (historyIndex >= history.size() - 1) {
@@ -471,13 +483,13 @@ public class Controller {
             exerciseSession.setCurrentNodeId(snap.exerciseNodeId);
         }
 
-        updateSolvedStateAfterHistoryRestore();
+        updateSolvedStateAfterHistoryRestore(board);
     }
 
-    private void updateSolvedStateAfterHistoryRestore() {
+    private void updateSolvedStateAfterHistoryRestore(BoardModel board) {
         if (isExerciseFinished()) {
             if (onExerciseSolved != null) {
-                onExerciseSolved.run();
+                onExerciseSolved.accept(isMate(board));
             }
         } else if (onExerciseUnsolved != null) {
             onExerciseUnsolved.run();
