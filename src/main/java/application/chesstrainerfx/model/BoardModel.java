@@ -8,6 +8,9 @@ import java.util.List;
 
 public class BoardModel {
 
+    /** FEN van de normale startopstelling; fallback voor PGN's zonder [FEN]-tag. */
+    public static final String START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     // 8x8 grid is de meest logische datastructuur voor een schaakbord
     private final SquareModel[][] squares = new SquareModel[8][8];
 
@@ -47,7 +50,7 @@ public class BoardModel {
     // --------------------------------------------------------------------
     public void initializeFromFEN(String fen) {
         if (fen == null || fen.isEmpty()) {
-            fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            fen = START_FEN;
         }
 
         clearBoard();

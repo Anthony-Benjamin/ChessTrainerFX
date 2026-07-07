@@ -45,7 +45,9 @@ public class ChapterPresenter {
         }
         view.setHeaderTitle(ex.getTitle());
         // --- 1) Model + controller opbouwen ---
-        String fen = (ex.getFen() == null) ? "" : ex.getFen().trim();
+        String fen = (ex.getFen() == null || ex.getFen().isBlank())
+                ? BoardModel.START_FEN
+                : ex.getFen().trim();
 
         BoardModel boardModel = new BoardModel();
         boardModel.initializeFromFEN(fen);

@@ -15,6 +15,10 @@ public class ExerciseSessionBuilder {
 
     public ExerciseSession buildSessionFromExercise(Exercise exercise) {
         String fen = exercise.getFen();
+        if (fen == null || fen.isBlank()) {
+            // PGN zonder [FEN]-tag: volledige partij vanaf de startopstelling
+            fen = BoardModel.START_FEN;
+        }
 
         SanNode sanRoot = parseSanTree(exercise.getMoves());
 
