@@ -317,6 +317,12 @@ public class ChapterWindow extends BorderPane {
             btnHint.setVisible(!movesList.isVisible());
         });
 
+        // Naspelen: speelt de volgende zet uit de hoofdvariant zonder te raden.
+        Button btnPlayMove = new Button("Play move ▶");
+        btnPlayMove.setStyle(navStyle);
+        btnPlayMove.setMaxWidth(Double.MAX_VALUE);
+        btnPlayMove.setOnAction(e -> controller.playNextExerciseMove(boardModel));
+
         Button btnUndo = new Button("Undo");
         Button btnRedo = new Button("Redo");
         btnUndo.setStyle(navStyle);
@@ -341,7 +347,7 @@ public class ChapterWindow extends BorderPane {
         VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
 
         VBox moveBox = new VBox(22);
-        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint, undoRedoRow, bottomSpacer, navRow);
+        moveBox.getChildren().setAll(showHideMovesBtn, movesList, btnHint, lblHint, btnPlayMove, undoRedoRow, bottomSpacer, navRow);
         moveBox.setPrefWidth(250);
         moveBox.setMinWidth(250);
         // Kolom even hoog als het bord: Show moves lijnt met de bovenkant, Prev/Next met de onderkant.

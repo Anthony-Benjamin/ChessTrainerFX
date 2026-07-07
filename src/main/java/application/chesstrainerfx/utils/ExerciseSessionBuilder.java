@@ -262,65 +262,7 @@ public class ExerciseSessionBuilder {
     }
 
     private void applyMoveOnTempBoard(BoardModel board, Move move, String sanRaw, PieceColor color) {
-        Position from = move.getFrom();
-        Position to = move.getTo();
-
-        SquareModel fromSq = board.getSquare(from);
-        SquareModel toSq = board.getSquare(to);
-        if (fromSq == null || toSq == null) return;
-
-        PieceModel piece = fromSq.getPiece();
-        if (piece == null) return;
-
-        // En passant (simpel): pawn diagonaal naar leeg veld → remove captured pawn
-        if (piece.getType() == PieceType.PAWN) {
-            PieceModel target = toSq.getPiece();
-            int dx = Math.abs(to.getColumn() - from.getColumn());
-            if (dx == 1 && target == null) {
-                // captured pawn staat op (from.row, to.col)
-                Position cap = new Position(from.getRow(), to.getColumn());
-                SquareModel capSq = board.getSquare(cap);
-                if (capSq != null) capSq.removePiece();
-            }
-        }
-
-        // Move piece
-        board.movePiece(from, to);
-
-        // Rokade: rook ook verplaatsen (BoardModel.movePiece doet dat niet)
-        if (piece.getType() == PieceType.KING) {
-            int dx = to.getColumn() - from.getColumn();
-            if (Math.abs(dx) == 2) {
-                if (dx > 0) { // korte rokade
-                    Position rookFrom = new Position(from.getRow(), 7);
-                    Position rookTo   = new Position(from.getRow(), 5);
-                    board.movePiece(rookFrom, rookTo);
-                } else {      // lange rokade
-                    Position rookFrom = new Position(from.getRow(), 0);
-                    Position rookTo   = new Position(from.getRow(), 3);
-                    board.movePiece(rookFrom, rookTo);
-                }
-            }
-        }
-
-        // Promotie: als SAN "=Q" etc bevat
-        if (sanRaw.contains("=")) {
-            int idx = sanRaw.indexOf('=');
-            if (idx >= 0 && idx + 1 < sanRaw.length()) {
-                char promo = sanRaw.charAt(idx + 1);
-                PieceType newType = switch (promo) {
-                    case 'Q' -> PieceType.QUEEN;
-                    case 'R' -> PieceType.ROOK;
-                    case 'B' -> PieceType.BISHOP;
-                    case 'N' -> PieceType.KNIGHT;
-                    default  -> PieceType.QUEEN;
-                };
-                SquareModel toAfter = board.getSquare(to);
-                if (toAfter != null) {
-                    toAfter.setPiece(new PieceModel(newType, color));
-                }
-            }
-        }
+        ExerciseMoveExecutor.apply(board, move, sanRaw, color);
     }
 
     private static Position pos(String square) {

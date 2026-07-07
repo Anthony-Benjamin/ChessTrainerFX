@@ -318,8 +318,8 @@ public class Controller {
         // kleine vertraging voordat de tegenzet wordt uitgevoerd
         PauseTransition pause = new PauseTransition(Duration.millis(1000));
         pause.setOnFinished(evt -> {
-            // voer tegenzet uit
-            board.movePiece(from, to);
+            // voer tegenzet uit (incl. rokade/en passant/promotie)
+            ExerciseMoveExecutor.apply(board, expected, selectedReply.getSan(), piece.getColor());
 
             // turn wisselen (computer heeft gezet)
             toggleTurn();
@@ -340,6 +340,39 @@ public class Controller {
             }
         });
         pause.play();
+    }
+
+    /**
+     * Speelt de volgende zet uit de hoofdvariant automatisch (naspelen van een
+     * partij zonder te raden). Eén ply per aanroep; no-op als de oefening
+     * klaar is of de bordstand niet meer bij de sessie past.
+     */
+    public void playNextExerciseMove(BoardModel board) {
+        if (exerciseSession == null) return;
+
+        List<ExerciseSession.Node> candidates = exerciseSession.getCandidateNodes();
+        if (candidates.isEmpty()) return;
+
+        ExerciseSession.Node next = candidates.get(0); // hoofdvariant
+        Move move = next.getMove();
+
+        PieceModel piece = board.getSquare(move.getFrom()).getPiece();
+        if (piece == null || piece.getColor() != currentTurnColor()) return;
+
+        cleanupSelection();
+        ExerciseMoveExecutor.apply(board, move, next.getSan(), piece.getColor());
+        toggleTurn();
+        board.notifyListenersTurnChanged(whiteTurn);
+
+        exerciseSession.advanceTo(next);
+        saveSnapshot(board);
+
+        if (checkGameState(board)) {
+            return;
+        }
+        if (isExerciseFinished()) {
+            showExerciseFinishedMessage(false);
+        }
     }
 
     private ExerciseSession.Node selectOpponentReply(List<ExerciseSession.Node> candidates) {
