@@ -22,7 +22,9 @@
     <VBox spacing="10">
         <padding><Insets top="10" left="75"/></padding>
 
-        <HBox spacing="5" alignment="TOP_RIGHT">
+        <HBox spacing="5" alignment="CENTER_RIGHT">
+            <Label text="Category:" style="-fx-font-weight: bold;"/>
+            <Label fx:id="categoryPathLbl"/>
             <Button text="Set category" onAction="#onSetCategory"/>
             <Label fx:id="categoryStatusLbl" text="☒"
                    style="-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 20px"/>

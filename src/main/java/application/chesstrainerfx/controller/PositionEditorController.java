@@ -46,6 +46,7 @@ public class PositionEditorController {
 
     @FXML private VBox boardColumn;
     @FXML private Label categoryStatusLbl;
+    @FXML private Label categoryPathLbl;
     @FXML private TextArea movesWindow;
     @FXML private ComboBox<String> whoseTurnSelector;
     @FXML private CheckBox whiteKingSideCastling;
@@ -96,8 +97,7 @@ public class PositionEditorController {
             File dir = new File(saved);
             if (dir.isDirectory()) {
                 saveDirectory = dir;
-                categoryStatusLbl.setText("☑");
-                categoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
+                showSelectedCategory();
             }
         }
     }
@@ -206,9 +206,15 @@ public class PositionEditorController {
         File chosen = directoryChooser.showDialog(stage);
         if (chosen != null) {
             saveDirectory = chosen;
-            categoryStatusLbl.setText("☑");
-            categoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
+            showSelectedCategory();
         }
+    }
+
+    /** Toont het groene vinkje en het pad van de gekozen categorie-map. */
+    private void showSelectedCategory() {
+        categoryStatusLbl.setText("☑");
+        categoryStatusLbl.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 20px");
+        categoryPathLbl.setText(saveDirectory.getAbsolutePath());
     }
 
     @FXML
