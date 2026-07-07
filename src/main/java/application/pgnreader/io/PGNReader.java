@@ -44,7 +44,7 @@ public class PGNReader {
 
             String title = extractTag(block, "White"); // jij gebruikt de [White "..."] als titel
             String fen   = extractTag(block, "FEN");
-            String moves = extractMoves(block);             // movetext zónder comments/varianten/NAGs/resultaat
+            String moves = extractMoves(block);             // movetext zonder comments/NAGs/resultaat, met varianten
             String comments = String.join(" | ", extractComments(block)); // losse comments uit { ... }
 
             result.add(new Exercise(title, fen, moves, comments));
@@ -66,7 +66,7 @@ public class PGNReader {
      * Haal het movetext-gedeelte op en maak het schoon:
      * - verwijder { ... } comments (multi-line)
      * - verwijder {[%eval ...]} of {[%evp ...]} engine-evaluaties
-     * - verwijder ( ... ) varianten
+     * - behoud ( ... ) varianten voor variant-aware oefeningen
      * - verwijder NAGs $1, $2, ...
      * - verwijder resultaten (1-0/0-1/1/2-1/2/*)
      * - normaliseer whitespace
@@ -90,18 +90,13 @@ public class PGNReader {
         // 2) comments { ... } (incl. {[%csl ...]})
         movetext = movetext.replaceAll("(?s)\\{[^}]*\\}", " ");
 
-        // 3) varianten ( ... ) verwijderen (werkt ook met geneste variaties)
-        movetext = removeVariationsNested(movetext);
-
-        movetext = movetext.replace("(", " ").replace(")", " ");
-
-        // 4) NAGs $n
+        // 3) NAGs $n
         movetext = movetext.replaceAll("\\$\\d+", " ");
 
-        // 5) resultaten (ook *) — vooral aan het einde
+        // 4) resultaten (ook *) — vooral aan het einde
         movetext = movetext.replaceAll("(1-0|0-1|1/2-1/2|\\*)\\s*$", " ");
 
-        // 6) whitespace normaliseren
+        // 5) whitespace normaliseren
         movetext = movetext.replaceAll("\\s+", " ").trim();
 
         return movetext;
@@ -143,24 +138,5 @@ public class PGNReader {
             }
         }
         return comments;
-    }
-    private static String removeVariationsNested(String pgn) {
-        StringBuilder result = new StringBuilder();
-        int depth = 0;
-
-        for (char c : pgn.toCharArray()) {
-            if (c == '(') {
-                depth++;
-                continue;
-            }
-            if (c == ')') {
-                if (depth > 0) depth--;
-                continue;
-            }
-            if (depth == 0) {
-                result.append(c);
-            }
-        }
-        return result.toString();
     }
 }

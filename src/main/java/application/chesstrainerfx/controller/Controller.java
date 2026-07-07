@@ -23,11 +23,13 @@ public class Controller {
         String fen;                         // Bordstand in FEN
         boolean whiteTurn;                  // Wie is aan zet in deze stand
         Position lastDoubleStepPawn;        // Voor en passant (mag null zijn)
+        Integer exerciseNodeId;             // Actieve variant-node in de oefensessie
 
-        BoardSnapshot(String fen, boolean whiteTurn, Position lastDoubleStepPawn) {
+        BoardSnapshot(String fen, boolean whiteTurn, Position lastDoubleStepPawn, Integer exerciseNodeId) {
             this.fen = fen;
             this.whiteTurn = whiteTurn;
             this.lastDoubleStepPawn = lastDoubleStepPawn;
+            this.exerciseNodeId = exerciseNodeId;
         }
     }
 
@@ -53,6 +55,7 @@ public class Controller {
     private SelectionStage stage = SelectionStage.NONE;
     private ExerciseSession exerciseSession;
     private Runnable onExerciseSolved;
+    private Runnable onExerciseUnsolved;
 
     public void setExerciseStage(ExerciseStage exerciseStage) {
         this.exerciseStage = exerciseStage;
@@ -61,6 +64,11 @@ public class Controller {
     /** Handler die de mat-melding inline naast het bord toont i.p.v. in een dialoog. */
     public void setOnExerciseSolved(Runnable onExerciseSolved) {
         this.onExerciseSolved = onExerciseSolved;
+    }
+
+    /** Handler die een eerder getoonde opgelost/mat-melding wist. */
+    public void setOnExerciseUnsolved(Runnable onExerciseUnsolved) {
+        this.onExerciseUnsolved = onExerciseUnsolved;
     }
 
     public String getExpectedSan() {
@@ -159,6 +167,7 @@ public class Controller {
             if (exerciseSession != null) {
                 exerciseSession.advancePly();
             }
+            saveSnapshot(board);
 
             // Schaak / mat detecteren op het bord
             if (checkGameState(board)) {
@@ -196,9 +205,6 @@ public class Controller {
         //Beurt wisselen
         toggleTurn();
         board.notifyListenersTurnChanged(whiteTurn);
-
-        //Nieuwe bordtoestand +beurt vastleggen in geschiedenis
-        saveSnapshot(board);
 
         lastViewMove = targetView;
         cleanupSelection();
@@ -287,8 +293,13 @@ public class Controller {
     private void playOpponentMoveIfAny(BoardModel board) {
         if (exerciseSession == null) return;
 
-        Move expected = exerciseSession.getExpectedMove();
-        if (expected == null) return;
+        List<ExerciseSession.Node> candidates = exerciseSession.getCandidateNodes();
+        if (candidates.isEmpty()) return;
+
+        ExerciseSession.Node selectedReply = selectOpponentReply(candidates);
+        if (selectedReply == null) return;
+
+        Move expected = selectedReply.getMove();
 
         Position from = expected.getFrom();
         Position to = expected.getTo();
@@ -309,11 +320,11 @@ public class Controller {
             toggleTurn();
             board.notifyListenersTurnChanged(whiteTurn);
 
+            // ply vooruit
+            exerciseSession.advanceTo(selectedReply);
+
             //snapshot van deze stand
             saveSnapshot(board);
-
-            // ply vooruit
-            exerciseSession.advancePly();
 
             // Schaak / mat detecteren na de tegenzet
             if (checkGameState(board)) {
@@ -324,6 +335,19 @@ public class Controller {
             }
         });
         pause.play();
+    }
+
+    private ExerciseSession.Node selectOpponentReply(List<ExerciseSession.Node> candidates) {
+        if (candidates.size() == 1) {
+            return candidates.get(0);
+        }
+
+        ChoiceDialog<ExerciseSession.Node> dialog = new ChoiceDialog<>(candidates.get(0), candidates);
+        dialog.setTitle("Computerzet kiezen");
+        dialog.setHeaderText("Kies de variant die de computer speelt:");
+        dialog.setContentText("Computerzet:");
+
+        return dialog.showAndWait().orElse(candidates.get(0));
     }
 
     private void showWrongMoveMessage() {
@@ -388,8 +412,9 @@ public class Controller {
 
         String fen = board.exportToFEN(whiteTurn);
         Position lastDouble = board.getLastDoubleStepPawnPosition();
+        Integer exerciseNodeId = exerciseSession == null ? null : exerciseSession.getCurrentNodeId();
 
-        BoardSnapshot snap = new BoardSnapshot(fen, whiteTurn, lastDouble);
+        BoardSnapshot snap = new BoardSnapshot(fen, whiteTurn, lastDouble, exerciseNodeId);
         history.add(snap);
         historyIndex = history.size() - 1;
     }
@@ -418,11 +443,11 @@ public class Controller {
         this.whiteTurn = snap.whiteTurn;
 
         // 2) Oefensessie ook delta plies terug
-        if (exerciseSession != null) {
-            for (int i = 0; i < delta; i++) {
-                exerciseSession.rewindPly();
-            }
+        if (exerciseSession != null && snap.exerciseNodeId != null) {
+            exerciseSession.setCurrentNodeId(snap.exerciseNodeId);
         }
+
+        updateSolvedStateAfterHistoryRestore();
     }
     public void redoMove(BoardModel board) {
         if (historyIndex >= history.size() - 1) {
@@ -442,10 +467,20 @@ public class Controller {
         this.whiteTurn = snap.whiteTurn;
 
         // 2) Oefensessie delta plies vooruit
-        if (exerciseSession != null) {
-            for (int i = 0; i < delta; i++) {
-                exerciseSession.advancePly();
+        if (exerciseSession != null && snap.exerciseNodeId != null) {
+            exerciseSession.setCurrentNodeId(snap.exerciseNodeId);
+        }
+
+        updateSolvedStateAfterHistoryRestore();
+    }
+
+    private void updateSolvedStateAfterHistoryRestore() {
+        if (isExerciseFinished()) {
+            if (onExerciseSolved != null) {
+                onExerciseSolved.run();
             }
+        } else if (onExerciseUnsolved != null) {
+            onExerciseUnsolved.run();
         }
     }
 }

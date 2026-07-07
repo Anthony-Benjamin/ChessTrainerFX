@@ -383,6 +383,13 @@ public class ChapterWindow extends BorderPane {
         }
     }
 
+    /** Wist de mat-melding wanneer undo/redo teruggaat naar een niet-opgeloste stand. */
+    public void hideSolved() {
+        if (statusLabel != null) {
+            statusLabel.setText("");
+        }
+    }
+
     private void switchMode(Mode m) {
         mode = m;
         boolean list = (m == Mode.LIST);

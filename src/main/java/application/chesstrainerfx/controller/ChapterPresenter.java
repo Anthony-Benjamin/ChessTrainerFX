@@ -52,14 +52,15 @@ public class ChapterPresenter {
 
         Controller controller = new Controller();
         controller.syncTurnFromFEN(fen);
-        controller.startNewHistory(boardModel);
         controller.setExerciseStage(Controller.ExerciseStage.PLAYER_TO_MOVE);
         controller.setOnExerciseSolved(view::showSolved);
+        controller.setOnExerciseUnsolved(view::hideSolved);
 
         // ExerciseSession opbouwen
         controller.setExerciseSession(
                 sessionBuilder.buildSessionFromExercise(ex)
         );
+        controller.startNewHistory(boardModel);
 
         this.currentController = controller;
 

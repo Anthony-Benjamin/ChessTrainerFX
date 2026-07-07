@@ -4,33 +4,20 @@ import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.model.SquareModel;
 import application.pgnreader.model.Exercise;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ExerciseSessionBuilder {
 
     public ExerciseSession buildSessionFromExercise(Exercise exercise) {
         String fen = exercise.getFen();
 
-        // PGN: variaties eruit + comments/annotations eruit
-        String main = PgnUtils.cleanMoveString(exercise.getMoves());
-        main = main.replaceAll("\\{[^}]*}", " ");                 // {...} weg
-        main = main.replaceAll("\\[[^]]*]", " ");                 // [..] weg (soms)
-        main = main.replace("*", " ");                            // harde fix voor losstaande *
-        main = main.replaceAll("(?i)\\b(1-0|0-1|1/2-1/2)\\b", " "); // resultaten
-        main = main.replaceAll("\\s+", " ").trim();
+        SanNode sanRoot = parseSanTree(exercise.getMoves());
 
-        ParsedMoves parsed = ChessMoveParser.parseMoves(main);
-
-        // Interleave naar ply-volgorde: w1, b1, w2, b2, ...
-        List<String> sanPlies = new ArrayList<>();
-        int max = Math.max(parsed.whiteMoves.size(), parsed.blackMoves.size());
-        for (int i = 0; i < max; i++) {
-            if (i < parsed.whiteMoves.size()) sanPlies.add(parsed.whiteMoves.get(i));
-            if (i < parsed.blackMoves.size()) sanPlies.add(parsed.blackMoves.get(i));
-        }
-
-        // Resolver gebruikt een TEMP board zodat je echte boardModel niet verandert
         BoardModel temp = new BoardModel();
         temp.initializeFromFEN(fen);
 
@@ -38,26 +25,136 @@ public class ExerciseSessionBuilder {
         boolean whiteToMove = fenParts.length >= 2 && fenParts[1].equals("w");
         PieceColor toMove = whiteToMove ? PieceColor.WHITE : PieceColor.BLACK;
 
-        List<Move> mainLine = new ArrayList<>();
-        List<String> sanLine = new ArrayList<>();
+        List<ExerciseSession.Node> nodesById = new ArrayList<>();
+        ExerciseSession.Node root = newSessionNode(nodesById, null, null, null);
+        resolveChildren(sanRoot, root, temp, toMove, nodesById);
 
-        for (String san : sanPlies) {
-            if (san == null || san.isBlank()) continue;
+        return new ExerciseSession(root, nodesById);
+    }
 
-            Move m = resolveSanToMove(temp, san, toMove);
-            if (m == null) {
-                throw new IllegalStateException("Kon SAN niet resolven: " + san);
+    private void resolveChildren(
+            SanNode sanNode,
+            ExerciseSession.Node sessionNode,
+            BoardModel board,
+            PieceColor toMove,
+            List<ExerciseSession.Node> nodesById) {
+        for (SanNode sanChild : sanNode.children.values()) {
+            Move move = resolveSanToMove(board, sanChild.san, toMove);
+            if (move == null) {
+                throw new IllegalStateException("Kon SAN niet resolven: " + sanChild.san);
             }
 
-            mainLine.add(m);
-            sanLine.add(san); // originele SAN bewaren
+            ExerciseSession.Node sessionChild = newSessionNode(nodesById, sessionNode, move, sanChild.san);
 
-            applyMoveOnTempBoard(temp, m, san, toMove);
+            BoardModel branchBoard = copyBoard(board, toMove);
+            applyMoveOnTempBoard(branchBoard, move, sanChild.san, toMove);
+            PieceColor nextToMove = (toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+            resolveChildren(sanChild, sessionChild, branchBoard, nextToMove, nodesById);
+        }
+    }
 
-            toMove = (toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+    private ExerciseSession.Node newSessionNode(
+            List<ExerciseSession.Node> nodesById,
+            ExerciseSession.Node parent,
+            Move move,
+            String san) {
+        ExerciseSession.Node node = new ExerciseSession.Node(nodesById.size(), parent, move, san);
+        nodesById.add(node);
+        if (parent != null) {
+            parent.addChild(node);
+        }
+        return node;
+    }
+
+    private BoardModel copyBoard(BoardModel board, PieceColor toMove) {
+        BoardModel copy = new BoardModel();
+        copy.initializeFromFEN(board.exportToFEN(toMove == PieceColor.WHITE));
+        copy.setLastDoubleStepPawnPosition(board.getLastDoubleStepPawnPosition());
+        return copy;
+    }
+
+    private SanNode parseSanTree(String moveText) {
+        SanNode root = new SanNode(null);
+        SanNode current = root;
+        SanNode lastMoveParent = null;
+        Deque<ParseContext> stack = new ArrayDeque<>();
+
+        for (String token : tokenizeMoveText(moveText)) {
+            if (token.equals("(")) {
+                if (lastMoveParent == null) {
+                    throw new IllegalArgumentException("Variant zonder voorafgaande zet: " + moveText);
+                }
+                stack.push(new ParseContext(current, lastMoveParent));
+                current = lastMoveParent;
+                lastMoveParent = null;
+                continue;
+            }
+            if (token.equals(")")) {
+                if (stack.isEmpty()) {
+                    throw new IllegalArgumentException("Onverwachte sluitende variant-haak in PGN: " + moveText);
+                }
+                ParseContext context = stack.pop();
+                current = context.current;
+                lastMoveParent = context.lastMoveParent;
+                continue;
+            }
+
+            if (!isSanToken(token)) {
+                continue;
+            }
+
+            SanNode child = current.children.computeIfAbsent(token, SanNode::new);
+            lastMoveParent = current;
+            current = child;
         }
 
-        return new ExerciseSession(mainLine, sanLine);
+        if (!stack.isEmpty()) {
+            throw new IllegalArgumentException("Niet-afgesloten variant in PGN: " + moveText);
+        }
+        return root;
+    }
+
+    private List<String> tokenizeMoveText(String moveText) {
+        if (moveText == null || moveText.isBlank()) {
+            return List.of();
+        }
+
+        String clean = moveText
+                .replace('\u00A0', ' ')
+                .replaceAll("(?s)\\{[^}]*}", " ")
+                .replaceAll("\\[%[^\\]]*]", " ")
+                .replaceAll("\\$\\d+", " ")
+                .replaceAll("(?i)\\b(1-0|0-1|1/2-1/2)\\b", " ")
+                .replace("*", " ")
+                .replace("(", " ( ")
+                .replace(")", " ) ")
+                .replaceAll("\\s+", " ")
+                .trim();
+
+        if (clean.isBlank()) {
+            return List.of();
+        }
+
+        String[] rawTokens = clean.split("\\s+");
+        List<String> tokens = new ArrayList<>();
+        for (String raw : rawTokens) {
+            String token = raw
+                    .replaceAll("^\\d+\\.+", "")
+                    .replaceAll("^\\.+", "")
+                    .replaceAll("[!?]+$", "")
+                    .trim();
+            if (!token.isBlank()) {
+                tokens.add(token);
+            }
+        }
+        return tokens;
+    }
+
+    private boolean isSanToken(String token) {
+        return !token.equals("(")
+                && !token.equals(")")
+                && !token.matches("\\d+\\.+")
+                && !token.isBlank();
     }
 
     private Move resolveSanToMove(BoardModel board, String sanRaw, PieceColor color) {
@@ -225,5 +322,17 @@ public class ExerciseSessionBuilder {
     private static Position pos(String square) {
         int[] rc = CoordinateSystem.coordinateToIndex(square); // [row, col]
         return new Position(rc[0], rc[1]);
+    }
+
+    private static class SanNode {
+        private final String san;
+        private final Map<String, SanNode> children = new LinkedHashMap<>();
+
+        private SanNode(String san) {
+            this.san = san;
+        }
+    }
+
+    private record ParseContext(SanNode current, SanNode lastMoveParent) {
     }
 }
