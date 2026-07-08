@@ -43,11 +43,13 @@ public class PGNReader {
             String block = matcher.group(1).trim();
 
             String title = extractTag(block, "White"); // jij gebruikt de [White "..."] als titel
+            String subtitle = extractTag(block, "Black"); // optionele subtitel, bv. "Position 1"
+            if ("?".equals(subtitle)) subtitle = ""; // PGN-conventie voor onbekend
             String fen   = extractTag(block, "FEN");
             String moves = extractMoves(block);             // movetext zonder comments/NAGs/resultaat, met varianten
             String comments = String.join(" | ", extractComments(block)); // losse comments uit { ... }
 
-            result.add(new Exercise(title, fen, moves, comments));
+            result.add(new Exercise(title, subtitle, fen, moves, comments));
         }
         return result;
     }
@@ -130,8 +132,10 @@ public class PGNReader {
                 continue;
             }
 
-            // 3) verwijder inline [#] markers
-            c = c.replaceAll("\\[\\s*#\\s*\\]", " ").trim();
+            // 3) verwijder inline annotaties ([%csl ...], [%cal ...], ...) en [#] markers
+            c = c.replaceAll("\\[%[^]]*\\]", " ");
+            c = c.replaceAll("\\[\\s*#\\s*\\]", " ");
+            c = c.replaceAll("\\s+", " ").trim();
 
             if (!c.isEmpty()) {
                 comments.add(c);

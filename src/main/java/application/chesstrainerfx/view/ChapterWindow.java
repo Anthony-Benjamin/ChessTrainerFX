@@ -28,7 +28,9 @@ public class ChapterWindow extends BorderPane {
     private enum Mode {LIST, BOARD}
 
     private final List<Exercise> exercises;
+    private final List<Exercise> playableExercises;
     private final String chapterTitle;
+    private String chapterTheoryText = "";
     private final Consumer<Void> onBack;
     private final ExerciseSessionBuilder exerciseSessionBuilder = new ExerciseSessionBuilder();
     private Mode mode = Mode.LIST;
@@ -52,6 +54,11 @@ public class ChapterWindow extends BorderPane {
 
     public ChapterWindow(String chapterTitle, List<Exercise> exercises, Consumer<Void> onBack, Stage stage) {
         this.exercises = exercises;
+        // Titel-only games (geen FEN én geen zetten) zijn geen speelbare oefening;
+        // hun comments blijven wel de bron voor de hoofdstuk-introtekst.
+        this.playableExercises = exercises.stream()
+                .filter(ex -> !isBlank(ex.getFen()) || !isBlank(ex.getMoves()))
+                .toList();
         this.chapterTitle = chapterTitle;
         this.onBack = onBack;
         this.stage = stage;
@@ -60,7 +67,7 @@ public class ChapterWindow extends BorderPane {
         this.getStylesheets().add(getClass().getResource("/splash.css").toExternalForm());
 
         // Presenter aanmaken (moet vóór layout vanwege event handlers)
-        this.presenter = new ChapterPresenter(this, exercises, exerciseSessionBuilder, onBack, this.stage);
+        this.presenter = new ChapterPresenter(this, playableExercises, exerciseSessionBuilder, onBack, this.stage);
 
         buildLayout();
         switchMode(Mode.LIST);
@@ -132,18 +139,9 @@ public class ChapterWindow extends BorderPane {
         headerRow.getChildren().addAll(backBtn, titleLabel, spacer);
 
 
-        String theoryText = exercises.isEmpty() ? "" : exercises.getFirst().getComments();
+        chapterTheoryText = formatTheoryText(exercises.isEmpty() ? "" : exercises.getFirst().getComments());
 
-        if (theoryText == null) theoryText = "";
-
-        // Normaliseer line endings
-        theoryText = theoryText.replace("\r\n", "\n");
-
-        // Forceer wrapping binnen regels door lange stukken te splitsen op spaties
-        theoryText = theoryText.replaceAll("(?<=\\S)(?=\\p{Lu})", " "); // voeg spaties toe voor hoofdletters
-        theoryText = theoryText.replaceAll("\\s+", " "); // dubbele spaties weg
-
-        theoryLabel = new Label(theoryText);
+        theoryLabel = new Label(chapterTheoryText);
         theoryLabel.setWrapText(true);
         theoryLabel.setStyle("""
                     -fx-text-fill: #f5deb3;
@@ -197,7 +195,7 @@ public class ChapterWindow extends BorderPane {
         tilesGrid.setAlignment(Pos.TOP_LEFT);
         tilesGrid.setStyle("-fx-background-color: transparent;");
 
-        for (Exercise ex : exercises) {
+        for (Exercise ex : playableExercises) {
             Button b = new Button(ex.getTitle());
             b.getStyleClass().add("tile");
             b.setPrefSize(160, 160);
@@ -412,20 +410,41 @@ public class ChapterWindow extends BorderPane {
 
     public void showExerciseList() {
         if (titleLabel != null) titleLabel.setText(chapterTitle);
+        if (theoryLabel != null) theoryLabel.setText(chapterTheoryText);
         switchMode(Mode.LIST);
     }
 
-    /** Zet de koptitel op de naam van de actieve exercise (door de presenter aangeroepen). */
-    public void setHeaderTitle(String title) {
-        if (titleLabel != null && title != null) titleLabel.setText(title);
+    /**
+     * Toont titel, subtitel en uitleg van de actieve exercise in de header
+     * (door de presenter aangeroepen). Zonder eigen uitleg blijft de
+     * hoofdstuk-introtekst staan.
+     */
+    public void setExerciseInfo(String title, String subtitle, String comments) {
+        if (titleLabel != null && title != null) {
+            titleLabel.setText(isBlank(subtitle) ? title : title + " — " + subtitle);
+        }
+        if (theoryLabel != null) {
+            String text = formatTheoryText(comments);
+            theoryLabel.setText(text.isBlank() ? chapterTheoryText : text);
+        }
     }
 
-    /** Slaat de tegelstap over en opent het bord meteen voor de eerste (of enige) exercise. */
-    public void autoStart() {
-        skipListOnBack = true;
-        if (!exercises.isEmpty()) {
-            presenter.onExerciseSelected(exercises.get(0));
-        }
+    /** Maakt PGN-commentaartekst geschikt voor het theorie-vak (line endings en spaties). */
+    private static String formatTheoryText(String text) {
+        if (text == null) return "";
+
+        // Normaliseer line endings
+        text = text.replace("\r\n", "\n");
+
+        // Forceer wrapping binnen regels door lange stukken te splitsen op spaties
+        text = text.replaceAll("(?<=\\S)(?=\\p{Lu})", " "); // voeg spaties toe voor hoofdletters
+        text = text.replaceAll("\\s+", " "); // dubbele spaties weg
+
+        return text.trim();
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 
     /** Slaat de tegelstap over en opent het bord meteen voor een specifieke exercise. */

@@ -40,10 +40,13 @@ public class ChapterPresenter {
     /** Wordt aangeroepen als de gebruiker op een exercise-tegel klikt. */
     public void onExerciseSelected(Exercise ex) {
         currentIndex = exercises.indexOf(ex);
+        String windowTitle = (ex.getSubtitle() == null || ex.getSubtitle().isBlank())
+                ? ex.getTitle()
+                : ex.getTitle() + " — " + ex.getSubtitle();
         if (stage != null) {
-            stage.setTitle(ex.getTitle());
+            stage.setTitle(windowTitle);
         }
-        view.setHeaderTitle(ex.getTitle());
+        view.setExerciseInfo(ex.getTitle(), ex.getSubtitle(), ex.getComments());
         // --- 1) Model + controller opbouwen ---
         String fen = (ex.getFen() == null || ex.getFen().isBlank())
                 ? BoardModel.START_FEN
