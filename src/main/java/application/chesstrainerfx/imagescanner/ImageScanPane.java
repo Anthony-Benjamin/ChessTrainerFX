@@ -109,7 +109,6 @@ public class ImageScanPane extends VBox {
 
         perspectiveBox.getItems().addAll(WHITE_BOTTOM, BLACK_BOTTOM);
         perspectiveBox.setValue(WHITE_BOTTOM);
-        perspectiveBox.setStyle("-fx-background-color: #444; -fx-text-fill: white;");
         // Een ander perspectief vereist een nieuwe cel→FEN mapping → opnieuw scannen.
         perspectiveBox.valueProperty().addListener((obs, oldV, newV) -> {
             if (loadedImage == null) return;
