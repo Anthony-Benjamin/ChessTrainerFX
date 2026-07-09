@@ -139,7 +139,11 @@ public class ChapterWindow extends BorderPane {
         headerRow.getChildren().addAll(backBtn, titleLabel, spacer);
 
 
-        chapterTheoryText = formatTheoryText(exercises.isEmpty() ? "" : exercises.getFirst().getComments());
+        chapterTheoryText = exercises.stream()
+                .map(ex -> formatTheoryText(ex.getComments()))
+                .filter(text -> !text.isBlank())
+                .findFirst()
+                .orElse("");
 
         theoryLabel = new Label(chapterTheoryText);
         theoryLabel.setWrapText(true);
