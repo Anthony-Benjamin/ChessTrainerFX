@@ -23,9 +23,9 @@
         <padding><Insets top="10" left="20"/></padding>
 
         <HBox spacing="5" alignment="CENTER_RIGHT">
-            <Label text="Category:" style="-fx-font-weight: bold;"/>
+            <Label text="Category:" style="-fx-font-weight: bold;" minWidth="-Infinity"/>
             <Label fx:id="categoryPathLbl"/>
-            <Button text="Set category" onAction="#onSetCategory"/>
+            <Button text="Set category" onAction="#onSetCategory" minWidth="-Infinity"/>
             <Label fx:id="categoryStatusLbl" text="☒"
                    style="-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 20px"/>
         </HBox>
