@@ -19,5 +19,5 @@ description: Hoe je ChessTrainerFX draait en end-to-end verifieert op deze machi
 
 ## Nuttige flows
 - Position Editor: Home → Puzzles-tegel (rechtsonder) → "Add Puzzles"-menu (linksboven) → "Position Editor".
-- Scanpaneel: knop "Import from Image" togglet de derde kolom; testafbeeldingen in `dev/test_images/` (FileChooser onthoudt de laatste map via Preferences).
+- Scanpaneel: knop "Import from Image" togglet de linkerkolom (links van het bord); testafbeeldingen in `dev/test_images/` (FileChooser onthoudt de laatste map via Preferences).
 - Een scheve crop over de preview slepen + Scan geeft gegarandeerd oranje onzeker-markeringen (handig om mark-gedrag te testen).

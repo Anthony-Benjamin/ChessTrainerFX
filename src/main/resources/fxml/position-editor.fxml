@@ -13,6 +13,12 @@
       fx:controller="application.chesstrainerfx.controller.PositionEditorController"
       alignment="CENTER" spacing="10">
 
+    <!-- Scanpaneel: verborgen tot "Import from Image"; inhoud (ImageScanPane) komt uit de controller.
+         Top-padding houdt de kaart vrij van de zwevende Back-knop linksboven. -->
+    <VBox fx:id="scanColumn" visible="false" managed="false" alignment="TOP_LEFT">
+        <padding><Insets top="55" left="10"/></padding>
+    </VBox>
+
     <!-- Bordkolom: titel, zwarte stukken, bord, witte stukken, FEN (gevuld in de controller) -->
     <VBox fx:id="boardColumn" spacing="10">
         <padding><Insets left="10"/></padding>
@@ -78,10 +84,5 @@
             <padding><Insets top="10"/></padding>
             <Button text="Save exercise" onAction="#onSaveExercise"/>
         </HBox>
-    </VBox>
-
-    <!-- Scanpaneel: verborgen tot "Import from Image"; inhoud (ImageScanPane) komt uit de controller -->
-    <VBox fx:id="scanColumn" visible="false" managed="false" alignment="TOP_LEFT">
-        <padding><Insets top="10"/></padding>
     </VBox>
 </HBox>
