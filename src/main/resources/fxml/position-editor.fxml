@@ -53,7 +53,7 @@
 
         <VBox alignment="CENTER">
             <Label text="Moves" style="-fx-font-weight: bold;"/>
-            <TextArea fx:id="movesWindow" maxWidth="150" maxHeight="150"/>
+            <TextArea fx:id="movesWindow" maxWidth="310" maxHeight="150"/>
         </VBox>
 
         <HBox alignment="CENTER">
