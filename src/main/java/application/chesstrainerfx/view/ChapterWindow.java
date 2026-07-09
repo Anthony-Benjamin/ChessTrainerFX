@@ -20,7 +20,10 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class ChapterWindow extends BorderPane {
@@ -199,8 +202,10 @@ public class ChapterWindow extends BorderPane {
         tilesGrid.setAlignment(Pos.TOP_LEFT);
         tilesGrid.setStyle("-fx-background-color: transparent;");
 
-        for (Exercise ex : playableExercises) {
-            Button b = new Button(ex.getTitle());
+        List<String> labels = tileLabels();
+        for (int i = 0; i < playableExercises.size(); i++) {
+            Exercise ex = playableExercises.get(i);
+            Button b = new Button(labels.get(i));
             b.getStyleClass().add("tile");
             b.setPrefSize(160, 160);
             b.setWrapText(true);
@@ -220,6 +225,37 @@ public class ChapterWindow extends BorderPane {
             var vp = tilesScroll.lookup(".viewport");
             if (vp != null) vp.setStyle("-fx-background-color: transparent;");
         });
+    }
+
+    /**
+     * Tegellabels per speelbare oefening. Bij dubbele titels wordt de subtitel
+     * toegevoegd ("Test — Position 1"); is ook dat niet uniek, dan een volgnummer.
+     */
+    private List<String> tileLabels() {
+        Map<String, Integer> titleCounts = new HashMap<>();
+        for (Exercise ex : playableExercises) {
+            titleCounts.merge(ex.getTitle(), 1, Integer::sum);
+        }
+
+        List<String> labels = new ArrayList<>(playableExercises.size());
+        Map<String, Integer> labelCounts = new HashMap<>();
+        for (Exercise ex : playableExercises) {
+            String label = ex.getTitle();
+            if (titleCounts.get(label) > 1 && !isBlank(ex.getSubtitle())) {
+                label = label + " — " + ex.getSubtitle();
+            }
+            labels.add(label);
+            labelCounts.merge(label, 1, Integer::sum);
+        }
+
+        Map<String, Integer> seen = new HashMap<>();
+        for (int i = 0; i < labels.size(); i++) {
+            String label = labels.get(i);
+            if (labelCounts.get(label) > 1) {
+                labels.set(i, label + " (" + seen.merge(label, 1, Integer::sum) + ")");
+            }
+        }
+        return labels;
     }
 
     /* ---------- CENTER: BOARD (bord + moves rechts) ---------- */
