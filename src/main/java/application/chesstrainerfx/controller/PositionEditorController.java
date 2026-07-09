@@ -1,14 +1,13 @@
 package application.chesstrainerfx.controller;
 
-import application.chesstrainerfx.imagescanner.ImageScannerView;
+import application.chesstrainerfx.imagescanner.ImageScanPane;
+import application.chesstrainerfx.imagescanner.ScanResult;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.BoardEditor;
 import application.chesstrainerfx.utils.PgnUtils;
 import application.chesstrainerfx.utils.PieceSelectorPane;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -20,7 +19,6 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.BufferedWriter;
@@ -45,6 +43,7 @@ public class PositionEditorController {
     private static final String PREF_LAST_DIR = "lastSaveDirectory";
 
     @FXML private VBox boardColumn;
+    @FXML private VBox scanColumn;
     @FXML private Label categoryStatusLbl;
     @FXML private Label categoryPathLbl;
     @FXML private TextArea movesWindow;
@@ -56,6 +55,7 @@ public class PositionEditorController {
 
     private BoardModel model;
     private BoardEditor board;
+    private ImageScanPane scanPane;
     private boolean isWhite = true;
     private File saveDirectory;
     private Stage stage;
@@ -153,23 +153,33 @@ public class PositionEditorController {
         layoutBoardColumn();
     }
 
+    /** Toont/verbergt het scanpaneel; lazy aanmaken bewaart afbeelding en crop over toggles heen. */
     @FXML
     private void onImportFromImage() {
-        Stage scannerStage = new Stage();
-        scannerStage.initOwner(stage);
-        scannerStage.initModality(Modality.WINDOW_MODAL);
-        scannerStage.setTitle("Import from Image");
+        if (scanPane == null) {
+            scanPane = new ImageScanPane(stage, this::applyScanResult);
+            scanColumn.getChildren().add(scanPane);
+        }
+        boolean show = !scanColumn.isVisible();
+        scanColumn.setVisible(show);
+        scanColumn.setManaged(show);
+    }
 
-        ImageScannerView scannerView = new ImageScannerView();
-        Parent content = scannerView.createView(scannerStage, fen -> {
-            model.initializeFromFEN(fen);
-            setTurnSelectorFromFen(fen);
-            fenTextField.setText(fen);
-            scannerStage.close();
-        });
-
-        scannerStage.setScene(new Scene(content));
-        scannerStage.show();
+    /**
+     * Zet een scanresultaat op het editor-bord. Het bord draait mee met het perspectief
+     * van de afbeelding en de partij onderaan is aan zet. Markeren moet ná de
+     * perspectiefwissel: flip() herbouwt de SquareViews en zou de marks wissen.
+     */
+    private void applyScanResult(ScanResult result, boolean blackPerspective) {
+        boolean whiteToMove = !blackPerspective;
+        String fen = result.toFEN(whiteToMove);
+        model.initializeFromFEN(fen);
+        isWhite = whiteToMove;
+        board.setWhitePerspective(isWhite);
+        layoutBoardColumn();
+        board.markLowConfidenceSquares(result.getLowConfidenceSquares());
+        whoseTurnSelector.setValue(whiteToMove ? WHITE_TO_MOVE : BLACK_TO_MOVE);
+        fenTextField.setText(fen);
     }
 
     private void onLoadFen() {

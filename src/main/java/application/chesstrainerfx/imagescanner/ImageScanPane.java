@@ -1,18 +1,15 @@
 package application.chesstrainerfx.imagescanner;
 
-import application.chesstrainerfx.controller.Controller;
-import application.chesstrainerfx.utils.BoardEditor;
-import application.chesstrainerfx.utils.PieceSelectorPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.image.*;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -22,37 +19,37 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
 /**
- * UI voor het omzetten van een schaakbord-afbeelding naar FEN.
+ * Scanpaneel voor het omzetten van een schaakbord-afbeelding naar een positie,
+ * ingebed in de Position Editor (toonbaar/verbergbaar via "Import from Image").
  *
  * Stroom:
- *  1. Bestand kiezen → afbeelding getoond in linker preview
+ *  1. Bestand kiezen → afbeelding getoond in de preview
  *  2. Sleep over het bord-gebied om het bij te snijden (optioneel; standaard = hele afbeelding)
- *  3. Scan ▶ → scanner loopt; resultaat verschijnt in rechter BoardEditor
+ *  3. Scan ▶ → scanner loopt; het resultaat gaat via de ScanListener naar het editor-bord
  *     Oranje velden = lage scanner-confidence → controleer/corrigeer via drag-drop
- *  4. Selecteer wie aan zet is; klik "FEN kopiëren" of "Gebruik FEN" om te exporteren
- *
- * Bereikbaar als scherm binnen de Puzzles-module (zie Main.openImageScanner).
- * Als onAccept niet null is (via createView(Stage, Consumer)), verschijnt ook "Accept position".
  */
-public class ImageScannerView {
+public class ImageScanPane extends VBox {
+
+    /** Callback waarmee een afgeronde scan aan de omliggende editor wordt doorgegeven. */
+    public interface ScanListener {
+        void onScanCompleted(ScanResult result, boolean blackPerspective);
+    }
 
     private static final int PREVIEW_SIZE = 400;
-    private static final int BOARD_SIZE   = 480;
 
     // onthoudt de map van de laatst gekozen afbeelding tussen sessies
-    private static final Preferences PREFS = Preferences.userNodeForPackage(ImageScannerView.class);
+    private static final Preferences PREFS = Preferences.userNodeForPackage(ImageScanPane.class);
     private static final String PREF_LAST_IMAGE_DIR = "lastImageDir";
 
     private static final String WHITE_BOTTOM = "Wit onder";
     private static final String BLACK_BOTTOM = "Zwart onder";
-    private static final String WHITE_TO_MOVE = "Wit aan zet";
-    private static final String BLACK_TO_MOVE = "Zwart aan zet";
 
-    // ---- linker panel ----
+    private final ImageScannerPresenter presenter = new ImageScannerPresenter();
+    private final ScanListener listener;
+
     private Image loadedImage;
     private final ImageView previewImageView = new ImageView();
     private final Rectangle cropRect        = new Rectangle();
@@ -61,58 +58,16 @@ public class ImageScannerView {
     private double cropVX, cropVY, cropVW, cropVH;
     private boolean hasCrop = false;
 
-    // ---- rechter panel ----
-    private final ImageScannerPresenter presenter = new ImageScannerPresenter();
-    private BoardEditor boardEditor;
-    private final Label statusLabel   = new Label("Laad een afbeelding om te beginnen.");
-    private final TextField fenField  = new TextField();
-    private final ComboBox<String> turnBox = new ComboBox<>();
-
-    // ---- knoppen ----
     private final Button scanBtn      = new Button("Scan ▶");
     private final Button resetCropBtn = new Button("Reset crop");
     private final ComboBox<String> perspectiveBox = new ComboBox<>();
+    private final Label statusLabel = new Label("Laad een afbeelding om te beginnen.");
 
-    // null = standalone modus (geen "Accept position"-knop)
-    private Consumer<String> onAccept;
+    /** Bouwt het scanpaneel; Stage is nodig voor de FileChooser. */
+    public ImageScanPane(Stage stage, ScanListener listener) {
+        super(10);
+        this.listener = listener;
 
-    // onderdrukt listener-reacties tijdens programmatische updates (voorkomt re-scan loops)
-    private boolean suppressControls = false;
-
-    /** Bouwt het scanner-scherm; Stage is nodig voor de FileChooser. */
-    public Parent createView(Stage stage) {
-        return createView(stage, null);
-    }
-
-    /**
-     * Bouwt het scanner-scherm met optionele accept-callback.
-     * Als onAccept niet null is, verschijnt een "Accept position"-knop die de FEN
-     * teruggeeft aan de aanroeper (bijv. PositionEditor).
-     */
-    public Parent createView(Stage stage, Consumer<String> onAccept) {
-        this.onAccept = onAccept;
-
-        Controller editorController = new Controller();
-        editorController.setEditorMode(true); // vrije plaatsing voor correctie via drag
-
-        boardEditor = new BoardEditor(
-            presenter.getResultModel(),
-            editorController,
-            true,
-            BOARD_SIZE
-        );
-
-        HBox root = new HBox(20, buildLeftPanel(stage), buildRightPanel());
-        root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: #2b2b2b;");
-        return root;
-    }
-
-    // -------------------------------------------------------------------------
-    // Linker panel: afbeelding + crop + scan
-    // -------------------------------------------------------------------------
-
-    private VBox buildLeftPanel(Stage stage) {
         Label title = styledLabel("Afbeelding", 16, true);
 
         // Preview-container: vaste grootte, afbeelding geschaald erin
@@ -157,7 +112,7 @@ public class ImageScannerView {
         perspectiveBox.setStyle("-fx-background-color: #444; -fx-text-fill: white;");
         // Een ander perspectief vereist een nieuwe cel→FEN mapping → opnieuw scannen.
         perspectiveBox.valueProperty().addListener((obs, oldV, newV) -> {
-            if (suppressControls || loadedImage == null) return;
+            if (loadedImage == null) return;
             onScan();
         });
         Label perspLabel = styledLabel("Perspectief:", 12, false);
@@ -167,9 +122,16 @@ public class ImageScannerView {
         HBox btnRow = new HBox(10, chooseBtn, scanBtn, resetCropBtn);
         btnRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox panel = new VBox(10, title, previewPane, cropHint, perspRow, btnRow);
-        panel.setPrefWidth(PREVIEW_SIZE + 20);
-        return panel;
+        statusLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 12;");
+        statusLabel.setWrapText(true);
+        statusLabel.setMaxWidth(PREVIEW_SIZE);
+
+        setPadding(new Insets(20));
+        setStyle("-fx-background-color: #2b2b2b;");
+        setPrefWidth(PREVIEW_SIZE + 40);
+        setMaxWidth(PREVIEW_SIZE + 40);
+        setAlignment(Pos.TOP_LEFT);
+        getChildren().addAll(title, previewPane, cropHint, perspRow, btnRow, statusLabel);
     }
 
     private void installCropHandlers(StackPane pane) {
@@ -207,63 +169,6 @@ public class ImageScannerView {
         });
     }
 
-    // -------------------------------------------------------------------------
-    // Rechter panel: bord + status + FEN
-    // -------------------------------------------------------------------------
-
-    private VBox buildRightPanel() {
-        Label title = styledLabel("Gecorrigeerde positie", 16, true);
-
-        turnBox.getItems().addAll(WHITE_TO_MOVE, BLACK_TO_MOVE);
-        turnBox.setValue(WHITE_TO_MOVE);
-        turnBox.setStyle("-fx-background-color: #444; -fx-text-fill: white;");
-        // Verzoek 5: FEN moet meteen meebewegen met de gekozen zijde-aan-zet.
-        turnBox.valueProperty().addListener((obs, oldV, newV) -> {
-            if (suppressControls || presenter.getLastResult() == null) return;
-            fenField.setText(presenter.exportFEN(isWhiteToMove()));
-        });
-
-        Button copyBtn = new Button("FEN kopiëren");
-        styleButton(copyBtn, false);
-        copyBtn.setOnAction(e -> {
-            String fen = presenter.exportFEN(isWhiteToMove());
-            fenField.setText(fen);
-            ClipboardContent cc = new ClipboardContent();
-            cc.putString(fen);
-            Clipboard.getSystemClipboard().setContent(cc);
-            statusLabel.setText("FEN gekopieerd naar klembord.");
-        });
-
-        fenField.setEditable(false);
-        fenField.setStyle("-fx-background-color: #333; -fx-text-fill: #ccc; -fx-font-family: monospace;");
-        fenField.setPrefWidth(500);
-
-        statusLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 12;");
-
-        HBox controlRow;
-        if (onAccept != null) {
-            Button acceptBtn = new Button("Accept position");
-            styleButton(acceptBtn, true);
-            acceptBtn.setOnAction(e -> onAccept.accept(presenter.exportFEN(isWhiteToMove())));
-            controlRow = new HBox(10, turnBox, copyBtn, acceptBtn);
-        } else {
-            controlRow = new HBox(10, turnBox, copyBtn);
-        }
-        controlRow.setAlignment(Pos.CENTER_LEFT);
-
-        // Stuk-palet voor correctie: sleep het juiste stuk op een (oranje) veld, of leeg via trash.
-        HBox blackPieces = new HBox(new PieceSelectorPane(piece -> {}).blackPieces());
-        HBox whitePieces = new HBox(new PieceSelectorPane(piece -> {}).whitePieces());
-
-        VBox panel = new VBox(10, title, blackPieces, boardEditor, whitePieces, statusLabel, controlRow, fenField);
-        panel.setAlignment(Pos.TOP_LEFT);
-        return panel;
-    }
-
-    // -------------------------------------------------------------------------
-    // Acties
-    // -------------------------------------------------------------------------
-
     private void chooseFile(Stage stage) {
         FileChooser fc = new FileChooser();
         fc.setTitle("Selecteer een schaakbord-afbeelding");
@@ -286,8 +191,6 @@ public class ImageScannerView {
         resetCropBtn.setDisable(true);
         scanBtn.setDisable(false);
         statusLabel.setText("Afbeelding geladen. Sleep voor crop of scan direct.");
-        fenField.clear();
-        boardEditor.clearAllMarks();
     }
 
     private void onScan() {
@@ -303,27 +206,14 @@ public class ImageScannerView {
 
         ScanResult result = presenter.scan(toScan);
 
-        // Verzoeken 3/4: bord meedraaien zodat het de afbeelding volgt, en de zijde-aan-zet
-        // afleiden uit het perspectief (de partij onderaan is aan zet).
-        suppressControls = true;
-        turnBox.setValue(black ? BLACK_TO_MOVE : WHITE_TO_MOVE);
-        suppressControls = false;
-        boardEditor.setWhitePerspective(!black);
-
-        boardEditor.markLowConfidenceSquares(result.getLowConfidenceSquares());
-
         int low = result.getLowConfidenceSquares().size();
         statusLabel.setText(low == 0
             ? "Scan voltooid — alle velden herkend met hoge zekerheid."
             : "Scan voltooid — " + low + " veld(en) onzeker (oranje). Controleer en corrigeer.");
 
-        fenField.setText(presenter.exportFEN(isWhiteToMove()));
+        listener.onScanCompleted(result, black);
         scanBtn.setDisable(false);
     }
-
-    // -------------------------------------------------------------------------
-    // Hulpmethoden
-    // -------------------------------------------------------------------------
 
     /**
      * Berekent de werkelijk weergegeven afbeeldingsbounds binnen de 400×400 preview
@@ -358,10 +248,6 @@ public class ImageScannerView {
             for (int col = 0; col < imgW; col++)
                 pw.setArgb(col, row, pr.getArgb(imgX + col, imgY + row));
         return out;
-    }
-
-    private boolean isWhiteToMove() {
-        return WHITE_TO_MOVE.equals(turnBox.getValue());
     }
 
     private Label styledLabel(String text, int size, boolean bold) {

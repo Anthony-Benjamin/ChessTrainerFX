@@ -15,12 +15,12 @@
 
     <!-- Bordkolom: titel, zwarte stukken, bord, witte stukken, FEN (gevuld in de controller) -->
     <VBox fx:id="boardColumn" spacing="10">
-        <padding><Insets left="50"/></padding>
+        <padding><Insets left="10"/></padding>
     </VBox>
 
     <!-- Zijpaneel -->
     <VBox spacing="10">
-        <padding><Insets top="10" left="75"/></padding>
+        <padding><Insets top="10" left="20"/></padding>
 
         <HBox spacing="5" alignment="CENTER_RIGHT">
             <Label text="Category:" style="-fx-font-weight: bold;"/>
@@ -78,5 +78,10 @@
             <padding><Insets top="10"/></padding>
             <Button text="Save exercise" onAction="#onSaveExercise"/>
         </HBox>
+    </VBox>
+
+    <!-- Scanpaneel: verborgen tot "Import from Image"; inhoud (ImageScanPane) komt uit de controller -->
+    <VBox fx:id="scanColumn" visible="false" managed="false" alignment="TOP_LEFT">
+        <padding><Insets top="10"/></padding>
     </VBox>
 </HBox>
