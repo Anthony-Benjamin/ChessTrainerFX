@@ -47,6 +47,7 @@ public class PositionEditorController {
     @FXML private Label categoryStatusLbl;
     @FXML private Label categoryPathLbl;
     @FXML private TextArea movesWindow;
+    @FXML private TextArea commentsWindow;
     @FXML private ComboBox<String> whoseTurnSelector;
     @FXML private CheckBox whiteKingSideCastling;
     @FXML private CheckBox whiteQueenSideCastling;
@@ -252,7 +253,7 @@ public class PositionEditorController {
         boolean whiteToMove = WHITE_TO_MOVE.equals(whoseTurnSelector.getValue());
         String fen = model.exportToFEN(whiteToMove, buildCastlingString());
         String moves = movesWindow.getText();
-        saveToFile(file, PgnUtils.buildExercisePgn(name, fen, moves));
+        saveToFile(file, PgnUtils.buildExercisePgn(name, fen, moves, commentsWindow.getText()));
     }
 
     /** Bouwt het FEN-rokadeveld uit de checkboxes ("KQkq", "Kq", "-", ...). */

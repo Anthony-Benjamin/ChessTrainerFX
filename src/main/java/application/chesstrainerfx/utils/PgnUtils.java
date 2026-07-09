@@ -66,9 +66,9 @@ public class PgnUtils {
 
     /**
      * Bouwt een minimale PGN-oefening: standaard tags, de FEN van de
-     * opgezette positie en de (optionele) zettenreeks.
+     * opgezette positie, optioneel commentaar en de (optionele) zettenreeks.
      */
-    public static String buildExercisePgn(String title, String fen, String moves) {
+    public static String buildExercisePgn(String title, String fen, String moves, String comments) {
         StringBuilder pgn = new StringBuilder();
 
         appendTag(pgn, "Event", "?");
@@ -86,11 +86,29 @@ public class PgnUtils {
         if (moves.startsWith("1 -")) {
             moves = moves.replace("1 -", "1.");
         }
+        String comment = sanitizeComment(comments);
+        if (!comment.isEmpty()) {
+            pgn.append("{").append(comment).append("} ");
+        }
         pgn.append(moves);
         if (!moves.isBlank()) pgn.append(" ");
         pgn.append("*\n");
 
         return pgn.toString();
+    }
+
+    /**
+     * Maakt commentaartekst veilig voor een {...}-blok: accolades zouden het blok
+     * vroegtijdig sluiten en een newline vóór "[Event" zou het bestand in twee
+     * games splitsen, dus die worden vervangen respectievelijk samengevouwen.
+     */
+    private static String sanitizeComment(String comments) {
+        if (comments == null) return "";
+        return comments
+                .replace('{', '(')
+                .replace('}', ')')
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     private static void appendTag(StringBuilder sb, String key, String value) {

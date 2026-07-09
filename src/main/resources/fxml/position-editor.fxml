@@ -56,6 +56,11 @@
             <TextArea fx:id="movesWindow" maxWidth="310" maxHeight="150"/>
         </VBox>
 
+        <VBox alignment="CENTER">
+            <Label text="Comments" style="-fx-font-weight: bold;"/>
+            <TextArea fx:id="commentsWindow" maxWidth="310" maxHeight="100" prefHeight="100" wrapText="true"/>
+        </VBox>
+
         <HBox alignment="CENTER">
             <ComboBox fx:id="whoseTurnSelector"/>
         </HBox>
