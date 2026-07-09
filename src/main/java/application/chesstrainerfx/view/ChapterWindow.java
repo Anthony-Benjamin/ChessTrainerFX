@@ -52,6 +52,7 @@ public class ChapterWindow extends BorderPane {
     private BoardView boardView;
     private ListView<String> movesList;
     private Label statusLabel;   // "Mat!" / "Opgelost!" recht naast het bord
+    private String exerciseComments = ""; // uitleg van de actieve exercise, klik-om-te-tonen naast het bord
 
     private final Stage stage;
 
@@ -397,9 +398,43 @@ public class ChapterWindow extends BorderPane {
         boardView.turnLabelHeightProperty().addListener((o, ov, nv) ->
                 moveBox.setPadding(new Insets(nv.doubleValue() + 10, 0, 0, 0)));
 
-        // Mat-melding centreert in de open ruimte rechts van de knoppenkolom.
-        StackPane statusArea = new StackPane(statusLabel);
+        // Uitleg van de exercise: standaard verborgen, alleen op te vragen als er commentaar is.
+        Label explanationLabel = new Label(exerciseComments);
+        explanationLabel.setWrapText(true);
+        explanationLabel.setStyle("""
+                        -fx-text-fill: #f5deb3;
+                        -fx-font-size: 16px;
+                        -fx-background-color: rgba(20,20,20,0.65);
+                        -fx-background-radius: 8;
+                        -fx-padding: 12;
+                """);
+        explanationLabel.setVisible(false);
+        explanationLabel.managedProperty().bind(explanationLabel.visibleProperty());
+
+        Button btnUitleg = new Button();
+        btnUitleg.setStyle("""
+                        -fx-background-color: rgba(20,20,20,0.65);
+                        -fx-text-fill: white;
+                        -fx-font-weight: bold;
+                        -fx-background-radius: 8;
+                        -fx-padding: 6 12 6 12;
+                        -fx-border-color: rgba(255,255,255,0.35);
+                        -fx-border-radius: 8;
+                """);
+        btnUitleg.textProperty().bind(
+                Bindings.when(explanationLabel.visibleProperty())
+                        .then("Verberg uitleg")
+                        .otherwise("Toon uitleg"));
+        btnUitleg.setOnAction(e -> explanationLabel.setVisible(!explanationLabel.isVisible()));
+        btnUitleg.setVisible(!exerciseComments.isBlank());
+        btnUitleg.managedProperty().bind(btnUitleg.visibleProperty());
+
+        // Mat-melding centreert in de open ruimte rechts van de knoppenkolom; de uitleg komt erboven.
+        VBox statusColumn = new VBox(14, btnUitleg, explanationLabel, statusLabel);
+        statusColumn.setAlignment(Pos.CENTER);
+        StackPane statusArea = new StackPane(statusColumn);
         statusArea.setAlignment(Pos.CENTER);
+        explanationLabel.maxWidthProperty().bind(statusArea.widthProperty().subtract(40));
         HBox.setHgrow(statusArea, Priority.ALWAYS);
 
         HBox row = new HBox(30, boardView, moveBox, statusArea);
@@ -460,6 +495,8 @@ public class ChapterWindow extends BorderPane {
      * hoofdstuk-introtekst staan.
      */
     public void setExerciseInfo(String title, String subtitle, String comments) {
+        // Rauwe tekst voor de uitleg-knop naast het bord (formatTheoryText zou SAN als O-O verminken).
+        this.exerciseComments = comments == null ? "" : comments.trim();
         if (titleLabel != null && title != null) {
             titleLabel.setText(isBlank(subtitle) ? title : title + " — " + subtitle);
         }
