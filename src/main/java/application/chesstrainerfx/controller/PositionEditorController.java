@@ -139,11 +139,13 @@ public class PositionEditorController {
     @FXML
     private void onStartPosition() {
         model.initializeFromFEN("");
+        board.clearAllMarks();
     }
 
     @FXML
     private void onClearBoard() {
         model.clearBoard();
+        board.clearAllMarks();
     }
 
     @FXML
@@ -186,6 +188,7 @@ public class PositionEditorController {
         String fen = fenTextField.getText().trim();
         if (!fen.isBlank()) {
             model.initializeFromFEN(fen);
+            board.clearAllMarks();
             setTurnSelectorFromFen(fen);
         }
     }
