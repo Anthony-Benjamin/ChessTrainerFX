@@ -514,12 +514,8 @@ public class ChapterWindow extends BorderPane {
     private static String formatTheoryText(String text) {
         if (text == null) return "";
 
-        // Normaliseer line endings
-        text = text.replace("\r\n", "\n");
-
-        // Forceer wrapping binnen regels door lange stukken te splitsen op spaties
-        text = text.replaceAll("(?<=\\S)(?=\\p{Lu})", " "); // voeg spaties toe voor hoofdletters
-        text = text.replaceAll("\\s+", " "); // dubbele spaties weg
+        // Regeleinden uit het PGN-bestand worden gewone spaties; het label wrapt zelf.
+        text = text.replaceAll("\\s+", " ");
 
         return text.trim();
     }
