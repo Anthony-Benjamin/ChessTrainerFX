@@ -444,7 +444,16 @@ public class ChapterWindow extends BorderPane {
         noteArea.setWrapText(true);
         noteArea.setPrefRowCount(4);
         noteArea.setMaxWidth(360);
-        noteArea.setStyle("-fx-font-size: 14px;");
+        // Zelfde look als het notitielabel: donkere achtergrond, tarwekleurige letters.
+        noteArea.setStyle("""
+                        -fx-text-fill: #f5deb3;
+                        -fx-font-size: 16px;
+                        -fx-font-style: italic;
+                        -fx-control-inner-background: rgba(20,20,20,0.85);
+                        -fx-background-color: rgba(20,20,20,0.65);
+                        -fx-background-radius: 8;
+                        -fx-highlight-fill: rgba(245,222,179,0.35);
+                """);
         noteArea.visibleProperty().bind(notitieBewerken);
         noteArea.managedProperty().bind(noteArea.visibleProperty());
 
