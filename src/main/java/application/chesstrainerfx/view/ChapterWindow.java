@@ -7,6 +7,7 @@ import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.pgnreader.model.Exercise;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 import javafx.geometry.Insets;
@@ -407,11 +408,14 @@ public class ChapterWindow extends BorderPane {
 
         // Uitleg + eigen notitie van de exercise: standaard verborgen, samen te tonen via één knop.
         SimpleBooleanProperty uitlegZichtbaar = new SimpleBooleanProperty(false);
-        SimpleBooleanProperty heeftUitleg = new SimpleBooleanProperty(!exerciseComments.isBlank());
+        SimpleStringProperty uitleg = new SimpleStringProperty(exerciseComments);
         SimpleStringProperty notitie = new SimpleStringProperty(
                 activeExercise == null ? "" : activeExercise.getUserNote());
+        // Ingebed bewerkveld (geen apart dialoogvenster): 0 = niet bewerken, 1 = uitleg, 2 = notitie.
+        SimpleIntegerProperty bewerkModus = new SimpleIntegerProperty(0);
 
-        Label explanationLabel = new Label(exerciseComments);
+        Label explanationLabel = new Label();
+        explanationLabel.textProperty().bind(uitleg);
         explanationLabel.setWrapText(true);
         explanationLabel.setStyle("""
                         -fx-text-fill: #f5deb3;
@@ -420,7 +424,8 @@ public class ChapterWindow extends BorderPane {
                         -fx-background-radius: 8;
                         -fx-padding: 12;
                 """);
-        explanationLabel.visibleProperty().bind(uitlegZichtbaar.and(heeftUitleg));
+        explanationLabel.visibleProperty().bind(
+                uitlegZichtbaar.and(uitleg.isNotEmpty()).and(bewerkModus.isNotEqualTo(1)));
         explanationLabel.managedProperty().bind(explanationLabel.visibleProperty());
 
         Label noteLabel = new Label();
@@ -434,10 +439,8 @@ public class ChapterWindow extends BorderPane {
                         -fx-background-radius: 8;
                         -fx-padding: 12;
                 """);
-        // Ingebed bewerkveld voor de notitie (geen apart dialoogvenster).
-        SimpleBooleanProperty notitieBewerken = new SimpleBooleanProperty(false);
         noteLabel.visibleProperty().bind(
-                uitlegZichtbaar.and(notitie.isNotEmpty()).and(notitieBewerken.not()));
+                uitlegZichtbaar.and(notitie.isNotEmpty()).and(bewerkModus.isNotEqualTo(2)));
         noteLabel.managedProperty().bind(noteLabel.visibleProperty());
 
         TextArea noteArea = new TextArea();
@@ -454,7 +457,7 @@ public class ChapterWindow extends BorderPane {
                         -fx-background-radius: 8;
                         -fx-highlight-fill: rgba(245,222,179,0.35);
                 """);
-        noteArea.visibleProperty().bind(notitieBewerken);
+        noteArea.visibleProperty().bind(bewerkModus.isNotEqualTo(0));
         noteArea.managedProperty().bind(noteArea.visibleProperty());
 
         String buttonStyle = """
@@ -467,6 +470,8 @@ public class ChapterWindow extends BorderPane {
                         -fx-border-radius: 8;
                 """;
 
+        boolean heeftBron = activeExercise != null && activeExercise.getSourceFile() != null;
+
         Button btnUitleg = new Button();
         btnUitleg.setStyle(buttonStyle);
         btnUitleg.textProperty().bind(
@@ -474,49 +479,78 @@ public class ChapterWindow extends BorderPane {
                         .then("Verberg uitleg")
                         .otherwise("Toon uitleg"));
         btnUitleg.setOnAction(e -> uitlegZichtbaar.set(!uitlegZichtbaar.get()));
-        btnUitleg.visibleProperty().bind(heeftUitleg.or(notitie.isNotEmpty()));
+        btnUitleg.visibleProperty().bind(
+                uitleg.isNotEmpty().or(notitie.isNotEmpty()).and(bewerkModus.isEqualTo(0)));
         btnUitleg.managedProperty().bind(btnUitleg.visibleProperty());
 
-        // Eigen notitie toevoegen/bewerken; alleen mogelijk als de exercise een bronbestand heeft.
-        // Eén knop wisselt tussen bewerken en opslaan; het tekstveld staat gewoon in het venster.
+        // Auteurscommentaar bewerken in het ingebedde tekstveld;
+        // alleen mogelijk als de exercise een bronbestand heeft.
+        Button btnUitlegBewerken = new Button();
+        btnUitlegBewerken.setStyle(buttonStyle);
+        btnUitlegBewerken.textProperty().bind(
+                Bindings.when(uitleg.isEmpty())
+                        .then("Uitleg toevoegen…")
+                        .otherwise("Uitleg bewerken…"));
+        btnUitlegBewerken.visibleProperty().bind(
+                bewerkModus.isEqualTo(0).and(new SimpleBooleanProperty(heeftBron)));
+        btnUitlegBewerken.managedProperty().bind(btnUitlegBewerken.visibleProperty());
+        btnUitlegBewerken.setOnAction(e -> {
+            noteArea.setText(activeExercise.getComments());
+            bewerkModus.set(1);
+            noteArea.requestFocus();
+        });
+
+        // Eigen notitie toevoegen/bewerken in hetzelfde tekstveld.
         Button btnNotitie = new Button();
         btnNotitie.setStyle(buttonStyle);
         btnNotitie.textProperty().bind(
-                Bindings.when(notitieBewerken)
-                        .then("Notitie opslaan")
-                        .otherwise(Bindings.when(notitie.isEmpty())
-                                .then("Notitie toevoegen…")
-                                .otherwise("Notitie bewerken…")));
-        btnNotitie.setVisible(activeExercise != null && activeExercise.getSourceFile() != null);
+                Bindings.when(notitie.isEmpty())
+                        .then("Notitie toevoegen…")
+                        .otherwise("Notitie bewerken…"));
+        btnNotitie.visibleProperty().bind(
+                bewerkModus.isEqualTo(0).and(new SimpleBooleanProperty(heeftBron)));
         btnNotitie.managedProperty().bind(btnNotitie.visibleProperty());
         btnNotitie.setOnAction(e -> {
-            if (!notitieBewerken.get()) {
-                noteArea.setText(notitie.get());
-                notitieBewerken.set(true);
-                noteArea.requestFocus();
-                return;
-            }
-            if (presenter.onSaveNote(noteArea.getText())) {
-                notitie.set(activeExercise.getUserNote());
-                notitieBewerken.set(false);
-                if (!notitie.get().isEmpty()) {
-                    uitlegZichtbaar.set(true);
-                }
-            } else {
+            noteArea.setText(notitie.get());
+            bewerkModus.set(2);
+            noteArea.requestFocus();
+        });
+
+        Button btnOpslaan = new Button("Opslaan");
+        btnOpslaan.setStyle(buttonStyle);
+        btnOpslaan.visibleProperty().bind(bewerkModus.isNotEqualTo(0));
+        btnOpslaan.managedProperty().bind(btnOpslaan.visibleProperty());
+        btnOpslaan.setOnAction(e -> {
+            boolean uitlegModus = bewerkModus.get() == 1;
+            boolean gelukt = uitlegModus
+                    ? presenter.onSaveComment(noteArea.getText())
+                    : presenter.onSaveNote(noteArea.getText());
+            if (!gelukt) {
                 Alert alert = new Alert(Alert.AlertType.ERROR,
-                        "De notitie kon niet in het PGN-bestand worden opgeslagen.");
+                        "De tekst kon niet in het PGN-bestand worden opgeslagen.");
                 alert.setHeaderText(null);
                 alert.showAndWait();
+                return;
+            }
+            if (uitlegModus) {
+                exerciseComments = activeExercise.getComments();
+                uitleg.set(exerciseComments);
+            } else {
+                notitie.set(activeExercise.getUserNote());
+            }
+            bewerkModus.set(0);
+            if (!uitleg.get().isEmpty() || !notitie.get().isEmpty()) {
+                uitlegZichtbaar.set(true);
             }
         });
 
         Button btnAnnuleer = new Button("Annuleren");
         btnAnnuleer.setStyle(buttonStyle);
-        btnAnnuleer.visibleProperty().bind(notitieBewerken);
+        btnAnnuleer.visibleProperty().bind(bewerkModus.isNotEqualTo(0));
         btnAnnuleer.managedProperty().bind(btnAnnuleer.visibleProperty());
-        btnAnnuleer.setOnAction(e -> notitieBewerken.set(false));
+        btnAnnuleer.setOnAction(e -> bewerkModus.set(0));
 
-        HBox buttonRow = new HBox(10, btnUitleg, btnNotitie, btnAnnuleer);
+        HBox buttonRow = new HBox(10, btnUitleg, btnUitlegBewerken, btnNotitie, btnOpslaan, btnAnnuleer);
         buttonRow.setAlignment(Pos.CENTER);
 
         // Mat-melding centreert in de open ruimte rechts van de knoppenkolom; de uitleg komt erboven.

@@ -4,7 +4,7 @@ import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.chesstrainerfx.utils.PgnUtils;
 import application.chesstrainerfx.view.ChapterWindow;
-import application.pgnreader.io.PGNNoteWriter;
+import application.pgnreader.io.PGNCommentWriter;
 import application.pgnreader.model.Exercise;
 import javafx.stage.Stage;
 
@@ -115,10 +115,24 @@ public class ChapterPresenter {
     public boolean onSaveNote(String text) {
         if (currentIndex < 0) return false;
         Exercise ex = exercises.get(currentIndex);
-        if (!PGNNoteWriter.writeUserNote(ex.getSourceFile(), ex.getGameIndex(), text)) {
+        if (!PGNCommentWriter.writeUserNote(ex.getSourceFile(), ex.getGameIndex(), text)) {
             return false;
         }
         ex.setUserNote(PgnUtils.sanitizeComment(text));
+        return true;
+    }
+
+    /**
+     * Slaat het bewerkte auteurscommentaar van de actieve exercise op in het
+     * bron-PGN-bestand. Geeft false terug als het schrijven mislukt.
+     */
+    public boolean onSaveComment(String text) {
+        if (currentIndex < 0) return false;
+        Exercise ex = exercises.get(currentIndex);
+        if (!PGNCommentWriter.writeAuthorComment(ex.getSourceFile(), ex.getGameIndex(), text)) {
+            return false;
+        }
+        ex.setComments(PgnUtils.sanitizeComment(text));
         return true;
     }
 

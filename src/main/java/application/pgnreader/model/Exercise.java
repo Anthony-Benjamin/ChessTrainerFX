@@ -7,7 +7,7 @@ public class Exercise {
     private final String subtitle;
     private final String fen;
     private final String moves;
-    private final String comments;
+    private String comments;       // auteurscommentaar; bewerkbaar vanuit de oefening
     private final Path sourceFile;   // bron-PGN-bestand, null voor in-memory oefeningen
     private final int gameIndex;     // index van het spelblok in het bronbestand, -1 zonder bron
     private String userNote;         // eigen notitie van de gebruiker ({[%unote] ...} in de PGN)
@@ -43,6 +43,10 @@ public class Exercise {
 
     public void setUserNote(String userNote) {
         this.userNote = userNote == null ? "" : userNote;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments == null ? "" : comments;
     }
 
     @Override
