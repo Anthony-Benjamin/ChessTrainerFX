@@ -34,6 +34,7 @@ public class ChapterWindow extends BorderPane {
     private final List<Exercise> playableExercises;
     private final String chapterTitle;
     private String chapterTheoryText = "";
+    private String chapterTheorySource = ""; // rauwe comments van de exercise die de introtekst levert
     private final Consumer<Void> onBack;
     private final ExerciseSessionBuilder exerciseSessionBuilder = new ExerciseSessionBuilder();
     private Mode mode = Mode.LIST;
@@ -143,11 +144,14 @@ public class ChapterWindow extends BorderPane {
         headerRow.getChildren().addAll(backBtn, titleLabel, spacer);
 
 
-        chapterTheoryText = exercises.stream()
-                .map(ex -> formatTheoryText(ex.getComments()))
-                .filter(text -> !text.isBlank())
-                .findFirst()
-                .orElse("");
+        for (Exercise ex : exercises) {
+            String formatted = formatTheoryText(ex.getComments());
+            if (!formatted.isBlank()) {
+                chapterTheoryText = formatted;
+                chapterTheorySource = ex.getComments().trim();
+                break;
+            }
+        }
 
         theoryLabel = new Label(chapterTheoryText);
         theoryLabel.setWrapText(true);
@@ -485,24 +489,24 @@ public class ChapterWindow extends BorderPane {
 
     public void showExerciseList() {
         if (titleLabel != null) titleLabel.setText(chapterTitle);
-        if (theoryLabel != null) theoryLabel.setText(chapterTheoryText);
         switchMode(Mode.LIST);
     }
 
     /**
-     * Toont titel, subtitel en uitleg van de actieve exercise in de header
-     * (door de presenter aangeroepen). Zonder eigen uitleg blijft de
-     * hoofdstuk-introtekst staan.
+     * Toont titel en subtitel van de actieve exercise in de header
+     * (door de presenter aangeroepen). De hoofdstuk-introtekst bovenaan
+     * blijft ongewijzigd; de exercise-comments zijn alleen via de
+     * uitleg-knop naast het bord op te vragen.
      */
     public void setExerciseInfo(String title, String subtitle, String comments) {
         // Rauwe tekst voor de uitleg-knop naast het bord (formatTheoryText zou SAN als O-O verminken).
         this.exerciseComments = comments == null ? "" : comments.trim();
+        // De exercise die de introtekst levert niet nogmaals naast het bord tonen.
+        if (exerciseComments.equals(chapterTheorySource)) {
+            this.exerciseComments = "";
+        }
         if (titleLabel != null && title != null) {
             titleLabel.setText(isBlank(subtitle) ? title : title + " — " + subtitle);
-        }
-        if (theoryLabel != null) {
-            String text = formatTheoryText(comments);
-            theoryLabel.setText(text.isBlank() ? chapterTheoryText : text);
         }
     }
 
