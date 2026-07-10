@@ -434,8 +434,19 @@ public class ChapterWindow extends BorderPane {
                         -fx-background-radius: 8;
                         -fx-padding: 12;
                 """);
-        noteLabel.visibleProperty().bind(uitlegZichtbaar.and(notitie.isNotEmpty()));
+        // Ingebed bewerkveld voor de notitie (geen apart dialoogvenster).
+        SimpleBooleanProperty notitieBewerken = new SimpleBooleanProperty(false);
+        noteLabel.visibleProperty().bind(
+                uitlegZichtbaar.and(notitie.isNotEmpty()).and(notitieBewerken.not()));
         noteLabel.managedProperty().bind(noteLabel.visibleProperty());
+
+        TextArea noteArea = new TextArea();
+        noteArea.setWrapText(true);
+        noteArea.setPrefRowCount(4);
+        noteArea.setMaxWidth(360);
+        noteArea.setStyle("-fx-font-size: 14px;");
+        noteArea.visibleProperty().bind(notitieBewerken);
+        noteArea.managedProperty().bind(noteArea.visibleProperty());
 
         String buttonStyle = """
                         -fx-background-color: rgba(20,20,20,0.65);
@@ -458,35 +469,49 @@ public class ChapterWindow extends BorderPane {
         btnUitleg.managedProperty().bind(btnUitleg.visibleProperty());
 
         // Eigen notitie toevoegen/bewerken; alleen mogelijk als de exercise een bronbestand heeft.
+        // Eén knop wisselt tussen bewerken en opslaan; het tekstveld staat gewoon in het venster.
         Button btnNotitie = new Button();
         btnNotitie.setStyle(buttonStyle);
         btnNotitie.textProperty().bind(
-                Bindings.when(notitie.isEmpty())
-                        .then("Notitie toevoegen…")
-                        .otherwise("Notitie bewerken…"));
+                Bindings.when(notitieBewerken)
+                        .then("Notitie opslaan")
+                        .otherwise(Bindings.when(notitie.isEmpty())
+                                .then("Notitie toevoegen…")
+                                .otherwise("Notitie bewerken…")));
         btnNotitie.setVisible(activeExercise != null && activeExercise.getSourceFile() != null);
         btnNotitie.managedProperty().bind(btnNotitie.visibleProperty());
         btnNotitie.setOnAction(e -> {
-            editUserNote(notitie.get()).ifPresent(text -> {
-                if (presenter.onSaveNote(text)) {
-                    notitie.set(activeExercise.getUserNote());
-                    if (!notitie.get().isEmpty()) {
-                        uitlegZichtbaar.set(true);
-                    }
-                } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR,
-                            "De notitie kon niet in het PGN-bestand worden opgeslagen.");
-                    alert.setHeaderText(null);
-                    alert.showAndWait();
+            if (!notitieBewerken.get()) {
+                noteArea.setText(notitie.get());
+                notitieBewerken.set(true);
+                noteArea.requestFocus();
+                return;
+            }
+            if (presenter.onSaveNote(noteArea.getText())) {
+                notitie.set(activeExercise.getUserNote());
+                notitieBewerken.set(false);
+                if (!notitie.get().isEmpty()) {
+                    uitlegZichtbaar.set(true);
                 }
-            });
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR,
+                        "De notitie kon niet in het PGN-bestand worden opgeslagen.");
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            }
         });
 
-        HBox buttonRow = new HBox(10, btnUitleg, btnNotitie);
+        Button btnAnnuleer = new Button("Annuleren");
+        btnAnnuleer.setStyle(buttonStyle);
+        btnAnnuleer.visibleProperty().bind(notitieBewerken);
+        btnAnnuleer.managedProperty().bind(btnAnnuleer.visibleProperty());
+        btnAnnuleer.setOnAction(e -> notitieBewerken.set(false));
+
+        HBox buttonRow = new HBox(10, btnUitleg, btnNotitie, btnAnnuleer);
         buttonRow.setAlignment(Pos.CENTER);
 
         // Mat-melding centreert in de open ruimte rechts van de knoppenkolom; de uitleg komt erboven.
-        VBox statusColumn = new VBox(14, buttonRow, explanationLabel, noteLabel, statusLabel);
+        VBox statusColumn = new VBox(14, buttonRow, explanationLabel, noteLabel, noteArea, statusLabel);
         statusColumn.setAlignment(Pos.CENTER);
         StackPane statusArea = new StackPane(statusColumn);
         statusArea.setAlignment(Pos.CENTER);
@@ -567,25 +592,6 @@ public class ChapterWindow extends BorderPane {
         }
     }
 
-    /** Dialoog om de eigen notitie te bewerken; geeft de nieuwe tekst terug bij Opslaan. */
-    private java.util.Optional<String> editUserNote(String currentNote) {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.initOwner(stage);
-        dialog.setTitle("Eigen notitie");
-        dialog.setHeaderText("Notitie bij deze oefening (wordt in het PGN-bestand opgeslagen)");
-
-        TextArea area = new TextArea(currentNote);
-        area.setWrapText(true);
-        area.setPrefRowCount(5);
-        area.setPrefWidth(420);
-        dialog.getDialogPane().setContent(area);
-
-        ButtonType save = new ButtonType("Opslaan", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
-        dialog.setResultConverter(bt -> bt == save ? area.getText() : null);
-
-        return dialog.showAndWait();
-    }
 
     /** Maakt PGN-commentaartekst geschikt voor het theorie-vak (line endings en spaties). */
     private static String formatTheoryText(String text) {
