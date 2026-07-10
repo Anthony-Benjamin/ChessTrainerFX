@@ -4,6 +4,7 @@ import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.chesstrainerfx.utils.PgnUtils;
 import application.chesstrainerfx.view.ChapterWindow;
+import application.pgnreader.io.PGNNoteWriter;
 import application.pgnreader.model.Exercise;
 import javafx.stage.Stage;
 
@@ -46,7 +47,7 @@ public class ChapterPresenter {
         if (stage != null) {
             stage.setTitle(windowTitle);
         }
-        view.setExerciseInfo(ex.getTitle(), ex.getSubtitle(), ex.getComments());
+        view.setExerciseInfo(ex);
         // --- 1) Model + controller opbouwen ---
         String fen = (ex.getFen() == null || ex.getFen().isBlank())
                 ? BoardModel.START_FEN
@@ -105,6 +106,20 @@ public class ChapterPresenter {
         }
 
         return items;
+    }
+
+    /**
+     * Slaat de eigen notitie van de actieve exercise op in het bron-PGN-bestand.
+     * Geeft false terug als er geen actieve exercise is of het schrijven mislukt.
+     */
+    public boolean onSaveNote(String text) {
+        if (currentIndex < 0) return false;
+        Exercise ex = exercises.get(currentIndex);
+        if (!PGNNoteWriter.writeUserNote(ex.getSourceFile(), ex.getGameIndex(), text)) {
+            return false;
+        }
+        ex.setUserNote(PgnUtils.sanitizeComment(text));
+        return true;
     }
 
     /** Wordt door de view gebruikt als de Hint-knop wordt geklikt. */

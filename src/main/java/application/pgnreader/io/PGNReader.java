@@ -12,6 +12,9 @@ import java.util.regex.Pattern;
 
 public class PGNReader {
 
+    /** Marker waarmee een eigen notitie van de gebruiker in de PGN wordt opgeslagen. */
+    public static final String USER_NOTE_MARKER = "[%unote]";
+
     /**
      * Leest een PGN-hoofdstuk (meerdere partijen/oefeningen) van schijf en splitst in Exercise-objecten.
      * Geeft een lege lijst terug als het bestand ontbreekt of niet leesbaar is.
@@ -19,7 +22,7 @@ public class PGNReader {
     public static List<Exercise> readChapter(Path file) {
         try {
             String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
-            return splitExercises(content);
+            return splitExercises(content, file);
         } catch (Exception e) {
             return List.of();
         }
@@ -28,7 +31,7 @@ public class PGNReader {
     /**
      * Splitst de volledige PGN-tekst in blokken, elk beginnend bij een [Event ...] tag.
      */
-    private static List<Exercise> splitExercises(String content) {
+    private static List<Exercise> splitExercises(String content, Path file) {
         List<Exercise> result = new ArrayList<>();
         if (content == null || content.isBlank()) return result;
 
@@ -39,6 +42,7 @@ public class PGNReader {
         Pattern blockPattern = Pattern.compile("(?s)(?=\\[Event\\b)(.*?)(?=(\\n\\[Event\\b|\\z))");
         Matcher matcher = blockPattern.matcher(src);
 
+        int gameIndex = 0;
         while (matcher.find()) {
             String block = matcher.group(1).trim();
 
@@ -48,8 +52,10 @@ public class PGNReader {
             String fen   = extractTag(block, "FEN");
             String moves = extractMoves(block);             // movetext zonder comments/NAGs/resultaat, met varianten
             String comments = String.join(" | ", extractComments(block)); // losse comments uit { ... }
+            String userNote = extractUserNote(block);       // eigen notitie uit {[%unote] ...}
 
-            result.add(new Exercise(title, subtitle, fen, moves, comments));
+            result.add(new Exercise(title, subtitle, fen, moves, comments, file, gameIndex, userNote));
+            gameIndex++;
         }
         return result;
     }
@@ -109,6 +115,7 @@ public class PGNReader {
      * zodat de oorspronkelijke tekst behouden blijft.
      * - sla engine evaluatieblokken over ({[%eval ...]} / {[%evp ...]})
      * - sla pure diagram markers over ({[#]})
+     * - sla eigen notities over ({[%unote] ...}); die komen apart binnen via extractUserNote
      */
     private static List<String> extractComments(String block) {
         List<String> comments = new ArrayList<>();
@@ -132,7 +139,12 @@ public class PGNReader {
                 continue;
             }
 
-            // 3) verwijder inline annotaties ([%csl ...], [%cal ...], ...) en [#] markers
+            // 3) sla eigen notities over
+            if (c.startsWith(USER_NOTE_MARKER)) {
+                continue;
+            }
+
+            // 4) verwijder inline annotaties ([%csl ...], [%cal ...], ...) en [#] markers
             c = c.replaceAll("\\[%[^]]*\\]", " ");
             c = c.replaceAll("\\[\\s*#\\s*\\]", " ");
             c = c.replaceAll("\\s+", " ").trim();
@@ -142,5 +154,16 @@ public class PGNReader {
             }
         }
         return comments;
+    }
+
+    /**
+     * Haal de eigen notitie van de gebruiker uit het {[%unote] ...}-blok van het spel.
+     */
+    private static String extractUserNote(String block) {
+        if (block == null || block.isBlank()) return "";
+
+        Matcher m = Pattern.compile("(?s)\\{\\s*" + Pattern.quote(USER_NOTE_MARKER) + "([^}]*)\\}")
+                .matcher(block);
+        return m.find() ? m.group(1).replaceAll("\\s+", " ").trim() : "";
     }
 }

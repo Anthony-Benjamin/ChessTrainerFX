@@ -6,6 +6,8 @@ import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.pgnreader.model.Exercise;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -54,6 +56,7 @@ public class ChapterWindow extends BorderPane {
     private ListView<String> movesList;
     private Label statusLabel;   // "Mat!" / "Opgelost!" recht naast het bord
     private String exerciseComments = ""; // uitleg van de actieve exercise, klik-om-te-tonen naast het bord
+    private Exercise activeExercise;      // actieve exercise, bron voor de eigen notitie
 
     private final Stage stage;
 
@@ -402,7 +405,12 @@ public class ChapterWindow extends BorderPane {
         boardView.turnLabelHeightProperty().addListener((o, ov, nv) ->
                 moveBox.setPadding(new Insets(nv.doubleValue() + 10, 0, 0, 0)));
 
-        // Uitleg van de exercise: standaard verborgen, alleen op te vragen als er commentaar is.
+        // Uitleg + eigen notitie van de exercise: standaard verborgen, samen te tonen via één knop.
+        SimpleBooleanProperty uitlegZichtbaar = new SimpleBooleanProperty(false);
+        SimpleBooleanProperty heeftUitleg = new SimpleBooleanProperty(!exerciseComments.isBlank());
+        SimpleStringProperty notitie = new SimpleStringProperty(
+                activeExercise == null ? "" : activeExercise.getUserNote());
+
         Label explanationLabel = new Label(exerciseComments);
         explanationLabel.setWrapText(true);
         explanationLabel.setStyle("""
@@ -412,11 +420,24 @@ public class ChapterWindow extends BorderPane {
                         -fx-background-radius: 8;
                         -fx-padding: 12;
                 """);
-        explanationLabel.setVisible(false);
+        explanationLabel.visibleProperty().bind(uitlegZichtbaar.and(heeftUitleg));
         explanationLabel.managedProperty().bind(explanationLabel.visibleProperty());
 
-        Button btnUitleg = new Button();
-        btnUitleg.setStyle("""
+        Label noteLabel = new Label();
+        noteLabel.textProperty().bind(Bindings.concat("Eigen notitie: ", notitie));
+        noteLabel.setWrapText(true);
+        noteLabel.setStyle("""
+                        -fx-text-fill: #f5deb3;
+                        -fx-font-size: 16px;
+                        -fx-font-style: italic;
+                        -fx-background-color: rgba(20,20,20,0.65);
+                        -fx-background-radius: 8;
+                        -fx-padding: 12;
+                """);
+        noteLabel.visibleProperty().bind(uitlegZichtbaar.and(notitie.isNotEmpty()));
+        noteLabel.managedProperty().bind(noteLabel.visibleProperty());
+
+        String buttonStyle = """
                         -fx-background-color: rgba(20,20,20,0.65);
                         -fx-text-fill: white;
                         -fx-font-weight: bold;
@@ -424,21 +445,53 @@ public class ChapterWindow extends BorderPane {
                         -fx-padding: 6 12 6 12;
                         -fx-border-color: rgba(255,255,255,0.35);
                         -fx-border-radius: 8;
-                """);
+                """;
+
+        Button btnUitleg = new Button();
+        btnUitleg.setStyle(buttonStyle);
         btnUitleg.textProperty().bind(
-                Bindings.when(explanationLabel.visibleProperty())
+                Bindings.when(uitlegZichtbaar)
                         .then("Verberg uitleg")
                         .otherwise("Toon uitleg"));
-        btnUitleg.setOnAction(e -> explanationLabel.setVisible(!explanationLabel.isVisible()));
-        btnUitleg.setVisible(!exerciseComments.isBlank());
+        btnUitleg.setOnAction(e -> uitlegZichtbaar.set(!uitlegZichtbaar.get()));
+        btnUitleg.visibleProperty().bind(heeftUitleg.or(notitie.isNotEmpty()));
         btnUitleg.managedProperty().bind(btnUitleg.visibleProperty());
 
+        // Eigen notitie toevoegen/bewerken; alleen mogelijk als de exercise een bronbestand heeft.
+        Button btnNotitie = new Button();
+        btnNotitie.setStyle(buttonStyle);
+        btnNotitie.textProperty().bind(
+                Bindings.when(notitie.isEmpty())
+                        .then("Notitie toevoegen…")
+                        .otherwise("Notitie bewerken…"));
+        btnNotitie.setVisible(activeExercise != null && activeExercise.getSourceFile() != null);
+        btnNotitie.managedProperty().bind(btnNotitie.visibleProperty());
+        btnNotitie.setOnAction(e -> {
+            editUserNote(notitie.get()).ifPresent(text -> {
+                if (presenter.onSaveNote(text)) {
+                    notitie.set(activeExercise.getUserNote());
+                    if (!notitie.get().isEmpty()) {
+                        uitlegZichtbaar.set(true);
+                    }
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR,
+                            "De notitie kon niet in het PGN-bestand worden opgeslagen.");
+                    alert.setHeaderText(null);
+                    alert.showAndWait();
+                }
+            });
+        });
+
+        HBox buttonRow = new HBox(10, btnUitleg, btnNotitie);
+        buttonRow.setAlignment(Pos.CENTER);
+
         // Mat-melding centreert in de open ruimte rechts van de knoppenkolom; de uitleg komt erboven.
-        VBox statusColumn = new VBox(14, btnUitleg, explanationLabel, statusLabel);
+        VBox statusColumn = new VBox(14, buttonRow, explanationLabel, noteLabel, statusLabel);
         statusColumn.setAlignment(Pos.CENTER);
         StackPane statusArea = new StackPane(statusColumn);
         statusArea.setAlignment(Pos.CENTER);
         explanationLabel.maxWidthProperty().bind(statusArea.widthProperty().subtract(40));
+        noteLabel.maxWidthProperty().bind(statusArea.widthProperty().subtract(40));
         HBox.setHgrow(statusArea, Priority.ALWAYS);
 
         HBox row = new HBox(30, boardView, moveBox, statusArea);
@@ -495,19 +548,43 @@ public class ChapterWindow extends BorderPane {
     /**
      * Toont titel en subtitel van de actieve exercise in de header
      * (door de presenter aangeroepen). De hoofdstuk-introtekst bovenaan
-     * blijft ongewijzigd; de exercise-comments zijn alleen via de
-     * uitleg-knop naast het bord op te vragen.
+     * blijft ongewijzigd; de exercise-comments en de eigen notitie zijn
+     * alleen via de uitleg-knop naast het bord op te vragen.
      */
-    public void setExerciseInfo(String title, String subtitle, String comments) {
+    public void setExerciseInfo(Exercise exercise) {
+        this.activeExercise = exercise;
         // Rauwe tekst voor de uitleg-knop naast het bord (formatTheoryText zou SAN als O-O verminken).
+        String comments = exercise == null ? "" : exercise.getComments();
         this.exerciseComments = comments == null ? "" : comments.trim();
         // De exercise die de introtekst levert niet nogmaals naast het bord tonen.
         if (exerciseComments.equals(chapterTheorySource)) {
             this.exerciseComments = "";
         }
-        if (titleLabel != null && title != null) {
+        if (titleLabel != null && exercise != null && exercise.getTitle() != null) {
+            String title = exercise.getTitle();
+            String subtitle = exercise.getSubtitle();
             titleLabel.setText(isBlank(subtitle) ? title : title + " — " + subtitle);
         }
+    }
+
+    /** Dialoog om de eigen notitie te bewerken; geeft de nieuwe tekst terug bij Opslaan. */
+    private java.util.Optional<String> editUserNote(String currentNote) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.initOwner(stage);
+        dialog.setTitle("Eigen notitie");
+        dialog.setHeaderText("Notitie bij deze oefening (wordt in het PGN-bestand opgeslagen)");
+
+        TextArea area = new TextArea(currentNote);
+        area.setWrapText(true);
+        area.setPrefRowCount(5);
+        area.setPrefWidth(420);
+        dialog.getDialogPane().setContent(area);
+
+        ButtonType save = new ButtonType("Opslaan", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
+        dialog.setResultConverter(bt -> bt == save ? area.getText() : null);
+
+        return dialog.showAndWait();
     }
 
     /** Maakt PGN-commentaartekst geschikt voor het theorie-vak (line endings en spaties). */

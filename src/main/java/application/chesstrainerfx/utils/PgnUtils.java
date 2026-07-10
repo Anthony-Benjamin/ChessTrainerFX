@@ -102,7 +102,7 @@ public class PgnUtils {
      * vroegtijdig sluiten en een newline vóór "[Event" zou het bestand in twee
      * games splitsen, dus die worden vervangen respectievelijk samengevouwen.
      */
-    private static String sanitizeComment(String comments) {
+    public static String sanitizeComment(String comments) {
         if (comments == null) return "";
         return comments
                 .replace('{', '(')
