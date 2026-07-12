@@ -18,6 +18,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.BoxBlur;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -293,7 +295,16 @@ public class Main extends Application {
             controller.init(stage, config.puzzlesDir());
 
             StackPane wrapper = withBackButton(editorRoot, () -> scene.setRoot(moduleRoots.get(PUZZLES)));
-            wrapper.setStyle("-fx-background-color: white;");
+
+            var bgUrl = getClass().getResource("/images/background_chapters_blur.png");
+            ImageView bg = new ImageView(new Image(bgUrl.toExternalForm()));
+            bg.setPreserveRatio(false);
+            bg.setSmooth(true);
+            bg.setMouseTransparent(true);
+            bg.fitWidthProperty().bind(wrapper.widthProperty());
+            bg.fitHeightProperty().bind(wrapper.heightProperty());
+            wrapper.getChildren().add(0, bg);
+
             scene.setRoot(wrapper);
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
