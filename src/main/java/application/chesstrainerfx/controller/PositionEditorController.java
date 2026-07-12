@@ -121,7 +121,7 @@ public class PositionEditorController {
         fenTextField = new TextField();
         fenTextField.setMinWidth(490);
         fenTextField.setEditable(true);
-        fenTextField.setPromptText("Plak of typ een FEN-string…");
+        fenTextField.setPromptText("Paste or type a FEN string…");
         Button loadFenBtn = new Button("Load FEN");
         loadFenBtn.setOnAction(e -> onLoadFen());
         fenBox = new HBox(5, fenLabel, fenTextField, loadFenBtn);
@@ -210,7 +210,7 @@ public class PositionEditorController {
     @FXML
     private void onSetCategory() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Kies een puzzles-sub-categorie");
+        directoryChooser.setTitle("Choose a puzzles sub-category");
 
         File initialDir = saveDirectory != null ? saveDirectory
                 : (puzzlesDir != null && Files.isDirectory(puzzlesDir)) ? puzzlesDir.toFile()
@@ -234,7 +234,7 @@ public class PositionEditorController {
     @FXML
     private void onSaveExercise() {
         if (saveDirectory == null) {
-            showInfo("Geen map geselecteerd", "Selecteer eerst een categorie (map) om het bestand op te slaan.");
+            showInfo("No folder selected", "First select a category (folder) to save the file.");
             return;
         }
 
@@ -271,7 +271,7 @@ public class PositionEditorController {
             writer.write(pgn);
             PREFS.put(PREF_LAST_DIR, file.getParent());
         } catch (IOException ex) {
-            showInfo("Opslaan mislukt", "Kon het bestand niet opslaan: " + ex.getMessage());
+            showInfo("Save failed", "Could not save the file: " + ex.getMessage());
         }
     }
 

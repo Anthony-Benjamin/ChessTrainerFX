@@ -250,9 +250,9 @@ public class Controller {
             List<PieceType> options = List.of(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT);
 
             ChoiceDialog<PieceType> dialog = new ChoiceDialog<>(PieceType.QUEEN, options);
-            dialog.setTitle("Promotie");
-            dialog.setHeaderText("Kies een promotie voor de pion:");
-            dialog.setContentText("Promoveer naar:");
+            dialog.setTitle("Promotion");
+            dialog.setHeaderText("Choose a promotion for the pawn:");
+            dialog.setContentText("Promote to:");
 
             PieceType choice = dialog.showAndWait().orElse(PieceType.QUEEN);
 
@@ -381,9 +381,9 @@ public class Controller {
         }
 
         ChoiceDialog<ExerciseSession.Node> dialog = new ChoiceDialog<>(candidates.get(0), candidates);
-        dialog.setTitle("Computerzet kiezen");
-        dialog.setHeaderText("Kies de variant die de computer speelt:");
-        dialog.setContentText("Computerzet:");
+        dialog.setTitle("Choose computer move");
+        dialog.setHeaderText("Choose the variation the computer plays:");
+        dialog.setContentText("Computer move:");
 
         return dialog.showAndWait().orElse(candidates.get(0));
     }
@@ -396,9 +396,9 @@ public class Controller {
                 getClass().getResource("/css/alert.css").toExternalForm()
         );
 
-        alert.setTitle("Onjuiste zet");
+        alert.setTitle("Wrong move");
         alert.setHeaderText(null);
-        alert.setContentText("Dit is niet de juiste zet. Probeer opnieuw.");
+        alert.setContentText("That is not the right move. Try again.");
         alert.showAndWait();
     }
 
@@ -409,9 +409,9 @@ public class Controller {
             return;
         }
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Oefening klaar");
+        alert.setTitle("Exercise finished");
         alert.setHeaderText(null);
-        alert.setContentText(mate ? "Mat! 🎉" : "Opgelost! 🎉");
+        alert.setContentText(mate ? "Checkmate! 🎉" : "Solved! 🎉");
 
         alert.showAndWait();
     }

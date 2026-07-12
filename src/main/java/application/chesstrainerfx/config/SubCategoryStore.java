@@ -75,17 +75,17 @@ public final class SubCategoryStore {
      */
     public static String validateName(String name, List<String> existing) {
         if (name == null || name.isBlank()) {
-            return "Voer een naam in.";
+            return "Enter a name.";
         }
         String trimmed = name.trim();
         if (INVALID_NAME_CHARS.matcher(trimmed).find()) {
-            return "De naam bevat ongeldige tekens (\\ / : * ? \" < > |).";
+            return "The name contains invalid characters (\\ / : * ? \" < > |).";
         }
         if (trimmed.equals(".") || trimmed.equals("..")) {
-            return "Deze naam is niet toegestaan.";
+            return "This name is not allowed.";
         }
         if (existing.stream().anyMatch(e -> e.equalsIgnoreCase(trimmed))) {
-            return "Er bestaat al een sub-categorie met deze naam.";
+            return "A sub-category with this name already exists.";
         }
         return null;
     }

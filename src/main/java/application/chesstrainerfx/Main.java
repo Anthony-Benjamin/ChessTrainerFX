@@ -190,7 +190,7 @@ public class Main extends Application {
     private void createSubCategory() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("New Sub-category");
-        dialog.setHeaderText("Naam van de nieuwe sub-categorie:");
+        dialog.setHeaderText("Name of the new sub-category:");
         Optional<String> name = dialog.showAndWait();
         if (name.isEmpty()) {
             return;
@@ -199,7 +199,7 @@ public class Main extends Application {
         String trimmed = name.get().trim();
         String error = SubCategoryStore.validateName(trimmed, subCategoryStore.load());
         if (error != null) {
-            showInfo("Ongeldige naam", error);
+            showInfo("Invalid name", error);
             return;
         }
 
@@ -207,20 +207,20 @@ public class Main extends Application {
             subCategoryStore.create(trimmed);
             refreshModule(PUZZLES);
         } catch (IOException e) {
-            showInfo("Aanmaken mislukt", e.getMessage());
+            showInfo("Create failed", e.getMessage());
         }
     }
 
     private void renameSubCategory() {
         List<String> subCategories = subCategoryStore.load();
         if (subCategories.isEmpty()) {
-            showInfo("Geen sub-categorieën", "Er zijn nog geen sub-categorieën om te hernoemen.");
+            showInfo("No sub-categories", "There are no sub-categories to rename yet.");
             return;
         }
 
         ChoiceDialog<String> choice = new ChoiceDialog<>(subCategories.get(0), subCategories);
         choice.setTitle("Rename Sub-category");
-        choice.setHeaderText("Welke sub-categorie wil je hernoemen?");
+        choice.setHeaderText("Which sub-category do you want to rename?");
         Optional<String> selected = choice.showAndWait();
         if (selected.isEmpty()) {
             return;
@@ -228,7 +228,7 @@ public class Main extends Application {
 
         TextInputDialog dialog = new TextInputDialog(selected.get());
         dialog.setTitle("Rename Sub-category");
-        dialog.setHeaderText("Nieuwe naam voor \"" + selected.get() + "\":");
+        dialog.setHeaderText("New name for \"" + selected.get() + "\":");
         Optional<String> newName = dialog.showAndWait();
         if (newName.isEmpty()) {
             return;
@@ -240,7 +240,7 @@ public class Main extends Application {
         }
         String error = SubCategoryStore.validateName(trimmed, subCategories);
         if (error != null) {
-            showInfo("Ongeldige naam", error);
+            showInfo("Invalid name", error);
             return;
         }
 
@@ -248,20 +248,20 @@ public class Main extends Application {
             subCategoryStore.rename(selected.get(), trimmed);
             refreshModule(PUZZLES);
         } catch (IOException e) {
-            showInfo("Hernoemen mislukt", e.getMessage());
+            showInfo("Rename failed", e.getMessage());
         }
     }
 
     private void deleteSubCategory() {
         List<String> subCategories = subCategoryStore.load();
         if (subCategories.isEmpty()) {
-            showInfo("Geen sub-categorieën", "Er zijn nog geen sub-categorieën om te verwijderen.");
+            showInfo("No sub-categories", "There are no sub-categories to delete yet.");
             return;
         }
 
         ChoiceDialog<String> choice = new ChoiceDialog<>(subCategories.get(0), subCategories);
         choice.setTitle("Delete Sub-category");
-        choice.setHeaderText("Welke sub-categorie wil je verwijderen?");
+        choice.setHeaderText("Which sub-category do you want to delete?");
         Optional<String> selected = choice.showAndWait();
         if (selected.isEmpty()) {
             return;
@@ -269,8 +269,8 @@ public class Main extends Application {
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete Sub-category");
-        confirm.setHeaderText("\"" + selected.get() + "\" verwijderen?");
-        confirm.setContentText("Alle PGN-bestanden in deze sub-categorie worden ook verwijderd.");
+        confirm.setHeaderText("Delete \"" + selected.get() + "\"?");
+        confirm.setContentText("All PGN files in this sub-category will also be deleted.");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isEmpty() || result.get() != ButtonType.OK) {
             return;
@@ -280,7 +280,7 @@ public class Main extends Application {
             subCategoryStore.delete(selected.get());
             refreshModule(PUZZLES);
         } catch (IOException e) {
-            showInfo("Verwijderen mislukt", e.getMessage());
+            showInfo("Delete failed", e.getMessage());
         }
     }
 
@@ -298,7 +298,7 @@ public class Main extends Application {
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Position Editor");
-            alert.setHeaderText("Kon de Position Editor niet openen");
+            alert.setHeaderText("Could not open the Position Editor");
             alert.setContentText(e.getMessage());
             alert.show();
         }
@@ -347,9 +347,9 @@ public class Main extends Application {
      */
     private void importPgnFiles(Path targetDir, Runnable afterImport) {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Importeer PGN-bestanden");
+        chooser.setTitle("Import PGN files");
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("PGN-bestanden (*.pgn)", "*.pgn"));
+                new FileChooser.ExtensionFilter("PGN files (*.pgn)", "*.pgn"));
 
         List<File> files = chooser.showOpenMultipleDialog(stage);
         if (files == null || files.isEmpty()) {
@@ -361,7 +361,7 @@ public class Main extends Application {
         for (File file : files) {
             Path target = targetDir.resolve(file.getName());
             if (Files.exists(target)) {
-                skipped.add(file.getName() + " (bestaat al)");
+                skipped.add(file.getName() + " (already exists)");
                 continue;
             }
             try {
@@ -373,11 +373,11 @@ public class Main extends Application {
             }
         }
 
-        StringBuilder msg = new StringBuilder(copied + " bestand(en) geïmporteerd.");
+        StringBuilder msg = new StringBuilder(copied + " file(s) imported.");
         if (!skipped.isEmpty()) {
-            msg.append("\nOvergeslagen:\n").append(String.join("\n", skipped));
+            msg.append("\nSkipped:\n").append(String.join("\n", skipped));
         }
-        showInfo("PGN-import", msg.toString());
+        showInfo("PGN import", msg.toString());
 
         if (copied > 0) {
             afterImport.run();

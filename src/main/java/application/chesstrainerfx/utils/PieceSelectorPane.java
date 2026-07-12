@@ -32,7 +32,7 @@ public class PieceSelectorPane extends VBox {
         this.listener = listener;
 
         // Verwijderknop
-        Button clearBtn = new Button("🗑 Verwijder");
+        Button clearBtn = new Button("🗑 Delete");
         clearBtn.setOnAction(e -> listener.onPieceSelected(null));
 
         getChildren().addAll(grid, clearBtn);

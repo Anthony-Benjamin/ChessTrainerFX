@@ -91,7 +91,7 @@ public final class AppConfig {
         props.setProperty(KEY_TACTICS, tacticsDir.toString());
         props.setProperty(KEY_PUZZLES, puzzlesDir.toString());
         try (OutputStream out = Files.newOutputStream(CONFIG_FILE)) {
-            props.store(out, "ChessTrainerFX — PGN-mappen per module");
+            props.store(out, "ChessTrainerFX — PGN folders per module");
         } catch (IOException e) {
             // niet fataal: bij de volgende start gelden opnieuw de standaardwaarden
         }

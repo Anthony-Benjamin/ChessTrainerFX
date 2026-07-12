@@ -44,8 +44,8 @@ public class ImageScanPane extends VBox {
     private static final Preferences PREFS = Preferences.userNodeForPackage(ImageScanPane.class);
     private static final String PREF_LAST_IMAGE_DIR = "lastImageDir";
 
-    private static final String WHITE_BOTTOM = "Wit onder";
-    private static final String BLACK_BOTTOM = "Zwart onder";
+    private static final String WHITE_BOTTOM = "White at bottom";
+    private static final String BLACK_BOTTOM = "Black at bottom";
 
     private final ImageScannerPresenter presenter = new ImageScannerPresenter();
     private final ScanListener listener;
@@ -61,14 +61,14 @@ public class ImageScanPane extends VBox {
     private final Button scanBtn      = new Button("Scan ▶");
     private final Button resetCropBtn = new Button("Reset crop");
     private final ComboBox<String> perspectiveBox = new ComboBox<>();
-    private final Label statusLabel = new Label("Laad een afbeelding om te beginnen.");
+    private final Label statusLabel = new Label("Load an image to begin.");
 
     /** Bouwt het scanpaneel; Stage is nodig voor de FileChooser. */
     public ImageScanPane(Stage stage, ScanListener listener) {
         super(10);
         this.listener = listener;
 
-        Label title = styledLabel("Afbeelding", 16, true);
+        Label title = styledLabel("Image", 16, true);
 
         // Preview-container: vaste grootte, afbeelding geschaald erin
         previewImageView.setFitWidth(PREVIEW_SIZE);
@@ -88,7 +88,7 @@ public class ImageScanPane extends VBox {
 
         installCropHandlers(previewPane);
 
-        Button chooseBtn = new Button("Bestand kiezen…");
+        Button chooseBtn = new Button("Choose file…");
         styleButton(chooseBtn, false);
         chooseBtn.setOnAction(e -> chooseFile(stage));
 
@@ -104,7 +104,7 @@ public class ImageScanPane extends VBox {
             resetCropBtn.setDisable(true);
         });
 
-        Label cropHint = styledLabel("Sleep over het bord om bij te snijden (optioneel)", 11, false);
+        Label cropHint = styledLabel("Drag across the board to crop (optional)", 11, false);
         cropHint.setTextFill(Color.GRAY);
 
         perspectiveBox.getItems().addAll(WHITE_BOTTOM, BLACK_BOTTOM);
@@ -114,7 +114,7 @@ public class ImageScanPane extends VBox {
             if (loadedImage == null) return;
             onScan();
         });
-        Label perspLabel = styledLabel("Perspectief:", 12, false);
+        Label perspLabel = styledLabel("Perspective:", 12, false);
         HBox perspRow = new HBox(10, perspLabel, perspectiveBox);
         perspRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -170,9 +170,9 @@ public class ImageScanPane extends VBox {
 
     private void chooseFile(Stage stage) {
         FileChooser fc = new FileChooser();
-        fc.setTitle("Selecteer een schaakbord-afbeelding");
+        fc.setTitle("Select a chessboard image");
         fc.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Afbeeldingen", "*.png", "*.jpg", "*.jpeg", "*.bmp")
+            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.bmp")
         );
         File lastDir = new File(PREFS.get(PREF_LAST_IMAGE_DIR, ""));
         if (lastDir.isDirectory()) fc.setInitialDirectory(lastDir);
@@ -189,7 +189,7 @@ public class ImageScanPane extends VBox {
         cropRect.setVisible(false);
         resetCropBtn.setDisable(true);
         scanBtn.setDisable(false);
-        statusLabel.setText("Afbeelding geladen. Sleep voor crop of scan direct.");
+        statusLabel.setText("Image loaded. Drag to crop or scan right away.");
     }
 
     private void onScan() {
@@ -198,7 +198,7 @@ public class ImageScanPane extends VBox {
         Image toScan = hasCrop ? cropToImage() : loadedImage;
 
         scanBtn.setDisable(true);
-        statusLabel.setText("Scannen…");
+        statusLabel.setText("Scanning…");
 
         boolean black = BLACK_BOTTOM.equals(perspectiveBox.getValue());
         presenter.setBlackPerspective(black);
@@ -207,8 +207,8 @@ public class ImageScanPane extends VBox {
 
         int low = result.getLowConfidenceSquares().size();
         statusLabel.setText(low == 0
-            ? "Scan voltooid — alle velden herkend met hoge zekerheid."
-            : "Scan voltooid — " + low + " veld(en) onzeker (oranje). Controleer en corrigeer.");
+            ? "Scan complete — all squares recognized with high confidence."
+            : "Scan complete — " + low + " square(s) uncertain (orange). Check and correct.");
 
         listener.onScanCompleted(result, black);
         scanBtn.setDisable(false);

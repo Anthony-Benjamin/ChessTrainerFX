@@ -45,7 +45,7 @@ public class ExerciseSessionBuilder {
         for (SanNode sanChild : sanNode.children.values()) {
             Move move = resolveSanToMove(board, sanChild.san, toMove);
             if (move == null) {
-                throw new IllegalStateException("Kon SAN niet resolven: " + sanChild.san);
+                throw new IllegalStateException("Could not resolve SAN: " + sanChild.san);
             }
 
             ExerciseSession.Node sessionChild = newSessionNode(nodesById, sessionNode, move, sanChild.san);
@@ -86,7 +86,7 @@ public class ExerciseSessionBuilder {
         for (String token : tokenizeMoveText(moveText)) {
             if (token.equals("(")) {
                 if (lastMoveParent == null) {
-                    throw new IllegalArgumentException("Variant zonder voorafgaande zet: " + moveText);
+                    throw new IllegalArgumentException("Variation without a preceding move: " + moveText);
                 }
                 stack.push(new ParseContext(current, lastMoveParent));
                 current = lastMoveParent;
@@ -95,7 +95,7 @@ public class ExerciseSessionBuilder {
             }
             if (token.equals(")")) {
                 if (stack.isEmpty()) {
-                    throw new IllegalArgumentException("Onverwachte sluitende variant-haak in PGN: " + moveText);
+                    throw new IllegalArgumentException("Unexpected closing variation bracket in PGN: " + moveText);
                 }
                 ParseContext context = stack.pop();
                 current = context.current;
@@ -113,7 +113,7 @@ public class ExerciseSessionBuilder {
         }
 
         if (!stack.isEmpty()) {
-            throw new IllegalArgumentException("Niet-afgesloten variant in PGN: " + moveText);
+            throw new IllegalArgumentException("Unclosed variation in PGN: " + moveText);
         }
         return root;
     }

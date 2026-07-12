@@ -169,7 +169,7 @@ public class BoardView extends HBox implements BoardChangeListener {
     @Override
     public void onCheck(boolean inCheck) {
         if (inCheck) {
-            turnLabel.setText((whiteToMove ? "White to move" : "Black to move") + "   —   Schaak!");
+            turnLabel.setText((whiteToMove ? "White to move" : "Black to move") + "   —   Check!");
             turnLabel.setStyle("""
                         -fx-text-fill: #ff6b6b;
                         -fx-font-size: 18px;

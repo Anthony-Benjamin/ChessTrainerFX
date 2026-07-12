@@ -54,7 +54,7 @@ public class ChapterWindow extends BorderPane {
     private VBox boardPane;        // BOARD (bord + moves)
     private BoardView boardView;
     private ListView<String> movesList;
-    private Label statusLabel;   // "Mat!" / "Opgelost!" recht naast het bord
+    private Label statusLabel;   // "Checkmate!" / "Solved!" right beside the board
     private String exerciseComments = ""; // author comment of the active exercise, fallback text for the note
     private Exercise activeExercise;      // active exercise, source of the user note
 
@@ -542,11 +542,11 @@ public class ChapterWindow extends BorderPane {
 
     /**
      * Toont de eindmelding recht naast het bord (aangeroepen door de Controller):
-     * "Mat!" bij schaakmat, anders "Opgelost!" bij een afgeronde oefening.
+     * "Checkmate!" bij schaakmat, anders "Solved!" bij een afgeronde oefening.
      */
     public void showSolved(boolean mate) {
         if (statusLabel != null) {
-            statusLabel.setText(mate ? "Mat! 🎉" : "Opgelost! 🎉");
+            statusLabel.setText(mate ? "Checkmate! 🎉" : "Solved! 🎉");
         }
     }
 
