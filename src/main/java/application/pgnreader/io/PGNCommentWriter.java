@@ -5,15 +5,12 @@ import application.chesstrainerfx.utils.PgnUtils;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Schrijft commentaar terug in het bron-PGN-bestand: de eigen notitie van de
- * gebruiker ({[%unote] ...}) en het auteurscommentaar van een oefening.
- * Andere spellen, BOM en regeleindes blijven daarbij ongewijzigd.
+ * Schrijft de eigen notitie van de gebruiker ({[%unote] ...}) terug in het
+ * bron-PGN-bestand. Andere spellen, BOM en regeleindes blijven ongewijzigd.
  */
 public class PGNCommentWriter {
 
@@ -26,10 +23,6 @@ public class PGNCommentWriter {
 
     private static final Pattern NOTE_BLOCK = Pattern.compile(
             "(?s)\\{\\s*" + Pattern.quote(PGNReader.USER_NOTE_MARKER) + "[^}]*\\}");
-
-    private static final Pattern COMMENT_BLOCK = Pattern.compile("(?s)\\{([^}]*)\\}");
-
-    private static final Pattern DIAGRAM_ONLY = Pattern.compile("^\\s*(\\[#\\]|#)\\s*$");
 
     // Resultaat-token aan het einde van een blok; nieuw commentaar hoort daar direct vóór.
     private static final Pattern RESULT_TAIL = Pattern.compile("(1-0|0-1|1/2-1/2|\\*)\\s*$");
@@ -45,16 +38,6 @@ public class PGNCommentWriter {
      */
     public static boolean writeUserNote(Path file, int gameIndex, String note) {
         return rewriteBlock(file, gameIndex, block -> updateNoteInBlock(block, note));
-    }
-
-    /**
-     * Vervangt het auteurscommentaar van het gameIndex-de spel door de gegeven
-     * tekst (of verwijdert het bij lege tekst). Meerdere prozablokken worden
-     * samengevoegd tot één; diagram-markers, engine-evaluaties en de eigen
-     * notitie blijven staan.
-     */
-    public static boolean writeAuthorComment(Path file, int gameIndex, String text) {
-        return rewriteBlock(file, gameIndex, block -> updateAuthorCommentInBlock(block, text));
     }
 
     private interface BlockEdit {
@@ -100,48 +83,6 @@ public class PGNCommentWriter {
             return block;
         }
         return insertBeforeTail(block, noteBlock);
-    }
-
-    private static String updateAuthorCommentInBlock(String block, String text) {
-        String sanitized = PgnUtils.sanitizeComment(text);
-
-        // Vind alle prozablokken: comments die na het strippen van annotaties
-        // en diagram-markers leesbare tekst overhouden (en geen eigen notitie zijn).
-        List<int[]> prose = new ArrayList<>();
-        Matcher m = COMMENT_BLOCK.matcher(block);
-        while (m.find()) {
-            String c = m.group(1).trim();
-            if (c.startsWith(PGNReader.USER_NOTE_MARKER)) continue;
-            if (DIAGRAM_ONLY.matcher(c).matches()) continue;
-            String stripped = c.replaceAll("\\[%[^]]*\\]", " ")
-                    .replaceAll("\\[\\s*#\\s*\\]", " ")
-                    .trim();
-            if (stripped.isEmpty()) continue;
-            prose.add(new int[]{m.start(), m.end()});
-        }
-
-        if (prose.isEmpty()) {
-            return sanitized.isEmpty() ? block : insertBeforeTail(block, "{" + sanitized + "}");
-        }
-
-        // Eerste prozablok vervangen (of weglaten bij lege tekst), overige verwijderen.
-        StringBuilder result = new StringBuilder();
-        int pos = 0;
-        boolean first = true;
-        for (int[] range : prose) {
-            result.append(block, pos, range[0]);
-            if (first && !sanitized.isEmpty()) {
-                result.append("{").append(sanitized).append("}");
-            } else if (result.length() > 0 && result.charAt(result.length() - 1) == ' '
-                    && range[1] < block.length() && block.charAt(range[1]) == ' ') {
-                // verwijderd blok: voorkom dubbele spatie
-                result.deleteCharAt(result.length() - 1);
-            }
-            first = false;
-            pos = range[1];
-        }
-        result.append(block, pos, block.length());
-        return result.toString();
     }
 
     /** Voegt een commentaarblok in vóór de eigen notitie of anders vóór het resultaat-token. */
