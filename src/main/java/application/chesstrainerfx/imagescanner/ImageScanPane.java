@@ -23,7 +23,7 @@ import java.util.prefs.Preferences;
 
 /**
  * Scanpaneel voor het omzetten van een schaakbord-afbeelding naar een positie,
- * ingebed in de Position Editor (toonbaar/verbergbaar via "Import from Image").
+ * permanent ingebed in de Position Editor.
  *
  * Stroom:
  *  1. Bestand kiezen → afbeelding getoond in de preview
@@ -84,7 +84,7 @@ public class ImageScanPane extends VBox {
         previewPane.setPrefSize(PREVIEW_SIZE, PREVIEW_SIZE);
         previewPane.setMinSize(PREVIEW_SIZE, PREVIEW_SIZE);
         previewPane.setMaxSize(PREVIEW_SIZE, PREVIEW_SIZE);
-        previewPane.setStyle("-fx-background-color: #1a1a1a; -fx-border-color: #555; -fx-border-width: 1;");
+        previewPane.setStyle("-fx-background-color: #1a1a1a; -fx-border-color: rgba(245,222,179,0.35); -fx-border-width: 1;");
 
         installCropHandlers(previewPane);
 
@@ -105,8 +105,9 @@ public class ImageScanPane extends VBox {
         });
 
         Label cropHint = styledLabel("Drag across the board to crop (optional)", 11, false);
-        cropHint.setTextFill(Color.GRAY);
+        cropHint.setTextFill(Color.web("#f5deb3", 0.7));
 
+        perspectiveBox.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8;");
         perspectiveBox.getItems().addAll(WHITE_BOTTOM, BLACK_BOTTOM);
         perspectiveBox.setValue(WHITE_BOTTOM);
         // Een ander perspectief vereist een nieuwe cel→FEN mapping → opnieuw scannen.
@@ -121,12 +122,12 @@ public class ImageScanPane extends VBox {
         HBox btnRow = new HBox(10, chooseBtn, scanBtn, resetCropBtn);
         btnRow.setAlignment(Pos.CENTER_LEFT);
 
-        statusLabel.setStyle("-fx-text-fill: #aaa; -fx-font-size: 12;");
+        statusLabel.setStyle("-fx-text-fill: #f5deb3; -fx-font-size: 12;");
         statusLabel.setWrapText(true);
         statusLabel.setMaxWidth(PREVIEW_SIZE);
 
         setPadding(new Insets(20));
-        setStyle("-fx-background-color: #2b2b2b;");
+        setStyle("-fx-background-color: #5A1F0E;");
         setPrefWidth(PREVIEW_SIZE + 40);
         setMaxWidth(PREVIEW_SIZE + 40);
         setAlignment(Pos.TOP_LEFT);
@@ -252,14 +253,14 @@ public class ImageScanPane extends VBox {
     private Label styledLabel(String text, int size, boolean bold) {
         Label l = new Label(text);
         l.setStyle(String.format(
-            "-fx-text-fill: white; -fx-font-size: %dpx; -fx-font-weight: %s;",
+            "-fx-text-fill: #f5deb3; -fx-font-size: %dpx; -fx-font-weight: %s;",
             size, bold ? "bold" : "normal"));
         return l;
     }
 
     private void styleButton(Button btn, boolean primary) {
-        String bg = primary ? "#4a7cac" : "#555";
-        btn.setStyle(String.format(
-            "-fx-background-color: %s; -fx-text-fill: white; -fx-padding: 6 14; -fx-cursor: hand;", bg));
+        String weight = primary ? "-fx-font-weight: bold; " : "";
+        btn.setStyle("-fx-background-color: #d7b77e; -fx-background-radius: 8; "
+                + weight + "-fx-padding: 6 14; -fx-cursor: hand;");
     }
 }
