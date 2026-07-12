@@ -7,7 +7,6 @@ import application.chesstrainerfx.utils.ExerciseSessionBuilder;
 import application.pgnreader.model.Exercise;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 import javafx.geometry.Insets;
@@ -56,8 +55,8 @@ public class ChapterWindow extends BorderPane {
     private BoardView boardView;
     private ListView<String> movesList;
     private Label statusLabel;   // "Mat!" / "Opgelost!" recht naast het bord
-    private String exerciseComments = ""; // uitleg van de actieve exercise, klik-om-te-tonen naast het bord
-    private Exercise activeExercise;      // actieve exercise, bron voor de eigen notitie
+    private String exerciseComments = ""; // author comment of the active exercise, fallback text for the note
+    private Exercise activeExercise;      // active exercise, source of the user note
 
     private final Stage stage;
 
@@ -406,30 +405,15 @@ public class ChapterWindow extends BorderPane {
         boardView.turnLabelHeightProperty().addListener((o, ov, nv) ->
                 moveBox.setPadding(new Insets(nv.doubleValue() + 10, 0, 0, 0)));
 
-        // Uitleg + eigen notitie van de exercise: standaard verborgen, samen te tonen via één knop.
-        SimpleBooleanProperty uitlegZichtbaar = new SimpleBooleanProperty(false);
-        SimpleStringProperty uitleg = new SimpleStringProperty(exerciseComments);
-        SimpleStringProperty notitie = new SimpleStringProperty(
-                activeExercise == null ? "" : activeExercise.getUserNote());
-        // Ingebed bewerkveld (geen apart dialoogvenster): 0 = niet bewerken, 1 = uitleg, 2 = notitie.
-        SimpleIntegerProperty bewerkModus = new SimpleIntegerProperty(0);
-
-        Label explanationLabel = new Label();
-        explanationLabel.textProperty().bind(uitleg);
-        explanationLabel.setWrapText(true);
-        explanationLabel.setStyle("""
-                        -fx-text-fill: #f5deb3;
-                        -fx-font-size: 16px;
-                        -fx-background-color: rgba(20,20,20,0.65);
-                        -fx-background-radius: 8;
-                        -fx-padding: 12;
-                """);
-        explanationLabel.visibleProperty().bind(
-                uitlegZichtbaar.and(uitleg.isNotEmpty()).and(bewerkModus.isNotEqualTo(1)));
-        explanationLabel.managedProperty().bind(explanationLabel.visibleProperty());
+        // The single per-exercise note: hidden by default, toggled via one button.
+        // Starts as the author comment from the PGN (if any) until the user saves an own note.
+        SimpleBooleanProperty noteVisible = new SimpleBooleanProperty(false);
+        SimpleStringProperty note = new SimpleStringProperty(noteDisplayText());
+        // Embedded edit field (no separate dialog window).
+        SimpleBooleanProperty editingNote = new SimpleBooleanProperty(false);
 
         Label noteLabel = new Label();
-        noteLabel.textProperty().bind(Bindings.concat("Eigen notitie: ", notitie));
+        noteLabel.textProperty().bind(note);
         noteLabel.setWrapText(true);
         noteLabel.setStyle("""
                         -fx-text-fill: #f5deb3;
@@ -440,14 +424,14 @@ public class ChapterWindow extends BorderPane {
                         -fx-padding: 12;
                 """);
         noteLabel.visibleProperty().bind(
-                uitlegZichtbaar.and(notitie.isNotEmpty()).and(bewerkModus.isNotEqualTo(2)));
+                noteVisible.and(note.isNotEmpty()).and(editingNote.not()));
         noteLabel.managedProperty().bind(noteLabel.visibleProperty());
 
         TextArea noteArea = new TextArea();
         noteArea.setWrapText(true);
         noteArea.setPrefRowCount(4);
         noteArea.setMaxWidth(360);
-        // Zelfde look als het notitielabel: donkere achtergrond, tarwekleurige letters.
+        // Same look as the note label: dark background, wheat-coloured text.
         noteArea.setStyle("""
                         -fx-text-fill: #f5deb3;
                         -fx-font-size: 16px;
@@ -457,7 +441,7 @@ public class ChapterWindow extends BorderPane {
                         -fx-background-radius: 8;
                         -fx-highlight-fill: rgba(245,222,179,0.35);
                 """);
-        noteArea.visibleProperty().bind(bewerkModus.isNotEqualTo(0));
+        noteArea.visibleProperty().bind(editingNote);
         noteArea.managedProperty().bind(noteArea.visibleProperty());
 
         String buttonStyle = """
@@ -470,95 +454,71 @@ public class ChapterWindow extends BorderPane {
                         -fx-border-radius: 8;
                 """;
 
-        boolean heeftBron = activeExercise != null && activeExercise.getSourceFile() != null;
+        boolean hasSource = activeExercise != null && activeExercise.getSourceFile() != null;
 
-        Button btnUitleg = new Button();
-        btnUitleg.setStyle(buttonStyle);
-        btnUitleg.textProperty().bind(
-                Bindings.when(uitlegZichtbaar)
-                        .then("Verberg uitleg")
-                        .otherwise("Toon uitleg"));
-        btnUitleg.setOnAction(e -> uitlegZichtbaar.set(!uitlegZichtbaar.get()));
-        btnUitleg.visibleProperty().bind(
-                uitleg.isNotEmpty().or(notitie.isNotEmpty()).and(bewerkModus.isEqualTo(0)));
-        btnUitleg.managedProperty().bind(btnUitleg.visibleProperty());
+        Button btnToggleNote = new Button();
+        btnToggleNote.setStyle(buttonStyle);
+        btnToggleNote.textProperty().bind(
+                Bindings.when(noteVisible)
+                        .then("Hide note")
+                        .otherwise("Show note"));
+        btnToggleNote.setOnAction(e -> noteVisible.set(!noteVisible.get()));
+        btnToggleNote.visibleProperty().bind(
+                note.isNotEmpty().and(editingNote.not()));
+        btnToggleNote.managedProperty().bind(btnToggleNote.visibleProperty());
 
-        // Auteurscommentaar bewerken in het ingebedde tekstveld;
-        // alleen mogelijk als de exercise een bronbestand heeft.
-        Button btnUitlegBewerken = new Button();
-        btnUitlegBewerken.setStyle(buttonStyle);
-        btnUitlegBewerken.textProperty().bind(
-                Bindings.when(uitleg.isEmpty())
-                        .then("Uitleg toevoegen…")
-                        .otherwise("Uitleg bewerken…"));
-        btnUitlegBewerken.visibleProperty().bind(
-                bewerkModus.isEqualTo(0).and(new SimpleBooleanProperty(heeftBron)));
-        btnUitlegBewerken.managedProperty().bind(btnUitlegBewerken.visibleProperty());
-        btnUitlegBewerken.setOnAction(e -> {
-            noteArea.setText(activeExercise.getComments());
-            bewerkModus.set(1);
+        // Add/edit the note in the embedded text field;
+        // only possible when the exercise has a source file.
+        Button btnEditNote = new Button();
+        btnEditNote.setStyle(buttonStyle);
+        btnEditNote.textProperty().bind(
+                Bindings.when(note.isEmpty())
+                        .then("Add note…")
+                        .otherwise("Edit note…"));
+        btnEditNote.visibleProperty().bind(
+                editingNote.not().and(new SimpleBooleanProperty(hasSource)));
+        btnEditNote.managedProperty().bind(btnEditNote.visibleProperty());
+        btnEditNote.setOnAction(e -> {
+            noteArea.setText(note.get());
+            editingNote.set(true);
             noteArea.requestFocus();
         });
 
-        // Eigen notitie toevoegen/bewerken in hetzelfde tekstveld.
-        Button btnNotitie = new Button();
-        btnNotitie.setStyle(buttonStyle);
-        btnNotitie.textProperty().bind(
-                Bindings.when(notitie.isEmpty())
-                        .then("Notitie toevoegen…")
-                        .otherwise("Notitie bewerken…"));
-        btnNotitie.visibleProperty().bind(
-                bewerkModus.isEqualTo(0).and(new SimpleBooleanProperty(heeftBron)));
-        btnNotitie.managedProperty().bind(btnNotitie.visibleProperty());
-        btnNotitie.setOnAction(e -> {
-            noteArea.setText(notitie.get());
-            bewerkModus.set(2);
-            noteArea.requestFocus();
-        });
-
-        Button btnOpslaan = new Button("Opslaan");
-        btnOpslaan.setStyle(buttonStyle);
-        btnOpslaan.visibleProperty().bind(bewerkModus.isNotEqualTo(0));
-        btnOpslaan.managedProperty().bind(btnOpslaan.visibleProperty());
-        btnOpslaan.setOnAction(e -> {
-            boolean uitlegModus = bewerkModus.get() == 1;
-            boolean gelukt = uitlegModus
-                    ? presenter.onSaveComment(noteArea.getText())
-                    : presenter.onSaveNote(noteArea.getText());
-            if (!gelukt) {
+        Button btnSave = new Button("Save");
+        btnSave.setStyle(buttonStyle);
+        btnSave.visibleProperty().bind(editingNote);
+        btnSave.managedProperty().bind(btnSave.visibleProperty());
+        btnSave.setOnAction(e -> {
+            boolean saved = presenter.onSaveNote(noteArea.getText());
+            if (!saved) {
                 Alert alert = new Alert(Alert.AlertType.ERROR,
-                        "De tekst kon niet in het PGN-bestand worden opgeslagen.");
+                        "The note could not be saved to the PGN file.");
                 alert.setHeaderText(null);
                 alert.showAndWait();
                 return;
             }
-            if (uitlegModus) {
-                exerciseComments = activeExercise.getComments();
-                uitleg.set(exerciseComments);
-            } else {
-                notitie.set(activeExercise.getUserNote());
-            }
-            bewerkModus.set(0);
-            if (!uitleg.get().isEmpty() || !notitie.get().isEmpty()) {
-                uitlegZichtbaar.set(true);
+            // A cleared note falls back to the author comment from the PGN.
+            note.set(noteDisplayText());
+            editingNote.set(false);
+            if (!note.get().isEmpty()) {
+                noteVisible.set(true);
             }
         });
 
-        Button btnAnnuleer = new Button("Annuleren");
-        btnAnnuleer.setStyle(buttonStyle);
-        btnAnnuleer.visibleProperty().bind(bewerkModus.isNotEqualTo(0));
-        btnAnnuleer.managedProperty().bind(btnAnnuleer.visibleProperty());
-        btnAnnuleer.setOnAction(e -> bewerkModus.set(0));
+        Button btnCancel = new Button("Cancel");
+        btnCancel.setStyle(buttonStyle);
+        btnCancel.visibleProperty().bind(editingNote);
+        btnCancel.managedProperty().bind(btnCancel.visibleProperty());
+        btnCancel.setOnAction(e -> editingNote.set(false));
 
-        HBox buttonRow = new HBox(10, btnUitleg, btnUitlegBewerken, btnNotitie, btnOpslaan, btnAnnuleer);
+        HBox buttonRow = new HBox(10, btnToggleNote, btnEditNote, btnSave, btnCancel);
         buttonRow.setAlignment(Pos.CENTER);
 
-        // Mat-melding centreert in de open ruimte rechts van de knoppenkolom; de uitleg komt erboven.
-        VBox statusColumn = new VBox(14, buttonRow, explanationLabel, noteLabel, noteArea, statusLabel);
+        // Mate message centres in the open space right of the button column; the note sits above it.
+        VBox statusColumn = new VBox(14, buttonRow, noteLabel, noteArea, statusLabel);
         statusColumn.setAlignment(Pos.CENTER);
         StackPane statusArea = new StackPane(statusColumn);
         statusArea.setAlignment(Pos.CENTER);
-        explanationLabel.maxWidthProperty().bind(statusArea.widthProperty().subtract(40));
         noteLabel.maxWidthProperty().bind(statusArea.widthProperty().subtract(40));
         HBox.setHgrow(statusArea, Priority.ALWAYS);
 
@@ -614,17 +574,17 @@ public class ChapterWindow extends BorderPane {
     }
 
     /**
-     * Toont titel en subtitel van de actieve exercise in de header
-     * (door de presenter aangeroepen). De hoofdstuk-introtekst bovenaan
-     * blijft ongewijzigd; de exercise-comments en de eigen notitie zijn
-     * alleen via de uitleg-knop naast het bord op te vragen.
+     * Shows title and subtitle of the active exercise in the header
+     * (called by the presenter). The chapter intro text at the top stays
+     * unchanged; the per-exercise note is only revealed via the note
+     * button beside the board.
      */
     public void setExerciseInfo(Exercise exercise) {
         this.activeExercise = exercise;
-        // Rauwe tekst voor de uitleg-knop naast het bord (formatTheoryText zou SAN als O-O verminken).
+        // Raw text for the note beside the board (formatTheoryText would mangle SAN like O-O).
         String comments = exercise == null ? "" : exercise.getComments();
         this.exerciseComments = comments == null ? "" : comments.trim();
-        // De exercise die de introtekst levert niet nogmaals naast het bord tonen.
+        // Don't repeat the exercise that supplies the intro text beside the board.
         if (exerciseComments.equals(chapterTheorySource)) {
             this.exerciseComments = "";
         }
@@ -633,6 +593,17 @@ public class ChapterWindow extends BorderPane {
             String subtitle = exercise.getSubtitle();
             titleLabel.setText(isBlank(subtitle) ? title : title + " — " + subtitle);
         }
+    }
+
+    /**
+     * The text shown as the exercise note: the user's own note if present,
+     * otherwise the author comment from the PGN as initial content.
+     */
+    private String noteDisplayText() {
+        if (activeExercise != null && !isBlank(activeExercise.getUserNote())) {
+            return activeExercise.getUserNote();
+        }
+        return exerciseComments;
     }
 
 

@@ -122,20 +122,6 @@ public class ChapterPresenter {
         return true;
     }
 
-    /**
-     * Slaat het bewerkte auteurscommentaar van de actieve exercise op in het
-     * bron-PGN-bestand. Geeft false terug als het schrijven mislukt.
-     */
-    public boolean onSaveComment(String text) {
-        if (currentIndex < 0) return false;
-        Exercise ex = exercises.get(currentIndex);
-        if (!PGNCommentWriter.writeAuthorComment(ex.getSourceFile(), ex.getGameIndex(), text)) {
-            return false;
-        }
-        ex.setComments(PgnUtils.sanitizeComment(text));
-        return true;
-    }
-
     /** Wordt door de view gebruikt als de Hint-knop wordt geklikt. */
     public String getHintText() {
         if (currentController == null) return "";
