@@ -1,0 +1,9 @@
+.editor-btn        { -fx-background-color: #d7b77e; -fx-background-radius: 8; }
+.editor-label      { -fx-text-fill: #f5deb3; }
+.editor-label-bold { -fx-text-fill: #f5deb3; -fx-font-weight: bold; }
+.editor-textarea   { -fx-text-fill: #f5deb3;
+                     -fx-control-inner-background: rgba(20,20,20,0.85);
+                     -fx-background-color: rgba(20,20,20,0.65);
+                     -fx-background-radius: 8;
+                     -fx-highlight-fill: rgba(245,222,179,0.35); }
+.editor-combo      { -fx-background-color: #d7b77e; -fx-background-radius: 8; }

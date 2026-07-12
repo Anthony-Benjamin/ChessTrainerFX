@@ -110,7 +110,7 @@ public class PositionEditorController {
         Label titleLabel = new Label("Position Editor");
         titleLabel.setMinHeight(100);
         titleLabel.setAlignment(Pos.CENTER);
-        titleLabel.setStyle("-fx-font-size: 30px; -fx-font-family: Garamond; -fx-font-weight: bold;");
+        titleLabel.setStyle("-fx-font-size: 30px; -fx-font-family: Garamond; -fx-font-weight: bold; -fx-text-fill: #f5deb3;");
         boardTitleBox = new HBox(titleLabel);
         boardTitleBox.setAlignment(Pos.CENTER);
 
@@ -121,11 +121,16 @@ public class PositionEditorController {
         whitePiecesBox.setAlignment(Pos.CENTER);
 
         Label fenLabel = new Label("FEN: ");
+        fenLabel.getStyleClass().add("editor-label-bold");
         fenTextField = new TextField();
         fenTextField.setMinWidth(490);
         fenTextField.setEditable(true);
         fenTextField.setPromptText("Paste or type a FEN string…");
+        fenTextField.setStyle("-fx-control-inner-background: rgba(20,20,20,0.85); "
+                + "-fx-text-fill: #f5deb3; -fx-prompt-text-fill: rgba(245,222,179,0.5); "
+                + "-fx-background-radius: 8;");
         Button loadFenBtn = new Button("Load FEN");
+        loadFenBtn.getStyleClass().add("editor-btn");
         loadFenBtn.setOnAction(e -> onLoadFen());
         fenBox = new HBox(5, fenLabel, fenTextField, loadFenBtn);
         fenBox.setMinHeight(50);

@@ -11,7 +11,7 @@
 
 <HBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="application.chesstrainerfx.controller.PositionEditorController"
-      alignment="CENTER" spacing="10">
+      alignment="CENTER" spacing="10" stylesheets="@../css/position-editor.css">
 
     <!-- Scanpaneel: permanent zichtbaar; inhoud (ImageScanPane) komt uit de controller.
          Verticaal gecentreerd op het bordmidden: de top-padding compenseert de titel boven het bord. -->
@@ -25,65 +25,65 @@
     </VBox>
 
     <!-- Zijpaneel -->
-    <VBox spacing="10">
+    <VBox spacing="10" prefWidth="340" maxWidth="340">
         <padding><Insets top="10" left="20"/></padding>
 
         <HBox spacing="5" alignment="CENTER_RIGHT">
-            <Label text="Category:" style="-fx-font-weight: bold;" minWidth="-Infinity"/>
-            <Label fx:id="categoryPathLbl"/>
-            <Button text="Set category" onAction="#onSetCategory" minWidth="-Infinity"/>
+            <Label text="Category:" styleClass="editor-label-bold" minWidth="-Infinity"/>
+            <Label fx:id="categoryPathLbl" styleClass="editor-label" maxWidth="120"/>
+            <Button text="Set category" onAction="#onSetCategory" minWidth="-Infinity" styleClass="editor-btn"/>
             <Label fx:id="categoryStatusLbl" text="☒"
                    style="-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 20px"/>
         </HBox>
 
         <HBox spacing="10" alignment="CENTER">
             <padding><Insets top="153"/></padding>
-            <Button text="Start Position" minWidth="150" onAction="#onStartPosition"/>
-            <Button text="Clear Board" minWidth="150" onAction="#onClearBoard"/>
+            <Button text="Start Position" minWidth="150" onAction="#onStartPosition" styleClass="editor-btn"/>
+            <Button text="Clear Board" minWidth="150" onAction="#onClearBoard" styleClass="editor-btn"/>
         </HBox>
 
         <HBox spacing="10" alignment="CENTER">
-            <Button text="Flip Board" minWidth="150" onAction="#onFlipBoard"/>
-            <Button text="Export FEN" minWidth="150" onAction="#onExportFen"/>
+            <Button text="Flip Board" minWidth="150" onAction="#onFlipBoard" styleClass="editor-btn"/>
+            <Button text="Export FEN" minWidth="150" onAction="#onExportFen" styleClass="editor-btn"/>
         </HBox>
 
         <VBox alignment="CENTER">
-            <Label text="Moves" style="-fx-font-weight: bold;"/>
-            <TextArea fx:id="movesWindow" maxWidth="310" maxHeight="150"/>
+            <Label text="Moves" styleClass="editor-label-bold"/>
+            <TextArea fx:id="movesWindow" maxWidth="310" maxHeight="150" styleClass="editor-textarea"/>
         </VBox>
 
         <VBox alignment="CENTER">
-            <Label text="Comments" style="-fx-font-weight: bold;"/>
-            <TextArea fx:id="commentsWindow" maxWidth="310" maxHeight="100" prefHeight="100" wrapText="true"/>
+            <Label text="Comments" styleClass="editor-label-bold"/>
+            <TextArea fx:id="commentsWindow" maxWidth="310" maxHeight="100" prefHeight="100" wrapText="true" styleClass="editor-textarea"/>
         </VBox>
 
         <HBox alignment="CENTER">
-            <ComboBox fx:id="whoseTurnSelector"/>
+            <ComboBox fx:id="whoseTurnSelector" styleClass="editor-combo"/>
         </HBox>
 
         <HBox alignment="CENTER">
-            <Label text="Castling" style="-fx-font-weight: bold;"/>
+            <Label text="Castling" styleClass="editor-label-bold"/>
         </HBox>
 
         <HBox spacing="4" alignment="CENTER">
-            <Label text="White"/>
+            <Label text="White" styleClass="editor-label"/>
             <CheckBox fx:id="whiteKingSideCastling"/>
-            <Label text="O-O"/>
+            <Label text="O-O" styleClass="editor-label"/>
             <CheckBox fx:id="whiteQueenSideCastling"/>
-            <Label text="O-O-O"/>
+            <Label text="O-O-O" styleClass="editor-label"/>
         </HBox>
 
         <HBox spacing="4" alignment="CENTER">
-            <Label text="Black"/>
+            <Label text="Black" styleClass="editor-label"/>
             <CheckBox fx:id="blackKingSideCastling"/>
-            <Label text="O-O"/>
+            <Label text="O-O" styleClass="editor-label"/>
             <CheckBox fx:id="blackQueenSideCastling"/>
-            <Label text="O-O-O"/>
+            <Label text="O-O-O" styleClass="editor-label"/>
         </HBox>
 
-        <HBox>
+        <HBox alignment="CENTER" maxWidth="310">
             <padding><Insets top="10"/></padding>
-            <Button text="Save exercise" onAction="#onSaveExercise"/>
+            <Button text="Save exercise" onAction="#onSaveExercise" minWidth="150" styleClass="editor-btn"/>
         </HBox>
     </VBox>
 </HBox>
