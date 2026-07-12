@@ -101,6 +101,9 @@ public class PositionEditorController {
                 showSelectedCategory();
             }
         }
+
+        scanPane = new ImageScanPane(stage, this::applyScanResult);
+        scanColumn.getChildren().add(scanPane);
     }
 
     private void buildBoardColumn() {
@@ -154,18 +157,6 @@ public class PositionEditorController {
         isWhite = !isWhite;
         board.flip();
         layoutBoardColumn();
-    }
-
-    /** Toont/verbergt het scanpaneel; lazy aanmaken bewaart afbeelding en crop over toggles heen. */
-    @FXML
-    private void onImportFromImage() {
-        if (scanPane == null) {
-            scanPane = new ImageScanPane(stage, this::applyScanResult);
-            scanColumn.getChildren().add(scanPane);
-        }
-        boolean show = !scanColumn.isVisible();
-        scanColumn.setVisible(show);
-        scanColumn.setManaged(show);
     }
 
     /**

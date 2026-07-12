@@ -13,9 +13,9 @@
       fx:controller="application.chesstrainerfx.controller.PositionEditorController"
       alignment="CENTER" spacing="10">
 
-    <!-- Scanpaneel: verborgen tot "Import from Image"; inhoud (ImageScanPane) komt uit de controller.
+    <!-- Scanpaneel: permanent zichtbaar; inhoud (ImageScanPane) komt uit de controller.
          Verticaal gecentreerd op het bordmidden: de top-padding compenseert de titel boven het bord. -->
-    <VBox fx:id="scanColumn" visible="false" managed="false" alignment="CENTER">
+    <VBox fx:id="scanColumn" alignment="CENTER">
         <padding><Insets top="50" left="10"/></padding>
     </VBox>
 
@@ -45,10 +45,6 @@
         <HBox spacing="10" alignment="CENTER">
             <Button text="Flip Board" minWidth="150" onAction="#onFlipBoard"/>
             <Button text="Export FEN" minWidth="150" onAction="#onExportFen"/>
-        </HBox>
-
-        <HBox spacing="10" alignment="CENTER">
-            <Button text="Import from Image" minWidth="310" onAction="#onImportFromImage"/>
         </HBox>
 
         <VBox alignment="CENTER">
