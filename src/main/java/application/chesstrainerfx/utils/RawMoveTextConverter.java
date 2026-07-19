@@ -47,6 +47,8 @@ public final class RawMoveTextConverter {
     private final Node root = new Node(0, null, null, null, null, null);
     private final List<String> proseRun = new ArrayList<>();
     private String pendingResult;
+    private Integer pendingNumber;
+    private PieceColor pendingColor;
 
     public static Conversion convert(String rawText, String fen) {
         return new RawMoveTextConverter(fen).run(rawText);
@@ -133,7 +135,7 @@ public final class RawMoveTextConverter {
             }
             if (m.group("number") != null) {
                 PieceColor color = m.group("dots").length() >= 2 ? PieceColor.BLACK : PieceColor.WHITE;
-                handleNumber(Integer.parseInt(m.group("number")), color);
+                handleNumberToken(Integer.parseInt(m.group("number")), color);
                 continue;
             }
             String token = m.group("castle") != null
@@ -144,11 +146,11 @@ public final class RawMoveTextConverter {
     }
 
     /**
-     * Verwerkt een zetnummer: bevestigt de verwachte voortzetting, keert terug
-     * naar een omliggende lijn, of opent een variatie als het nummer een al
-     * gespeelde zet van een open lijn herhaalt — ook als die lijn al verder is.
+     * Registreert een zetnummer. De structurele beslissing (voortzetten, variatie
+     * openen of terugkeren naar een omliggende lijn) valt pas bij de eerstvolgende
+     * zet, zodat de zet zelf kan meebeslissen in welke lijn hij herleidbaar is.
      */
-    private void handleNumber(int number, PieceColor color) {
+    private void handleNumberToken(int number, PieceColor color) {
         LineCtx current = stack.peek();
         if (!current.moved && stack.size() == 1) {
             // Het eerste zetnummer bepaalt de nummering van de oefening.
@@ -159,34 +161,78 @@ public final class RawMoveTextConverter {
             }
             return;
         }
-        if (current.expects(number, color)) {
+        pendingNumber = number;
+        pendingColor = color;
+    }
+
+    /**
+     * Kiest bij een zetnummer + zet de lijn waarin die zet thuishoort. Lijnen die
+     * dit nummer als voortzetting verwachten gaan voor; daarbinnen beslist
+     * herleidbaarheid van de zet. Verwachten meerdere lijnen dezelfde voortzetting
+     * en is de zet overal herleidbaar, dan geldt de boekconventie dat proza een
+     * variatie afsluit: draagt de variatietip al commentaar, dan wint de
+     * omliggende lijn. Anders wordt een variatie geopend op de open lijn die deze
+     * zet eerder speelde.
+     */
+    private void selectContext(int number, PieceColor color, String token) {
+        List<LineCtx> expecting = new ArrayList<>();
+        for (LineCtx ctx : stack) {
+            if (ctx.expects(number, color)) {
+                expecting.add(ctx);
+            }
+        }
+        if (!expecting.isEmpty()) {
+            List<LineCtx> resolving = new ArrayList<>();
+            for (LineCtx ctx : expecting) {
+                if (trialResolves(ctx.board, ctx.toMove, token)) {
+                    resolving.add(ctx);
+                }
+            }
+            LineCtx chosen = resolving.isEmpty() ? expecting.get(0) : resolving.get(0);
+            if (resolving.size() > 1 && chosen == stack.peek() && stack.size() > 1
+                    && chosen.current.san != null && !chosen.current.comment.isEmpty()) {
+                chosen = resolving.get(1);
+            }
+            popTo(chosen);
             return;
         }
 
-        int closes = 0;
+        LineCtx branchOwner = null;
+        Node replaced = null;
         for (LineCtx ctx : stack) {
-            if (ctx.expects(number, color)) {
-                pop(closes);
-                return;
+            Node candidate = ctx.findPlayed(number, color);
+            if (candidate == null) {
+                continue;
             }
-            closes++;
+            if (branchOwner == null) {
+                branchOwner = ctx;
+                replaced = candidate;
+            }
+            BoardModel trial = new BoardModel();
+            trial.initializeFromFEN(candidate.fenBefore);
+            trial.setLastDoubleStepPawnPosition(candidate.epBefore);
+            if (trialResolves(trial, candidate.color, token)) {
+                branchOwner = ctx;
+                replaced = candidate;
+                break;
+            }
         }
-        closes = 0;
-        for (LineCtx ctx : stack) {
-            Node replaced = ctx.findPlayed(number, color);
-            if (replaced != null) {
-                pop(closes);
-                branchFrom(replaced);
-                return;
-            }
-            closes++;
+        if (branchOwner != null) {
+            popTo(branchOwner);
+            branchFrom(replaced);
+            return;
         }
         warnings.add("Unexpected move number " + number + (color == PieceColor.BLACK ? "..." : ".")
                 + " — check the numbering around that move.");
     }
 
-    private void pop(int count) {
-        for (int i = 0; i < count; i++) {
+    private boolean trialResolves(BoardModel board, PieceColor toMove, String token) {
+        String san = reconstruct(board, toMove, 0, token, new ArrayList<>());
+        return SanResolver.resolve(board, san, toMove) != null;
+    }
+
+    private void popTo(LineCtx ctx) {
+        while (stack.peek() != ctx) {
             stack.pop();
         }
     }
@@ -205,8 +251,13 @@ public final class RawMoveTextConverter {
     }
 
     private void playToken(String token) {
+        if (pendingNumber != null) {
+            selectContext(pendingNumber, pendingColor, token);
+            pendingNumber = null;
+            pendingColor = null;
+        }
         LineCtx ctx = stack.peek();
-        String san = reconstruct(ctx, token);
+        String san = reconstruct(ctx.board, ctx.toMove, ctx.moveNumber, token, warnings);
         Move move = SanResolver.resolve(ctx.board, san, ctx.toMove);
         String fenBefore = ctx.board.exportToFEN(ctx.toMove == PieceColor.WHITE);
         Position epBefore = ctx.board.getLastDoubleStepPawnPosition();
@@ -251,23 +302,24 @@ public final class RawMoveTextConverter {
      * stuksoort die slag kan spelen. Een kaal veld ("e4") wordt als pionzet
      * gelezen als die legaal is; een legale stukzet ernaast levert een waarschuwing.
      */
-    private String reconstruct(LineCtx ctx, String token) {
+    private String reconstruct(BoardModel board, PieceColor toMove, int moveNumber,
+                               String token, List<String> sink) {
         if (Character.isUpperCase(token.charAt(0)) || token.matches("[a-h]x.*")) {
             return token; // stukletter of pion-slag met lijnletter is al compleet
         }
         if (token.charAt(0) == 'x') {
-            List<String> options = pieceOptions(ctx, token, true);
+            List<String> options = pieceOptions(board, toMove, token, true);
             if (options.size() == 1) {
                 return options.get(0);
             }
-            warnings.add(ambiguityWarning(ctx, token, options));
+            sink.add(ambiguityWarning(toMove, moveNumber, token, options));
             return token;
         }
-        boolean pawnLegal = SanResolver.resolve(ctx.board, token, ctx.toMove) != null;
-        List<String> options = pieceOptions(ctx, token, false);
+        boolean pawnLegal = SanResolver.resolve(board, token, toMove) != null;
+        List<String> options = pieceOptions(board, toMove, token, false);
         if (pawnLegal) {
             if (!options.isEmpty()) {
-                warnings.add("\"" + token + "\" at move " + ctx.moveNumber + " was read as a pawn move, but "
+                sink.add("\"" + token + "\" at move " + moveNumber + " was read as a pawn move, but "
                         + String.join(", ", options) + " is also legal — check which one is meant.");
             }
             return token;
@@ -275,37 +327,37 @@ public final class RawMoveTextConverter {
         if (options.size() == 1) {
             return options.get(0);
         }
-        warnings.add(ambiguityWarning(ctx, token, options));
+        sink.add(ambiguityWarning(toMove, moveNumber, token, options));
         return token;
     }
 
-    private String ambiguityWarning(LineCtx ctx, String token, List<String> options) {
+    private String ambiguityWarning(PieceColor toMove, int moveNumber, String token, List<String> options) {
         return options.isEmpty()
-                ? "No piece can play \"" + token + "\" for " + name(ctx.toMove) + " at move "
-                        + ctx.moveNumber + " — check the position."
-                : "\"" + token + "\" at move " + ctx.moveNumber + " is ambiguous ("
+                ? "No piece can play \"" + token + "\" for " + name(toMove) + " at move "
+                        + moveNumber + " — check the position."
+                : "\"" + token + "\" at move " + moveNumber + " is ambiguous ("
                         + String.join(", ", options) + ") — pick the right one manually.";
     }
 
-    private List<String> pieceOptions(LineCtx ctx, String token, boolean capture) {
+    private List<String> pieceOptions(BoardModel board, PieceColor toMove, String token, boolean capture) {
         List<String> options = new ArrayList<>();
-        if (capture && !enemyOnTarget(ctx, token)) {
+        if (capture && !enemyOnTarget(board, toMove, token)) {
             return options;
         }
         for (char piece : PIECE_LETTERS) {
-            if (SanResolver.resolve(ctx.board, piece + token, ctx.toMove) != null) {
+            if (SanResolver.resolve(board, piece + token, toMove) != null) {
                 options.add(piece + token);
             }
         }
         return options;
     }
 
-    private boolean enemyOnTarget(LineCtx ctx, String token) {
+    private boolean enemyOnTarget(BoardModel board, PieceColor toMove, String token) {
         String core = token.contains("=") ? token.substring(0, token.indexOf('=')) : token;
         int[] rc = CoordinateSystem.coordinateToIndex(core.substring(core.length() - 2));
-        SquareModel sq = ctx.board.getSquare(new Position(rc[0], rc[1]));
+        SquareModel sq = board.getSquare(new Position(rc[0], rc[1]));
         PieceModel piece = sq == null ? null : sq.getPiece();
-        return piece != null && piece.getColor() != ctx.toMove;
+        return piece != null && piece.getColor() != toMove;
     }
 
     private static String name(PieceColor color) {

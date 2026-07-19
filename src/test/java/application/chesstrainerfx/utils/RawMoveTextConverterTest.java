@@ -68,6 +68,24 @@ class RawMoveTextConverterTest {
     }
 
     @Test
+    void proseClosesOneMoveVariationSoMainLineContinues() {
+        // "45.Rd6 was played in the game." is een aside op wits 45e; het proza
+        // sluit die variatie af, waarna 45...Rxe3 de hoofdlijn (na 45.f3) vervolgt.
+        // Rxe3 is in béide lijnen legaal — pas 46.Rh8+ (toren nog op d8) beslist.
+        String raw = """
+                45.f3! 45.Rd6 was played in the game. 45...Rxe3 46.Rh8+ Kxh8 47.Qxg6+– Karpov-Timman,
+                Groningen m 2013.
+                """;
+        String fen = "3R4/6pk/2p3q1/2Pp4/4rP1p/4P3/2Q2P2/5K2 w - - 0 1";
+
+        RawMoveTextConverter.Conversion result = RawMoveTextConverter.convert(raw, fen);
+
+        assertEquals("45. f3! (45. Rd6 {was played in the game.}) 45... Rxe3 46. Rh8+ Kxh8"
+                + " 47. Qxg6 {Karpov-Timman, Groningen m 2013.}", result.moveText());
+        assertTrue(result.warnings().isEmpty(), () -> String.join("\n", result.warnings()));
+    }
+
+    @Test
     void cleanPgnWithParenthesesSurvivesConversion() {
         String raw = "1. e4 e5 (1... c5 2. Nf3)";
 
