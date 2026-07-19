@@ -33,7 +33,17 @@
 .tile:armed {
     -fx-background-color: rgba(60,60,60,0.75);
 }
-/* Dropdown van de overlay-menuknoppen (Add Puzzles / ☰) in dezelfde stijl als de tegels */
+/* Het eigen label van de overlay-menuknop: modena zet dit donker, dus expliciet
+   wit zoals de overlay-knoppen (Position Editor / ← Back), inclusief het pijltje. */
+.overlay-menu > .label {
+    -fx-text-fill: white;
+}
+
+.overlay-menu > .arrow-button > .arrow {
+    -fx-background-color: white;
+}
+
+/* Dropdown van de overlay-menuknoppen (Sub-categories / ☰) in dezelfde stijl als de tegels */
 .overlay-menu .context-menu {
     -fx-background-color: rgba(20,20,20,0.92);
     -fx-background-radius: 8;
