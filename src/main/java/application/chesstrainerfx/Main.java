@@ -163,8 +163,10 @@ public class Main extends Application {
             scene.setRoot(homeRoot);
         });
 
-        MenuItem editorItem = new MenuItem("Position Editor");
-        editorItem.setOnAction(e -> openPositionEditor());
+        Button editorBtn = overlayButton("Position Editor");
+        editorBtn.setOnAction(e -> openPositionEditor());
+        StackPane.setAlignment(editorBtn, Pos.TOP_LEFT);
+        StackPane.setMargin(editorBtn, new Insets(58, 10, 10, 10));
 
         MenuItem newItem = new MenuItem("New Sub-category…");
         newItem.setOnAction(e -> createSubCategory());
@@ -175,14 +177,12 @@ public class Main extends Application {
         MenuItem deleteItem = new MenuItem("Delete Sub-category…");
         deleteItem.setOnAction(e -> deleteSubCategory());
 
-        Menu settingsMenu = new Menu("Sub-category Settings");
-        settingsMenu.getItems().addAll(newItem, renameItem, deleteItem);
+        MenuButton subCategoryMenu = overlayMenu("Sub-categories", newItem, renameItem, deleteItem);
+        subCategoryMenu.setPopupSide(Side.BOTTOM);
+        StackPane.setAlignment(subCategoryMenu, Pos.TOP_LEFT);
+        StackPane.setMargin(subCategoryMenu, new Insets(106, 10, 10, 10));
 
-        MenuButton addMenu = overlayMenu("Add Puzzles", editorItem, settingsMenu);
-        addMenu.setPopupSide(Side.BOTTOM);
-        StackPane.setAlignment(addMenu, Pos.TOP_LEFT);
-        StackPane.setMargin(addMenu, new Insets(58, 10, 10, 10));
-        wrapper.getChildren().add(addMenu);
+        wrapper.getChildren().addAll(editorBtn, subCategoryMenu);
 
         return wrapper;
     }
@@ -395,6 +395,17 @@ public class Main extends Application {
         }
     }
 
+    /** Gestylede overlay-knop (zelfde stijl als de menuknop en de terug-knop). */
+    private Button overlayButton(String label) {
+        Button button = new Button(label);
+        button.setStyle("""
+        -fx-background-color: rgba(20,20,20,0.65);
+        -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
+        -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
+    """);
+        return button;
+    }
+
     /** Gestylede menuknop rechtsboven voor module-acties. */
     private MenuButton overlayMenu(String label, MenuItem... items) {
         MenuButton menu = new MenuButton(label, null, items);
@@ -426,13 +437,8 @@ public class Main extends Application {
 
     /** Legt een gestylede terug-knop over de gegeven view heen. */
     private StackPane withBackButton(Parent content, Runnable onBack) {
-        Button back = new Button("← Back");
+        Button back = overlayButton("← Back");
         back.setOnAction(e -> onBack.run());
-        back.setStyle("""
-        -fx-background-color: rgba(20,20,20,0.65);
-        -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;
-        -fx-padding: 6 12 6 12; -fx-border-color: rgba(255,255,255,0.35); -fx-border-radius: 8;
-    """);
 
         StackPane wrapper = new StackPane(content, back);
         StackPane.setAlignment(back, Pos.TOP_LEFT);
