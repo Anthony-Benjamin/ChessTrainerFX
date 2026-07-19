@@ -7,3 +7,11 @@
                      -fx-background-radius: 8;
                      -fx-highlight-fill: rgba(245,222,179,0.35); }
 .editor-combo      { -fx-background-color: #d7b77e; -fx-background-radius: 8; }
+
+/* Contextmenu (rechtermuis: knippen/plakken): de tekstvelden geven hun lichte
+   tekstkleur door aan de popup, dus die krijgt dezelfde donkere achtergrond. */
+.context-menu                       { -fx-background-color: rgba(30,30,30,0.95);
+                                      -fx-background-radius: 8; }
+.context-menu .menu-item .label     { -fx-text-fill: #f5deb3; }
+.context-menu .menu-item:focused    { -fx-background-color: rgba(245,222,179,0.3); }
+.context-menu .menu-item:focused .label { -fx-text-fill: white; }
