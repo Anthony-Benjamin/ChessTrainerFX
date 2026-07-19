@@ -418,7 +418,6 @@ public class ChapterWindow extends BorderPane {
         noteLabel.setStyle("""
                         -fx-text-fill: #f5deb3;
                         -fx-font-size: 16px;
-                        -fx-font-style: italic;
                         -fx-background-color: rgba(20,20,20,0.65);
                         -fx-background-radius: 8;
                         -fx-padding: 12;
@@ -435,7 +434,6 @@ public class ChapterWindow extends BorderPane {
         noteArea.setStyle("""
                         -fx-text-fill: #f5deb3;
                         -fx-font-size: 16px;
-                        -fx-font-style: italic;
                         -fx-control-inner-background: rgba(20,20,20,0.85);
                         -fx-background-color: rgba(20,20,20,0.65);
                         -fx-background-radius: 8;
