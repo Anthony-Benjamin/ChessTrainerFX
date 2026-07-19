@@ -37,7 +37,7 @@
         </HBox>
 
         <HBox spacing="10" alignment="CENTER">
-            <padding><Insets top="153"/></padding>
+            <padding><Insets top="100"/></padding>
             <Button text="Start Position" minWidth="150" onAction="#onStartPosition" styleClass="editor-btn"/>
             <Button text="Clear Board" minWidth="150" onAction="#onClearBoard" styleClass="editor-btn"/>
         </HBox>
@@ -49,12 +49,17 @@
 
         <VBox alignment="CENTER">
             <Label text="Moves" styleClass="editor-label-bold"/>
-            <TextArea fx:id="movesWindow" maxWidth="310" maxHeight="150" styleClass="editor-textarea"/>
+            <TextArea fx:id="movesWindow" maxWidth="310" maxHeight="90" prefHeight="90" styleClass="editor-textarea"/>
         </VBox>
 
         <VBox alignment="CENTER">
             <Label text="Comments" styleClass="editor-label-bold"/>
             <TextArea fx:id="commentsWindow" maxWidth="310" maxHeight="100" prefHeight="100" wrapText="true" styleClass="editor-textarea"/>
+        </VBox>
+
+        <VBox alignment="CENTER">
+            <Label text="Notes" styleClass="editor-label-bold"/>
+            <TextArea fx:id="notesWindow" maxWidth="310" maxHeight="90" prefHeight="90" wrapText="true" styleClass="editor-textarea"/>
         </VBox>
 
         <HBox alignment="CENTER">

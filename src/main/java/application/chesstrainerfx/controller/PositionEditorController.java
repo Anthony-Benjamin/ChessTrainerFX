@@ -48,6 +48,7 @@ public class PositionEditorController {
     @FXML private Label categoryPathLbl;
     @FXML private TextArea movesWindow;
     @FXML private TextArea commentsWindow;
+    @FXML private TextArea notesWindow;
     @FXML private ComboBox<String> whoseTurnSelector;
     @FXML private CheckBox whiteKingSideCastling;
     @FXML private CheckBox whiteQueenSideCastling;
@@ -249,7 +250,12 @@ public class PositionEditorController {
         boolean whiteToMove = WHITE_TO_MOVE.equals(whoseTurnSelector.getValue());
         String fen = model.exportToFEN(whiteToMove, buildCastlingString());
         String moves = movesWindow.getText();
-        saveToFile(file, PgnUtils.buildExercisePgn(name, fen, moves, commentsWindow.getText()));
+        String pgn = PgnUtils.buildExercisePgn(name, fen, moves, commentsWindow.getText(), notesWindow.getText());
+        if (saveToFile(file, pgn)) {
+            movesWindow.clear();
+            commentsWindow.clear();
+            notesWindow.clear();
+        }
     }
 
     /** Bouwt het FEN-rokadeveld uit de checkboxes ("KQkq", "Kq", "-", ...). */
@@ -262,12 +268,14 @@ public class PositionEditorController {
         return sb.isEmpty() ? "-" : sb.toString();
     }
 
-    private void saveToFile(File file, String pgn) {
+    private boolean saveToFile(File file, String pgn) {
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
             writer.write(pgn);
             PREFS.put(PREF_LAST_DIR, file.getParent());
+            return true;
         } catch (IOException ex) {
             showInfo("Save failed", "Could not save the file: " + ex.getMessage());
+            return false;
         }
     }
 

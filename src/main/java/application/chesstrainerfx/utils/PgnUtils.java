@@ -1,5 +1,7 @@
 package application.chesstrainerfx.utils;
 
+import application.pgnreader.io.PGNReader;
+
 public class PgnUtils {
 
     private PgnUtils() {
@@ -66,9 +68,10 @@ public class PgnUtils {
 
     /**
      * Bouwt een minimale PGN-oefening: standaard tags, de FEN van de
-     * opgezette positie, optioneel commentaar en de (optionele) zettenreeks.
+     * opgezette positie, optioneel commentaar, de (optionele) zettenreeks en
+     * een optionele eigen notitie als {[%unote] ...}-blok vóór het resultaat.
      */
-    public static String buildExercisePgn(String title, String fen, String moves, String comments) {
+    public static String buildExercisePgn(String title, String fen, String moves, String comments, String userNote) {
         StringBuilder pgn = new StringBuilder();
 
         appendTag(pgn, "Event", "?");
@@ -92,6 +95,10 @@ public class PgnUtils {
         }
         pgn.append(moves);
         if (!moves.isBlank()) pgn.append(" ");
+        String note = sanitizeComment(userNote);
+        if (!note.isEmpty()) {
+            pgn.append("{").append(PGNReader.USER_NOTE_MARKER).append(" ").append(note).append("} ");
+        }
         pgn.append("*\n");
 
         return pgn.toString();
