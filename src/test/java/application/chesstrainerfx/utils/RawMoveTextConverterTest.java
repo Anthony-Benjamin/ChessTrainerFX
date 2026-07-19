@@ -31,6 +31,54 @@ class RawMoveTextConverterTest {
     }
 
     @Test
+    void inlineProseCitationAndLateVariationOnOneLine() {
+        // Boek-layout op één regel: proza tussen de zetten, een partij-citatie met
+        // resultaat, en een variatie (2...Bb4) die pas komt nadat de hoofdlijn al
+        // tot zet 3 is doorgelopen.
+        String raw = "1.Nxe5 Grabbing a pawn. 1...Nxe5 2.d4 Bxd4 1-0 Someone-Else, Sometown 2002;"
+                + " 3.Qxd4 d6; 2...Bb4 3.dxe5 Bxc3+ 4.bxc3";
+
+        RawMoveTextConverter.Conversion result = RawMoveTextConverter.convert(raw, ITALIAN);
+
+        assertEquals("1. Nxe5 {Grabbing a pawn.} 1... Nxe5 2. d4 Bxd4"
+                + " {1-0 Someone-Else, Sometown 2002} (2... Bb4 3. dxe5 Bxc3+ 4. bxc3)"
+                + " 3. Qxd4 d6", result.moveText());
+        assertTrue(result.warnings().isEmpty(), () -> String.join("\n", result.warnings()));
+    }
+
+    @Test
+    void bookFragmentWithCitationAndEnDashEvaluationsConverts() {
+        // Letterlijk boekfragment: alles op één regel(afbreking), citatie met
+        // resultaat, "+–" met en-dash, en de variatie 14...Ra7 nadat de hoofdlijn
+        // al tot en met 16.Bxa8 is doorgelopen.
+        String raw = """
+                13.Nxf6+! Clearing the e4-square for the bishop. 13...Bxf6 14.Be4 e5 1-0 Grigorov-Veselinov,
+                Borovec 2002; 15.Qxd8 Rxd8 16.Bxa8+–; 14...Ra7 15.Qxd8 Rxd8 16.Bxb8+–
+                """;
+        String fen = "rn1q1rk1/4ppbp/5np1/8/4NB2/8/PP3PBP/R2Q1RK1 w - - 0 1";
+
+        RawMoveTextConverter.Conversion result = RawMoveTextConverter.convert(raw, fen);
+
+        assertEquals("13. Nxf6+! {Clearing the e4-square for the bishop.} 13... Bxf6 14. Be4 e5"
+                + " {1-0 Grigorov-Veselinov, Borovec 2002} (14... Ra7 15. Qxd8 Rxd8 16. Bxb8)"
+                + " 15. Qxd8 Rxd8 16. Bxa8", result.moveText());
+        // Eén terechte waarschuwing: "e5" kan hier ook de loperzet Be5 zijn.
+        assertEquals(1, result.warnings().size());
+        assertTrue(result.warnings().get(0).contains("Be5"));
+    }
+
+    @Test
+    void cleanPgnWithParenthesesSurvivesConversion() {
+        String raw = "1. e4 e5 (1... c5 2. Nf3)";
+
+        RawMoveTextConverter.Conversion result =
+                RawMoveTextConverter.convert(raw, application.chesstrainerfx.model.BoardModel.START_FEN);
+
+        assertEquals("1. e4 e5 (1... c5 2. Nf3)", result.moveText());
+        assertTrue(result.warnings().isEmpty(), () -> String.join("\n", result.warnings()));
+    }
+
+    @Test
     void convertedTextReplaysInExerciseSession() {
         String raw = """
                 1.xe5xe52.d4xd4

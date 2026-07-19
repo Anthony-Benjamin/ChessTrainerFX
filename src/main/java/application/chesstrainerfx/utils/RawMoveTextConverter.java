@@ -12,11 +12,13 @@ import java.util.regex.Pattern;
 
 /**
  * Zet ruwe, uit boeken of apps geplakte zettentekst om naar nette PGN-movetext.
+ * Werkt per woord, zodat proza en zetten op dezelfde regel mogen staan.
  * Herstelt weggevallen stukletters (figurines, bv. "xf6" → "Nxf6") aan de hand
  * van de stelling, splitst aan elkaar geplakte tokens ("e4e5", "a73.xd8"),
- * maakt van proza-regels inline {commentaar} en herkent variaties aan
- * terugspringende zetnummers (boek-layout: de variatie volgt direct op de zet
- * waarvan ze afwijkt).
+ * maakt van proza inline {commentaar} bij de voorafgaande zet en herkent
+ * variaties aan terugspringende zetnummers. De zetten worden intern als boom
+ * bijgehouden zodat een variatie op een eerdere zet — ook als de hoofdlijn al
+ * verder is — op de juiste plek tussen haakjes belandt.
  */
 public final class RawMoveTextConverter {
 
@@ -24,10 +26,8 @@ public final class RawMoveTextConverter {
     public record Conversion(String moveText, List<String> warnings) {
     }
 
-    private static final Pattern PROSE = Pattern.compile("[A-Za-z]{4,}");
-
     // Volgorde is betekenisvol: resultaat vóór zetnummer ("1-0" vs "1."),
-    // rokade vóór SAN, evaluaties ("+-") vóór het losse schaak-plusje.
+    // rokade vóór SAN, evaluaties ("+-", ook met en/em-dash) vóór het losse schaak-plusje.
     private static final Pattern TOKEN = Pattern.compile(
             "(?<result>1-0|0-1|1/2-1/2|½-½)"
                     + "|(?<number>\\d+)(?<dots>\\.{1,3})"
@@ -36,63 +36,50 @@ public final class RawMoveTextConverter {
                     + "|[a-h]x[a-h][1-8](?:=[QRBN])?"
                     + "|x[a-h][1-8](?:=[QRBN])?"
                     + "|[a-h][1-8](?:=[QRBN])?)"
-                    + "|(?<eval>\\+-|-\\+|\\+/-|-/\\+|[±∓⩱⩲=∞])"
+                    + "|(?<eval>\\+[-–—]|[-–—]\\+|\\+/-|-/\\+|[±∓⩱⩲=∞])"
                     + "|(?<suffix>[+#])"
                     + "|(?<glyph>[!?]+)");
 
     private static final char[] PIECE_LETTERS = {'N', 'B', 'R', 'Q', 'K'};
 
-    private RawMoveTextConverter() {
-    }
+    private final List<String> warnings = new ArrayList<>();
+    private final Deque<LineCtx> stack = new ArrayDeque<>();
+    private final Node root = new Node(0, null, null, null, null, null);
+    private final List<String> proseRun = new ArrayList<>();
+    private String pendingResult;
 
     public static Conversion convert(String rawText, String fen) {
-        List<String> warnings = new ArrayList<>();
-        Output out = new Output();
-        Deque<LineCtx> stack = new ArrayDeque<>();
-        stack.push(LineCtx.fromFen(fen));
+        return new RawMoveTextConverter(fen).run(rawText);
+    }
 
-        for (String line : rawText.split("\\R")) {
-            String trimmed = line.trim();
-            if (trimmed.isEmpty()) {
+    private RawMoveTextConverter(String fen) {
+        LineCtx main = new LineCtx();
+        main.board = new BoardModel();
+        main.board.initializeFromFEN(fen);
+        String[] parts = fen.trim().split("\\s+");
+        main.toMove = parts.length >= 2 && parts[1].equals("b") ? PieceColor.BLACK : PieceColor.WHITE;
+        main.moveNumber = 1;
+        main.current = root;
+        main.anchor = root;
+        stack.push(main);
+    }
+
+    private Conversion run(String rawText) {
+        for (String word : rawText.split("\\s+")) {
+            if (word.isEmpty()) {
                 continue;
             }
-            if (PROSE.matcher(trimmed).find()) {
-                String comment = PgnUtils.sanitizeComment(trimmed);
-                if (!comment.isEmpty()) {
-                    out.appendComment(comment);
-                }
+            String movePart = asMoveWord(word);
+            if (movePart == null) {
+                proseRun.add(stripBrackets(word));
                 continue;
             }
-            Matcher m = TOKEN.matcher(trimmed);
-            while (m.find()) {
-                if (m.group("result") != null || m.group("eval") != null) {
-                    continue; // resultaat komt uit de Result-tag; evaluaties horen niet in movetext
-                }
-                if (m.group("suffix") != null) {
-                    out.appendToLastMove(m.group("suffix"));
-                    continue;
-                }
-                if (m.group("glyph") != null) {
-                    out.appendToLastMove(m.group("glyph"));
-                    continue;
-                }
-                if (m.group("number") != null) {
-                    PieceColor color = m.group("dots").length() >= 2 ? PieceColor.BLACK : PieceColor.WHITE;
-                    handleNumber(Integer.parseInt(m.group("number")), color, stack, out, warnings);
-                    continue;
-                }
-                String token = m.group("castle") != null
-                        ? m.group("castle").replace('0', 'O')
-                        : m.group("san");
-                playToken(token, stack.peek(), out, warnings);
-            }
+            flushProse();
+            processTokens(movePart);
         }
+        flushProse();
 
-        while (stack.size() > 1) {
-            out.closeVariation();
-            stack.pop();
-        }
-        String moveText = out.toString();
+        String moveText = serialize();
         if (moveText.isBlank()) {
             warnings.add("No moves recognized in the text.");
             return new Conversion(rawText, warnings);
@@ -101,12 +88,67 @@ public final class RawMoveTextConverter {
     }
 
     /**
-     * Verwerkt een zetnummer-token: bevestigt de verwachte voortzetting, keert
-     * terug naar een omliggende lijn (variatie sluiten) of opent een variatie als
-     * het nummer de laatst gespeelde zet van een open lijn herhaalt.
+     * Levert de verwerkbare vorm van een woord dat zetmateriaal is, of null voor
+     * proza. Een zetwoord bestaat (na eventuele openingshaakjes) uit aaneengesloten
+     * tokens vanaf het begin, met hooguit loze leestekens als staart. Een woord dat
+     * alleen uit een groot getal bestaat (bv. een jaartal "2002.") blijft proza.
      */
-    private static void handleNumber(int number, PieceColor color, Deque<LineCtx> stack,
-                                     Output out, List<String> warnings) {
+    private String asMoveWord(String word) {
+        String s = word.replaceAll("^[(\\[{]+", "");
+        Matcher m = TOKEN.matcher(s);
+        int pos = 0;
+        boolean onlyLargeNumbers = true;
+        while (m.find() && m.start() == pos) {
+            if (m.group("number") == null || Integer.parseInt(m.group("number")) <= 99) {
+                onlyLargeNumbers = false;
+            }
+            pos = m.end();
+        }
+        if (pos == 0 || onlyLargeNumbers) {
+            return null;
+        }
+        return s.substring(pos).matches("[.,;:)\\]}]*") ? s : null;
+    }
+
+    private static String stripBrackets(String word) {
+        return word.replaceAll("^[(\\[{]+", "").replaceAll("[)\\]}]+$", "");
+    }
+
+    private void processTokens(String word) {
+        Matcher m = TOKEN.matcher(word);
+        while (m.find()) {
+            if (m.group("result") != null) {
+                pendingResult = m.group("result");
+                continue;
+            }
+            if (m.group("eval") != null) {
+                continue; // evaluaties horen niet in movetext
+            }
+            if (m.group("suffix") != null || m.group("glyph") != null) {
+                Node tip = stack.peek().current;
+                if (tip.san != null) {
+                    tip.san += m.group();
+                }
+                continue;
+            }
+            if (m.group("number") != null) {
+                PieceColor color = m.group("dots").length() >= 2 ? PieceColor.BLACK : PieceColor.WHITE;
+                handleNumber(Integer.parseInt(m.group("number")), color);
+                continue;
+            }
+            String token = m.group("castle") != null
+                    ? m.group("castle").replace('0', 'O')
+                    : m.group("san");
+            playToken(token);
+        }
+    }
+
+    /**
+     * Verwerkt een zetnummer: bevestigt de verwachte voortzetting, keert terug
+     * naar een omliggende lijn, of opent een variatie als het nummer een al
+     * gespeelde zet van een open lijn herhaalt — ook als die lijn al verder is.
+     */
+    private void handleNumber(int number, PieceColor color) {
         LineCtx current = stack.peek();
         if (!current.moved && stack.size() == 1) {
             // Het eerste zetnummer bepaalt de nummering van de oefening.
@@ -124,17 +166,17 @@ public final class RawMoveTextConverter {
         int closes = 0;
         for (LineCtx ctx : stack) {
             if (ctx.expects(number, color)) {
-                popVariations(stack, out, closes);
+                pop(closes);
                 return;
             }
             closes++;
         }
         closes = 0;
         for (LineCtx ctx : stack) {
-            if (ctx.lastMoveWas(number, color)) {
-                popVariations(stack, out, closes);
-                out.openVariation();
-                stack.push(ctx.branchBeforeLastMove());
+            Node replaced = ctx.findPlayed(number, color);
+            if (replaced != null) {
+                pop(closes);
+                branchFrom(replaced);
                 return;
             }
             closes++;
@@ -143,25 +185,65 @@ public final class RawMoveTextConverter {
                 + " — check the numbering around that move.");
     }
 
-    private static void popVariations(Deque<LineCtx> stack, Output out, int count) {
+    private void pop(int count) {
         for (int i = 0; i < count; i++) {
-            out.closeVariation();
             stack.pop();
         }
     }
 
-    private static void playToken(String token, LineCtx ctx, Output out, List<String> warnings) {
-        String san = reconstruct(ctx, token, warnings);
+    /** Opent een variatie die de gegeven zet vervangt: zelfde ouder, stelling van vóór die zet. */
+    private void branchFrom(Node replaced) {
+        LineCtx ctx = new LineCtx();
+        ctx.board = new BoardModel();
+        ctx.board.initializeFromFEN(replaced.fenBefore);
+        ctx.board.setLastDoubleStepPawnPosition(replaced.epBefore);
+        ctx.toMove = replaced.color;
+        ctx.moveNumber = replaced.number;
+        ctx.current = replaced.parent;
+        ctx.anchor = replaced.parent;
+        stack.push(ctx);
+    }
+
+    private void playToken(String token) {
+        LineCtx ctx = stack.peek();
+        String san = reconstruct(ctx, token);
         Move move = SanResolver.resolve(ctx.board, san, ctx.toMove);
+        String fenBefore = ctx.board.exportToFEN(ctx.toMove == PieceColor.WHITE);
+        Position epBefore = ctx.board.getLastDoubleStepPawnPosition();
         if (move == null) {
             warnings.add("Could not resolve \"" + token + "\" as a legal move for " + name(ctx.toMove)
                     + " at move " + ctx.moveNumber + ".");
         } else {
-            ctx.snapshotBeforeMove();
             ExerciseMoveExecutor.apply(ctx.board, move, san, ctx.toMove);
         }
-        out.appendMove(ctx.moveNumber, ctx.toMove, san);
-        ctx.recordMove();
+        Node node = new Node(ctx.moveNumber, ctx.toMove, san, ctx.current, fenBefore, epBefore);
+        ctx.current.children.add(node);
+        ctx.current = node;
+        ctx.moved = true;
+        if (ctx.toMove == PieceColor.BLACK) {
+            ctx.moveNumber++;
+        }
+        ctx.toMove = (ctx.toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+        pendingResult = null;
+    }
+
+    /** Hangt verzameld proza (plus een direct voorafgaand resultaat) als commentaar aan de laatste zet. */
+    private void flushProse() {
+        if (proseRun.isEmpty()) {
+            return;
+        }
+        String text = String.join(" ", proseRun).trim().replaceAll("[;,\\s]+$", "");
+        proseRun.clear();
+        if (pendingResult != null) {
+            text = (pendingResult + " " + text).trim();
+            pendingResult = null;
+        }
+        String comment = PgnUtils.sanitizeComment(text);
+        if (comment.isEmpty()) {
+            return;
+        }
+        Node target = stack.peek().current;
+        target.comment = target.comment.isEmpty() ? comment : target.comment + " " + comment;
     }
 
     /**
@@ -169,7 +251,7 @@ public final class RawMoveTextConverter {
      * stuksoort die slag kan spelen. Een kaal veld ("e4") wordt als pionzet
      * gelezen als die legaal is; een legale stukzet ernaast levert een waarschuwing.
      */
-    private static String reconstruct(LineCtx ctx, String token, List<String> warnings) {
+    private String reconstruct(LineCtx ctx, String token) {
         if (Character.isUpperCase(token.charAt(0)) || token.matches("[a-h]x.*")) {
             return token; // stukletter of pion-slag met lijnletter is al compleet
         }
@@ -197,7 +279,7 @@ public final class RawMoveTextConverter {
         return token;
     }
 
-    private static String ambiguityWarning(LineCtx ctx, String token, List<String> options) {
+    private String ambiguityWarning(LineCtx ctx, String token, List<String> options) {
         return options.isEmpty()
                 ? "No piece can play \"" + token + "\" for " + name(ctx.toMove) + " at move "
                         + ctx.moveNumber + " — check the position."
@@ -205,7 +287,7 @@ public final class RawMoveTextConverter {
                         + String.join(", ", options) + ") — pick the right one manually.";
     }
 
-    private static List<String> pieceOptions(LineCtx ctx, String token, boolean capture) {
+    private List<String> pieceOptions(LineCtx ctx, String token, boolean capture) {
         List<String> options = new ArrayList<>();
         if (capture && !enemyOnTarget(ctx, token)) {
             return options;
@@ -218,7 +300,7 @@ public final class RawMoveTextConverter {
         return options;
     }
 
-    private static boolean enemyOnTarget(LineCtx ctx, String token) {
+    private boolean enemyOnTarget(LineCtx ctx, String token) {
         String core = token.contains("=") ? token.substring(0, token.indexOf('=')) : token;
         int[] rc = CoordinateSystem.coordinateToIndex(core.substring(core.length() - 2));
         SquareModel sq = ctx.board.getSquare(new Position(rc[0], rc[1]));
@@ -230,110 +312,99 @@ public final class RawMoveTextConverter {
         return color == PieceColor.WHITE ? "white" : "black";
     }
 
-    /** Eén (hoofd- of variatie)lijn: bordstand, wie aan zet is en de nummering. */
+    // ---- serialisatie van de zettenboom naar PGN-movetext ----
+
+    private String serialize() {
+        StringBuilder sb = new StringBuilder();
+        if (!root.comment.isEmpty()) {
+            append(sb, "{" + root.comment + "}");
+        }
+        serializeChildren(root, sb, true);
+        return sb.toString().trim();
+    }
+
+    /** Eerste kind is de hoofdvoortzetting; overige kinderen worden variaties tussen haakjes. */
+    private void serializeChildren(Node parent, StringBuilder sb, boolean forceNumber) {
+        if (parent.children.isEmpty()) {
+            return;
+        }
+        Node main = parent.children.get(0);
+        appendMove(sb, main, forceNumber);
+        boolean interrupted = false;
+        if (!main.comment.isEmpty()) {
+            append(sb, "{" + main.comment + "}");
+            interrupted = true;
+        }
+        for (int i = 1; i < parent.children.size(); i++) {
+            append(sb, "(");
+            Node variation = parent.children.get(i);
+            appendMove(sb, variation, true);
+            if (!variation.comment.isEmpty()) {
+                append(sb, "{" + variation.comment + "}");
+            }
+            serializeChildren(variation, sb, !variation.comment.isEmpty());
+            sb.append(')');
+            interrupted = true;
+        }
+        serializeChildren(main, sb, interrupted);
+    }
+
+    private void appendMove(StringBuilder sb, Node node, boolean forceNumber) {
+        String prefix = node.color == PieceColor.WHITE
+                ? node.number + ". "
+                : (forceNumber ? node.number + "... " : "");
+        append(sb, prefix + node.san);
+    }
+
+    private void append(StringBuilder sb, String token) {
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '(') {
+            sb.append(' ');
+        }
+        sb.append(token);
+    }
+
+    /** Eén zet in de boom, met de stelling van vóór de zet om variaties te kunnen aftakken. */
+    private static final class Node {
+        final int number;
+        final PieceColor color;
+        String san;
+        String comment = "";
+        final Node parent;
+        final String fenBefore;
+        final Position epBefore;
+        final List<Node> children = new ArrayList<>();
+
+        Node(int number, PieceColor color, String san, Node parent, String fenBefore, Position epBefore) {
+            this.number = number;
+            this.color = color;
+            this.san = san;
+            this.parent = parent;
+            this.fenBefore = fenBefore;
+            this.epBefore = epBefore;
+        }
+    }
+
+    /** Eén open (hoofd- of variatie)lijn: bordstand, wie aan zet is en de aanhechting in de boom. */
     private static final class LineCtx {
         BoardModel board;
         PieceColor toMove;
         int moveNumber;
         boolean moved;
-        int lastNumber;
-        PieceColor lastColor;
-        String fenBeforeLast;
-        Position epBeforeLast;
-
-        static LineCtx fromFen(String fen) {
-            LineCtx ctx = new LineCtx();
-            ctx.board = new BoardModel();
-            ctx.board.initializeFromFEN(fen);
-            String[] parts = fen.trim().split("\\s+");
-            ctx.toMove = parts.length >= 2 && parts[1].equals("b") ? PieceColor.BLACK : PieceColor.WHITE;
-            ctx.moveNumber = 1;
-            return ctx;
-        }
+        Node current;
+        Node anchor;
 
         boolean expects(int number, PieceColor color) {
             return number == moveNumber && color == toMove;
         }
 
-        boolean lastMoveWas(int number, PieceColor color) {
-            return moved && fenBeforeLast != null && number == lastNumber && color == lastColor;
-        }
-
-        LineCtx branchBeforeLastMove() {
-            LineCtx branch = new LineCtx();
-            branch.board = new BoardModel();
-            branch.board.initializeFromFEN(fenBeforeLast);
-            branch.board.setLastDoubleStepPawnPosition(epBeforeLast);
-            branch.toMove = lastColor;
-            branch.moveNumber = lastNumber;
-            return branch;
-        }
-
-        void snapshotBeforeMove() {
-            fenBeforeLast = board.exportToFEN(toMove == PieceColor.WHITE);
-            epBeforeLast = board.getLastDoubleStepPawnPosition();
-        }
-
-        void recordMove() {
-            lastNumber = moveNumber;
-            lastColor = toMove;
-            moved = true;
-            if (toMove == PieceColor.BLACK) {
-                moveNumber++;
+        /** Zoekt de gespeelde zet met dit nummer binnen het eigen segment van deze lijn. */
+        Node findPlayed(int number, PieceColor color) {
+            for (Node n = current; n != null && n != anchor; n = n.parent) {
+                if (n.number == number && n.color == color) {
+                    return n;
+                }
             }
-            toMove = (toMove == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
-        }
-    }
-
-    /** Bouwt de movetext op met nette nummering, spaties en haakjes. */
-    private static final class Output {
-        private final StringBuilder sb = new StringBuilder();
-        private boolean lastWasMove;
-        private boolean needsBlackNumber = true;
-
-        void appendMove(int number, PieceColor color, String san) {
-            String prefix = color == PieceColor.WHITE
-                    ? number + ". "
-                    : (needsBlackNumber ? number + "... " : "");
-            appendToken(prefix + san);
-            lastWasMove = true;
-            needsBlackNumber = false;
-        }
-
-        void appendComment(String comment) {
-            appendToken("{" + comment + "}");
-            lastWasMove = false;
-            needsBlackNumber = true;
-        }
-
-        void openVariation() {
-            appendToken("(");
-            lastWasMove = false;
-            needsBlackNumber = true;
-        }
-
-        void closeVariation() {
-            sb.append(')');
-            lastWasMove = false;
-            needsBlackNumber = true;
-        }
-
-        void appendToLastMove(String suffix) {
-            if (lastWasMove) {
-                sb.append(suffix);
-            }
-        }
-
-        private void appendToken(String token) {
-            if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '(') {
-                sb.append(' ');
-            }
-            sb.append(token);
-        }
-
-        @Override
-        public String toString() {
-            return sb.toString().trim();
+            return null;
         }
     }
 }
