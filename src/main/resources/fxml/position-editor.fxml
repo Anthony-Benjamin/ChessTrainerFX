@@ -48,7 +48,10 @@
         </HBox>
 
         <VBox alignment="CENTER">
-            <Label text="Moves" styleClass="editor-label-bold"/>
+            <HBox spacing="8" alignment="CENTER">
+                <Label text="Moves" styleClass="editor-label-bold"/>
+                <Button text="Convert" onAction="#onConvertMoves" minWidth="-Infinity" styleClass="editor-btn"/>
+            </HBox>
             <TextArea fx:id="movesWindow" maxWidth="310" maxHeight="90" prefHeight="90" styleClass="editor-textarea"/>
         </VBox>
 

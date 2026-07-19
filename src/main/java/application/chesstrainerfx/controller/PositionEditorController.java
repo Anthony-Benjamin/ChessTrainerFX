@@ -5,6 +5,7 @@ import application.chesstrainerfx.imagescanner.ScanResult;
 import application.chesstrainerfx.model.BoardModel;
 import application.chesstrainerfx.utils.BoardEditor;
 import application.chesstrainerfx.utils.PgnUtils;
+import application.chesstrainerfx.utils.RawMoveTextConverter;
 import application.chesstrainerfx.utils.PieceSelectorPane;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -196,6 +197,27 @@ public class PositionEditorController {
         String[] parts = fen.trim().split("\\s+");
         boolean whiteToMove = parts.length < 2 || !parts[1].equals("b");
         whoseTurnSelector.setValue(whiteToMove ? WHITE_TO_MOVE : BLACK_TO_MOVE);
+    }
+
+    /**
+     * Zet ruwe geplakte zettentekst in het Moves-venster om naar nette PGN-movetext,
+     * met de huidige stelling als uitgangspunt voor het aanvullen van weggevallen
+     * stukletters. Waarschuwingen (dubbelzinnige of onherleidbare zetten) worden
+     * getoond zodat de gebruiker het resultaat kan corrigeren.
+     */
+    @FXML
+    private void onConvertMoves() {
+        String raw = movesWindow.getText();
+        if (raw.isBlank()) {
+            return;
+        }
+        boolean whiteToMove = WHITE_TO_MOVE.equals(whoseTurnSelector.getValue());
+        String fen = model.exportToFEN(whiteToMove, buildCastlingString());
+        RawMoveTextConverter.Conversion result = RawMoveTextConverter.convert(raw, fen);
+        movesWindow.setText(result.moveText());
+        if (!result.warnings().isEmpty()) {
+            showInfo("Check the converted moves", String.join("\n", result.warnings()));
+        }
     }
 
     @FXML
