@@ -1,5 +1,6 @@
 .dialog-pane{
-    -fx-background-color: #FCF3E8; /* dialog venster background color */
+    -fx-background-color: #2b1a0e; /* warme donkerbruine achtergrond, zelfde sfeer als het bord */
+    -fx-graphic: null; /* standaard blauw vraagteken-icoon verbergen, kan niet herkleurd worden (vast PNG) */
 }
 
 .dialog-pane > *.button-bar > *.container {
@@ -7,23 +8,25 @@
 }
 
 .dialog-pane .button{
-    -fx-background-color: #ECAF6F;
-    -fx-text-fill: white;
+    -fx-background-color: #d7b77e;
+    -fx-text-fill: #2b1a0e;
+    -fx-font-weight: normal;
+    -fx-background-radius: 8;
 }
 
 .dialog-pane .content.label{
-    -fx-text-fill: #660000;
+    -fx-text-fill: #f5deb3;
 }
 
 /* Header panel background */
 .dialog-pane .header-panel {
-    -fx-background-color: #336699; /* deep blue */
+    -fx-background-color: #3b2412; /* donkerder bruin */
     -fx-padding: 10;
 }
 
 /* Header text */
 .dialog-pane .header-panel .label {
-    -fx-text-fill: white;
+    -fx-text-fill: #f5deb3;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
@@ -31,4 +34,31 @@
 /* Optional: remove the default icon background */
 .dialog-pane .header-panel .graphic-container {
     -fx-background-color: transparent;
+}
+
+/* ChoiceDialog's ComboBox meenemen in het thema */
+.dialog-pane .combo-box-base {
+    -fx-background-color: #d7b77e;
+    -fx-background-radius: 8;
+}
+
+.dialog-pane .combo-box-base .list-cell {
+    -fx-text-fill: #2b1a0e;
+}
+
+/* Uitklap-lijst van de ComboBox (los popup-venster) */
+.combo-box-popup .list-view {
+    -fx-background-color: #d7b77e;
+    -fx-border-color: #2b1a0e;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #d7b77e;
+    -fx-text-fill: #2b1a0e;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover,
+.combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #3b2412;
+    -fx-text-fill: #f5deb3;
 }

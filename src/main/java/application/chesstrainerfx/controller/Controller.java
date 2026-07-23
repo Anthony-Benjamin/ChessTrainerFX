@@ -381,6 +381,9 @@ public class Controller {
         }
 
         ChoiceDialog<ExerciseSession.Node> dialog = new ChoiceDialog<>(candidates.get(0), candidates);
+        dialog.getDialogPane().getStylesheets().add(
+                getClass().getResource("/css/alert.css").toExternalForm()
+        );
         dialog.setTitle("Choose computer move");
         dialog.setHeaderText("Choose the variation the computer plays:");
         dialog.setContentText("Computer move:");
